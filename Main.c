@@ -296,7 +296,7 @@ void makeMove(Move move) {
 
 
 // checks if a move would take a king
-int checkIfCheckMate(Move move, int side) {
+bool checkIfCheckMate(Move move, int side) {
     int i;
     int moveCount;
     Move generatedMove;
@@ -311,27 +311,26 @@ int checkIfCheckMate(Move move, int side) {
     gameState = GAME_STATE_STACK[GAME_STATE_STACK_POINTER];
     whiteKings = gameState[6];
     blackKings = gameState[13];
-    GAME_STATE_STACK_POINTER--;
 
     movesArr = MOVE_STACK[MOVE_STACK_POINTER];
     // generate moves for opponent side and check if any could take your king in the square you are moving (t0)
-    moveCount = generateMoves(gameState, movesArr, -side);
+    moveCount = generateMoves(movesArr, -side);
+    GAME_STATE_STACK_POINTER--;
+    MOVE_STACK_POINTER--;
     for (i = 0; i < moveCount; i++) {
         generatedMove = movesArr[i];
 
         if (side == 1 && squareOccupied(whiteKings, generatedMove.to)) {
-            printf("attack from: %d, and king in: %d\n", generatedMove.from, i);
-            MOVE_STACK_POINTER--;
-            return 1;
+            printf("attack from: %d, and king in: %d\n", generatedMove.from, generatedMove.to);
+            return true;
         }
         else if (side == -1 && squareOccupied(blackKings, generatedMove.to)) {
-            MOVE_STACK_POINTER--;
-            return 1;
+            printf("attack from: %d, and king in: %d\n", generatedMove.from, generatedMove.to);
+            return true;
         }
     }
 
-    MOVE_STACK_POINTER--;
-    return 0;
+    return false;
 }
 
 void printBoard() {
@@ -424,24 +423,30 @@ void gameLoop() {
     printBoard();
 
     while (true) {
+        int inputFrom;
+        int inputTo;
         int from;
         int to;
 
         int legalMoveCount;
         int i;
         Move legalMove;
-        int moveIsLegal;
+        bool moveIsLegal;
 
         printf("from:");
-        scanf("%d", &from);
+        scanf("%d", &inputFrom);
         printf("to:");
-        scanf("%d", &to);
+        scanf("%d", &inputTo);
+
+        // translate inputs to coordinates
+        from = inputFrom / 10 - 1 + (inputFrom % 10 - 1) * 8;
+        to = inputTo / 10 - 1 + (inputTo % 10 - 1) * 8;
 
         bestMove = createMove(from, to, 0, 0, 0);
 
-        legalMoveCount = generateMoves(gameState, legalMoves, side);
+        legalMoveCount = generateMoves(legalMoves, side);
 
-        moveIsLegal = 0;
+        moveIsLegal = false;
         for (i = 0; i < legalMoveCount; i++) {
             legalMove = legalMoves[i];
 
@@ -453,28 +458,37 @@ void gameLoop() {
                 continue;
             }
 
-            moveIsLegal = 1;
+            moveIsLegal = true;
             break;
         }
 
-        if (moveIsLegal == 0) {
+        if (!moveIsLegal) {
             printf("move is not legal\n");
             continue;
         }
 
-        // invalid promotion number is used to signify that no move is available (to save space in move struct)
-        if (bestMove.promotion == 7) {
-            printf("draw");
+        if (legalMoveCount == 0) {
+            printf("draw\n");
             return;
         }
 
-        if (checkIfCheckMate(bestMove, side) == 1) {
-            printf("checkmate");
-            return;
+        if (checkIfCheckMate(bestMove, side)) {
+            bool checkmate = true;
+            int j;
+            for (j = 0; j < legalMoveCount; j++) {
+                if (!checkIfCheckMate(legalMoves[j], side)) checkmate = false;
+            }
+
+            if (checkmate) {
+                printf("checkmate\n");
+                return;
+            }
+
+            printf("move is not legal, you are in check\n");
+            continue;
         }
         printf("side: %d   from: %d,   to: %d\n", side, from, to);
-
-        gameState = GAME_STATE_STACK[GAME_STATE_STACK_POINTER];
+        
         // modifies the gamestate array
         makeMove(bestMove);
         GAME_STATE_STACK_POINTER++;

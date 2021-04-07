@@ -658,13 +658,14 @@ int addKingMoves(u64 *gameState, int boardIndex, Move *movesArr, int moveIndex, 
 // the 3-fold repetition (4 bits) and the 50-move rule (9 bits)
 
 // side: 0 == white, 1 == black
-int generateMoves(u64 *gameState, Move *movesArr, int side) {
+int generateMoves(Move *movesArr, int side) {
     int i;
     int isKingInDanger;
 
     // next free index in moves array
     int moveIndex = 0;
     u64 bitIndex;
+    u64 *gameState = GAME_STATE_STACK[GAME_STATE_STACK_POINTER];
 
 
     u64 whitePieces = gameState[0];
