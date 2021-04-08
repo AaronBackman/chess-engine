@@ -8,6 +8,10 @@
 #include "MoveGeneration.h"
 #include "Constants.h"
 
+Move legalMoves[MAX_MOVES];
+Move checkThreatMoves[MAX_MOVES];
+Move checkMateMoves[MAX_MOVES];
+
 void makeMove(Move move) {
     int from = move.from;
     int to = move.to;
@@ -209,7 +213,6 @@ void makeMove(Move move) {
 
             // moved 2 squares, en passant possible on next move
             if (to - from == 16) {
-                printf("set en passant %d\n", to);
                 otherGameInfo = setEnPassantAllowed(otherGameInfo, true);
                 otherGameInfo = setEnPassantSquare(otherGameInfo, to);
             }
@@ -253,7 +256,6 @@ void makeMove(Move move) {
 
             // moved 2 squares, en passant possible on next move
             if (to - from == -16) {
-                printf("set en passant %d\n", to);
                 otherGameInfo = setEnPassantAllowed(otherGameInfo, true);
                 otherGameInfo = setEnPassantSquare(otherGameInfo, to);
             }
@@ -358,30 +360,22 @@ void makeMove(Move move) {
 }
 
 
-// checks if a move would take a king
-bool checkIfCheckMate(Move move, int side) {
+// checks if king can be taken
+bool checkIfCheckThreat(int side) {
     int i;
     int moveCount;
     Move generatedMove;
     u64 *gameState;
     u64 whiteKings;
     u64 blackKings;
-    Move *movesArr;
 
-    makeMove(move);
-    MOVE_STACK_POINTER++;
-    GAME_STATE_STACK_POINTER++;
     gameState = GAME_STATE_STACK[GAME_STATE_STACK_POINTER];
     whiteKings = gameState[6];
     blackKings = gameState[13];
-
-    movesArr = MOVE_STACK[MOVE_STACK_POINTER];
     // generate moves for opponent side and check if any could take your king in the square you are moving (t0)
-    moveCount = generateMoves(movesArr, -side);
-    GAME_STATE_STACK_POINTER--;
-    MOVE_STACK_POINTER--;
+    moveCount = generateMoves(checkThreatMoves, -side);
     for (i = 0; i < moveCount; i++) {
-        generatedMove = movesArr[i];
+        generatedMove = checkThreatMoves[i];
 
         if (side == 1 && squareOccupied(whiteKings, generatedMove.to)) {
             printf("attack from: %d, and king in: %d\n", generatedMove.from, generatedMove.to);
@@ -394,6 +388,30 @@ bool checkIfCheckMate(Move move, int side) {
     }
 
     return false;
+}
+
+// does not notice stalemate
+bool checkIfCheckMate(int side) {
+    int moveCount;
+    int i;
+
+    // could be a stalemate
+    if (!checkIfCheckThreat(side)) return false;
+
+    moveCount = generateMoves(checkMateMoves, side);
+    bool checkmate = true;
+    for (i = 0; i < moveCount; i++) {
+        makeMove(checkMateMoves[i]);
+        GAME_STATE_STACK_POINTER++;
+        if (!checkIfCheckThreat(side)) {
+            checkmate = false;
+            GAME_STATE_STACK_POINTER--;
+            break;
+        }
+        GAME_STATE_STACK_POINTER--;
+    }
+
+    return checkmate;
 }
 
 void printBoard() {
@@ -472,16 +490,10 @@ void printBoard() {
 }
 
 void gameLoop() {
-    int playingSide = 1;
     int side = 1;
     Move bestMove;
     u64 *gameState = GAME_STATE_STACK[GAME_STATE_STACK_POINTER];
-
     int i = 0;
-
-    int playerSide = 1;
-
-    Move legalMoves[MAX_MOVES];
 
     printBoard();
 
@@ -497,6 +509,14 @@ void gameLoop() {
         bool moveIsLegal;
         Move selectedMove;
 
+        legalMoveCount = generateMoves(legalMoves, side);
+
+        // does not notice draws
+        if (checkIfCheckMate(side)) {
+            printf("checkmate\n");
+            return;
+        }
+
         printf("from:");
         scanf("%d", &inputFrom);
         printf("to:");
@@ -505,8 +525,6 @@ void gameLoop() {
         // translate inputs to coordinates
         from = inputFrom / 10 - 1 + (inputFrom % 10 - 1) * 8;
         to = inputTo / 10 - 1 + (inputTo % 10 - 1) * 8;
-
-        legalMoveCount = generateMoves(legalMoves, side);
 
         moveIsLegal = false;
         for (i = 0; i < legalMoveCount; i++) {
@@ -537,26 +555,15 @@ void gameLoop() {
             return;
         }
 
-        if (checkIfCheckMate(selectedMove, side)) {
-            bool checkmate = true;
-            int j;
-            for (j = 0; j < legalMoveCount; j++) {
-                if (!checkIfCheckMate(legalMoves[j], side)) checkmate = false;
-            }
-
-            if (checkmate) {
-                printf("checkmate\n");
-                return;
-            }
-
-            printf("move is not legal, you are in check\n");
-            continue;
-        }
-        printf("side: %d   from: %d,   to: %d\n", side, from, to);
-        
-        // modifies the gamestate array
         makeMove(selectedMove);
         GAME_STATE_STACK_POINTER++;
+        if (checkIfCheckThreat(side)) {
+            printf("move is not legal, you are in check\n");
+            GAME_STATE_STACK_POINTER--;
+            continue;
+        }
+
+        printf("side: %d   from: %d,   to: %d\n", side, from, to);
 
         printBoard();
 

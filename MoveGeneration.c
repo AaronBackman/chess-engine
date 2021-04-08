@@ -17,13 +17,6 @@ int addPawnMoves(u64 *gameState, int boardIndex, Move *movesArr, int moveIndex, 
     // only useful if enPassant is allowed
     const u64 enPassantSquare = getEnPassantSquare(meta);
 
-    if (enPassantAllowed) {
-        printf("en passant square is: %d\n", enPassantSquare);
-    }
-    else {
-        printf("enpassant not allowed\n");
-    }
-
     // white
     if (side == 1) {
         if (!squareOccupied(whitePieces, boardIndex + 8) && !squareOccupied(blackPieces, boardIndex + 8)) {
@@ -103,7 +96,6 @@ int addPawnMoves(u64 *gameState, int boardIndex, Move *movesArr, int moveIndex, 
 
             // can take the left piece with enPassant
             if (enPassantAllowed && column != 0 && boardIndex - 1 == enPassantSquare) {
-                printf("take en passant\n");
                 movesArr[moveIndex] = createMove(boardIndex, boardIndex + 7, 0, 0, true);
                 moveIndex++;
             }
@@ -116,7 +108,6 @@ int addPawnMoves(u64 *gameState, int boardIndex, Move *movesArr, int moveIndex, 
 
             // can take the right piece with enPassant
             if (enPassantAllowed && column != 7 && boardIndex + 1 == enPassantSquare) {
-                printf("take en passant\n");
                 movesArr[moveIndex] = createMove(boardIndex, boardIndex + 9, 0, 0, true);
                 moveIndex++;
             }
@@ -202,7 +193,6 @@ int addPawnMoves(u64 *gameState, int boardIndex, Move *movesArr, int moveIndex, 
 
             // can take the left piece with enPassant
             if (enPassantAllowed && column != 0 && boardIndex - 1 == enPassantSquare) {
-                printf("take en passant\n");
                 movesArr[moveIndex] = createMove(boardIndex, boardIndex - 9, 0, 0, true);
                 moveIndex++;
             }
@@ -216,7 +206,6 @@ int addPawnMoves(u64 *gameState, int boardIndex, Move *movesArr, int moveIndex, 
 
             // can take the right piece with enPassant
             if (enPassantAllowed && column != 7 && boardIndex + 1 == enPassantSquare) {
-                printf("take en passant\n");
                 movesArr[moveIndex] = createMove(boardIndex, boardIndex - 7, 0, 0, true);
                 moveIndex++;
             }
