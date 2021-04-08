@@ -10,35 +10,46 @@
 int addPawnMoves(u64 *gameState, int boardIndex, Move *movesArr, int moveIndex, int side) {
     u64 whitePieces = gameState[0];
     u64 blackPieces = gameState[7];
+    u64 meta = gameState[14];
     const int row = boardIndex / 8;
     const int column = boardIndex % 8;
+    const bool enPassantAllowed = isEnPassantAllowed(meta);
+    // only useful if enPassant is allowed
+    const u64 enPassantSquare = getEnPassantSquare(meta);
+
+    if (enPassantAllowed) {
+        printf("en passant square is: %d\n", enPassantSquare);
+    }
+    else {
+        printf("enpassant not allowed\n");
+    }
 
     // white
     if (side == 1) {
         if (!squareOccupied(whitePieces, boardIndex + 8) && !squareOccupied(blackPieces, boardIndex + 8)) {
-            movesArr[moveIndex] = createMove(boardIndex, boardIndex + 8, 0, 0, 0);
+            movesArr[moveIndex] = createMove(boardIndex, boardIndex + 8, 0, 0, false);
             moveIndex++;
 
             if (row == 6) {
                 // promote to knight
-                movesArr[moveIndex] = createMove(boardIndex, boardIndex + 8, 1, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, boardIndex + 8, 1, 0, false);
                 moveIndex++;
 
                 // promote to bishop
-                movesArr[moveIndex] = createMove(boardIndex, boardIndex + 8, 2, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, boardIndex + 8, 2, 0, false);
                 moveIndex++;
 
                 // promote to rook
-                movesArr[moveIndex] = createMove(boardIndex, boardIndex + 8, 3, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, boardIndex + 8, 3, 0, false);
                 moveIndex++;
 
                 // promote to queen
-                movesArr[moveIndex] = createMove(boardIndex, boardIndex + 8, 4, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, boardIndex + 8, 4, 0, false);
                 moveIndex++;
             }
 
             if ((row == 1) && (!squareOccupied(whitePieces, boardIndex + 16) && !squareOccupied(blackPieces, boardIndex + 16))) {
-                movesArr[moveIndex] = createMove(boardIndex, boardIndex + 16, 0, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, boardIndex + 16, 0, 0, false);
                 moveIndex++;
             }
         }
@@ -47,38 +58,38 @@ int addPawnMoves(u64 *gameState, int boardIndex, Move *movesArr, int moveIndex, 
             // take top left piece and promote
             if (column != 0 && squareOccupied(blackPieces, boardIndex + 7)) {
                 // promote to knight
-                movesArr[moveIndex] = createMove(boardIndex, boardIndex + 7, 1, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, boardIndex + 7, 1, 0, false);
                 moveIndex++;
 
                 // promote to bishop
-                movesArr[moveIndex] = createMove(boardIndex, boardIndex + 7, 2, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, boardIndex + 7, 2, 0, false);
                 moveIndex++;
 
                 // promote to rook
-                movesArr[moveIndex] = createMove(boardIndex, boardIndex + 7, 3, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, boardIndex + 7, 3, 0, false);
                 moveIndex++;
 
                 // promote to queen
-                movesArr[moveIndex] = createMove(boardIndex, boardIndex + 7, 4, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, boardIndex + 7, 4, 0, false);
                 moveIndex++;
             }
 
             // take top right piece and promote
             if (column != 7 && squareOccupied(blackPieces, boardIndex + 9)) {
                 // promote to knight
-                movesArr[moveIndex] = createMove(boardIndex, boardIndex + 9, 1, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, boardIndex + 9, 1, 0, false);
                 moveIndex++;
 
                 // promote to bishop
-                movesArr[moveIndex] = createMove(boardIndex, boardIndex + 9, 2, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, boardIndex + 9, 2, 0, false);
                 moveIndex++;
 
                 // promote to rook
-                movesArr[moveIndex] = createMove(boardIndex, boardIndex + 9, 3, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, boardIndex + 9, 3, 0, false);
                 moveIndex++;
 
                 // promote to queen
-                movesArr[moveIndex] = createMove(boardIndex, boardIndex + 9, 4, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, boardIndex + 9, 4, 0, false);
                 moveIndex++;
             }
         }
@@ -86,13 +97,27 @@ int addPawnMoves(u64 *gameState, int boardIndex, Move *movesArr, int moveIndex, 
         else {
             // take top left piece
             if (column != 0 && squareOccupied(blackPieces, boardIndex + 7)) {
-                movesArr[moveIndex] = createMove(boardIndex, boardIndex + 7, 0, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, boardIndex + 7, 0, 0, false);
+                moveIndex++;
+            }
+
+            // can take the left piece with enPassant
+            if (enPassantAllowed && column != 0 && boardIndex - 1 == enPassantSquare) {
+                printf("take en passant\n");
+                movesArr[moveIndex] = createMove(boardIndex, boardIndex + 7, 0, 0, true);
                 moveIndex++;
             }
 
             // take top right piece
             if (column != 7 && squareOccupied(blackPieces, boardIndex + 9)) {
-                movesArr[moveIndex] = createMove(boardIndex, boardIndex + 9, 0, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, boardIndex + 9, 0, 0, false);
+                moveIndex++;
+            }
+
+            // can take the right piece with enPassant
+            if (enPassantAllowed && column != 7 && boardIndex + 1 == enPassantSquare) {
+                printf("take en passant\n");
+                movesArr[moveIndex] = createMove(boardIndex, boardIndex + 9, 0, 0, true);
                 moveIndex++;
             }
         }
@@ -101,29 +126,29 @@ int addPawnMoves(u64 *gameState, int boardIndex, Move *movesArr, int moveIndex, 
     // black
     else if (side == -1) {
         if (!squareOccupied(blackPieces, boardIndex - 8) && !squareOccupied(whitePieces, boardIndex - 8)) {
-            movesArr[moveIndex] = createMove(boardIndex, boardIndex - 8, 0, 0, 0);
+            movesArr[moveIndex] = createMove(boardIndex, boardIndex - 8, 0, 0, false);
             moveIndex++;
 
             if (row == 1) {
                 // promote to knight
-                movesArr[moveIndex] = createMove(boardIndex, boardIndex - 8, 1, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, boardIndex - 8, 1, 0, false);
                 moveIndex++;
 
                 // promote to bishop
-                movesArr[moveIndex] = createMove(boardIndex, boardIndex - 8, 2, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, boardIndex - 8, 2, 0, false);
                 moveIndex++;
 
                 // promote to rook
-                movesArr[moveIndex] = createMove(boardIndex, boardIndex - 8, 3, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, boardIndex - 8, 3, 0, false);
                 moveIndex++;
 
                 // promote to queen
-                movesArr[moveIndex] = createMove(boardIndex, boardIndex - 8, 4, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, boardIndex - 8, 4, 0, false);
                 moveIndex++;
             }
 
             if ((row == 6) && (!squareOccupied(blackPieces, boardIndex - 16) && !squareOccupied(whitePieces, boardIndex - 16))) {
-                movesArr[moveIndex] = createMove(boardIndex, boardIndex - 16, 0, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, boardIndex - 16, 0, 0, false);
                 moveIndex++;
             }
         }
@@ -132,38 +157,38 @@ int addPawnMoves(u64 *gameState, int boardIndex, Move *movesArr, int moveIndex, 
             // take bottom left piece and promote
             if (column != 0 && squareOccupied(whitePieces, boardIndex - 9)) {
                 // promote to knight
-                movesArr[moveIndex] = createMove(boardIndex, boardIndex - 9, 1, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, boardIndex - 9, 1, 0, false);
                 moveIndex++;
 
                 // promote to bishop
-                movesArr[moveIndex] = createMove(boardIndex, boardIndex - 9, 2, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, boardIndex - 9, 2, 0, false);
                 moveIndex++;
 
                 // promote to rook
-                movesArr[moveIndex] = createMove(boardIndex, boardIndex - 9, 3, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, boardIndex - 9, 3, 0, false);
                 moveIndex++;
 
                 // promote to queen
-                movesArr[moveIndex] = createMove(boardIndex, boardIndex - 9, 4, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, boardIndex - 9, 4, 0, false);
                 moveIndex++;
             }
 
             // take bottom right piece and promote
             if (column != 7 && squareOccupied(whitePieces, boardIndex - 7)) {
                 // promote to knight
-                movesArr[moveIndex] = createMove(boardIndex, boardIndex - 7, 1, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, boardIndex - 7, 1, 0, false);
                 moveIndex++;
 
                 // promote to bishop
-                movesArr[moveIndex] = createMove(boardIndex, boardIndex - 7, 2, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, boardIndex - 7, 2, 0, false);
                 moveIndex++;
 
                 // promote to rook
-                movesArr[moveIndex] = createMove(boardIndex, boardIndex - 7, 3, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, boardIndex - 7, 3, 0, false);
                 moveIndex++;
 
                 // promote to queen
-                movesArr[moveIndex] = createMove(boardIndex, boardIndex - 7, 4, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, boardIndex - 7, 4, 0, false);
                 moveIndex++;
             }
         }
@@ -171,14 +196,28 @@ int addPawnMoves(u64 *gameState, int boardIndex, Move *movesArr, int moveIndex, 
         else {
             // take bottom left piece
             if (column != 0 && squareOccupied(whitePieces, boardIndex - 9)) {
-                movesArr[moveIndex] = createMove(boardIndex, boardIndex - 9, 0, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, boardIndex - 9, 0, 0, false);
+                moveIndex++;
+            }
+
+            // can take the left piece with enPassant
+            if (enPassantAllowed && column != 0 && boardIndex - 1 == enPassantSquare) {
+                printf("take en passant\n");
+                movesArr[moveIndex] = createMove(boardIndex, boardIndex - 9, 0, 0, true);
                 moveIndex++;
             }
 
             // take bottom right piece
             if (column != 7 && squareOccupied(whitePieces, boardIndex - 7)) {
                 // promote to knight
-                movesArr[moveIndex] = createMove(boardIndex, boardIndex - 7, 0, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, boardIndex - 7, 0, 0, false);
+                moveIndex++;
+            }
+
+            // can take the right piece with enPassant
+            if (enPassantAllowed && column != 7 && boardIndex + 1 == enPassantSquare) {
+                printf("take en passant\n");
+                movesArr[moveIndex] = createMove(boardIndex, boardIndex - 7, 0, 0, true);
                 moveIndex++;
             }
         }
@@ -207,7 +246,7 @@ int addKnightMoves(u64 *gameState, int boardIndex, Move *movesArr, int moveIndex
                     if (destinationSquare > 63 || destinationSquare < 0) continue;
 
                     if (!squareOccupied(whitePieces, destinationSquare)) {
-                        movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, 0);
+                        movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, false);
                         moveIndex++;
                     }
                 }
@@ -228,7 +267,7 @@ int addKnightMoves(u64 *gameState, int boardIndex, Move *movesArr, int moveIndex
                     if (destinationSquare > 63 || destinationSquare < 0) continue;
 
                     if (!squareOccupied(blackPieces, destinationSquare)) {
-                        movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, 0);
+                        movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, false);
                         moveIndex++;
                     }
                 }
@@ -256,13 +295,13 @@ int addBishopMoves(u64 *gameState, int boardIndex, Move *movesArr, int moveIndex
             if (squareOccupied(whitePieces, destinationSquare)) break;
 
             else if (squareOccupied(blackPieces, destinationSquare)) {
-                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, false);
                 moveIndex++;
                 break;
             }
 
             else {
-                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, false);
                 moveIndex++;
             }
 
@@ -277,13 +316,13 @@ int addBishopMoves(u64 *gameState, int boardIndex, Move *movesArr, int moveIndex
             if (squareOccupied(whitePieces, destinationSquare)) break;
 
             else if (squareOccupied(blackPieces, destinationSquare)) {
-                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, false);
                 moveIndex++;
                 break;
             }
 
             else {
-                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, false);
                 moveIndex++;
             }
 
@@ -298,13 +337,13 @@ int addBishopMoves(u64 *gameState, int boardIndex, Move *movesArr, int moveIndex
             if (squareOccupied(whitePieces, destinationSquare)) break;
 
             else if (squareOccupied(blackPieces, destinationSquare)) {
-                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, false);
                 moveIndex++;
                 break;
             }
 
             else {
-                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, false);
                 moveIndex++;
             }
 
@@ -319,13 +358,13 @@ int addBishopMoves(u64 *gameState, int boardIndex, Move *movesArr, int moveIndex
             if (squareOccupied(whitePieces, destinationSquare)) break;
 
             else if (squareOccupied(blackPieces, destinationSquare)) {
-                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, false);
                 moveIndex++;
                 break;
             }
 
             else {
-                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, false);
                 moveIndex++;
             }
 
@@ -343,13 +382,13 @@ int addBishopMoves(u64 *gameState, int boardIndex, Move *movesArr, int moveIndex
             if (squareOccupied(blackPieces, destinationSquare)) break;
 
             else if (squareOccupied(whitePieces, destinationSquare)) {
-                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, false);
                 moveIndex++;
                 break;
             }
 
             else {
-                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, false);
                 moveIndex++;
             }
 
@@ -364,13 +403,13 @@ int addBishopMoves(u64 *gameState, int boardIndex, Move *movesArr, int moveIndex
             if (squareOccupied(blackPieces, destinationSquare)) break;
 
             else if (squareOccupied(whitePieces, destinationSquare)) {
-                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, false);
                 moveIndex++;
                 break;
             }
 
             else {
-                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, false);
                 moveIndex++;
             }
 
@@ -385,13 +424,13 @@ int addBishopMoves(u64 *gameState, int boardIndex, Move *movesArr, int moveIndex
             if (squareOccupied(blackPieces, destinationSquare)) break;
 
             else if (squareOccupied(whitePieces, destinationSquare)) {
-                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, false);
                 moveIndex++;
                 break;
             }
 
             else {
-                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, false);
                 moveIndex++;
             }
 
@@ -406,13 +445,13 @@ int addBishopMoves(u64 *gameState, int boardIndex, Move *movesArr, int moveIndex
             if (squareOccupied(blackPieces, destinationSquare)) break;
 
             else if (squareOccupied(whitePieces, destinationSquare)) {
-                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, false);
                 moveIndex++;
                 break;
             }
 
             else {
-                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, false);
                 moveIndex++;
             }
 
@@ -438,13 +477,13 @@ int addRookMoves(u64 *gameState, int boardIndex, Move *movesArr, int moveIndex, 
             if (squareOccupied(whitePieces, destinationSquare)) break;
 
             else if (squareOccupied(blackPieces, destinationSquare)) {
-                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, false);
                 moveIndex++;
                 break;
             }
 
             else {
-                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, false);
                 moveIndex++;
             }
         }
@@ -456,13 +495,13 @@ int addRookMoves(u64 *gameState, int boardIndex, Move *movesArr, int moveIndex, 
             if (squareOccupied(whitePieces, destinationSquare)) break;
 
             else if (squareOccupied(blackPieces, destinationSquare)) {
-                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, false);
                 moveIndex++;
                 break;
             }
 
             else {
-                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, false);
                 moveIndex++;
             }
         }
@@ -474,13 +513,13 @@ int addRookMoves(u64 *gameState, int boardIndex, Move *movesArr, int moveIndex, 
             if (squareOccupied(whitePieces, destinationSquare)) break;
 
             else if (squareOccupied(blackPieces, destinationSquare)) {
-                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, false);
                 moveIndex++;
                 break;
             }
 
             else {
-                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, false);
                 moveIndex++;
             }
         }
@@ -492,13 +531,13 @@ int addRookMoves(u64 *gameState, int boardIndex, Move *movesArr, int moveIndex, 
             if (squareOccupied(whitePieces, destinationSquare)) break;
 
             else if (squareOccupied(blackPieces, destinationSquare)) {
-                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, false);
                 moveIndex++;
                 break;
             }
 
             else {
-                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, false);
                 moveIndex++;
             }
         }
@@ -513,13 +552,13 @@ int addRookMoves(u64 *gameState, int boardIndex, Move *movesArr, int moveIndex, 
             if (squareOccupied(blackPieces, destinationSquare)) break;
 
             else if (squareOccupied(whitePieces, destinationSquare)) {
-                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, false);
                 moveIndex++;
                 break;
             }
 
             else {
-                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, false);
                 moveIndex++;
             }
         }
@@ -531,13 +570,13 @@ int addRookMoves(u64 *gameState, int boardIndex, Move *movesArr, int moveIndex, 
             if (squareOccupied(blackPieces, destinationSquare)) break;
 
             else if (squareOccupied(whitePieces, destinationSquare)) {
-                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, false);
                 moveIndex++;
                 break;
             }
 
             else {
-                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, false);
                 moveIndex++;
             }
         }
@@ -549,13 +588,13 @@ int addRookMoves(u64 *gameState, int boardIndex, Move *movesArr, int moveIndex, 
             if (squareOccupied(blackPieces, destinationSquare)) break;
 
             else if (squareOccupied(whitePieces, destinationSquare)) {
-                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, false);
                 moveIndex++;
                 break;
             }
 
             else {
-                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, false);
                 moveIndex++;
             }
         }
@@ -567,13 +606,13 @@ int addRookMoves(u64 *gameState, int boardIndex, Move *movesArr, int moveIndex, 
             if (squareOccupied(blackPieces, destinationSquare)) break;
 
             else if (squareOccupied(whitePieces, destinationSquare)) {
-                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, false);
                 moveIndex++;
                 break;
             }
 
             else {
-                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, 0);
+                movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, false);
                 moveIndex++;
             }
         }
@@ -604,7 +643,7 @@ int addKingMoves(u64 *gameState, int boardIndex, Move *movesArr, int moveIndex, 
                 if (destinationSquare < 0 || destinationSquare > 63) continue;
 
                 if (!squareOccupied(whitePieces, destinationSquare)) {
-                    movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, 0);
+                    movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, false);
                     moveIndex++;
                 }
              }
@@ -626,7 +665,7 @@ int addKingMoves(u64 *gameState, int boardIndex, Move *movesArr, int moveIndex, 
                 if (destinationSquare < 0 || destinationSquare > 63) continue;
 
                 if (!squareOccupied(blackPieces, destinationSquare)) {
-                    movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, 0);
+                    movesArr[moveIndex] = createMove(boardIndex, destinationSquare, 0, 0, false);
                     moveIndex++;
                 }
              }
@@ -635,6 +674,7 @@ int addKingMoves(u64 *gameState, int boardIndex, Move *movesArr, int moveIndex, 
 
     return moveIndex;
 }
+
 
 // board coordinates are from 0 to 63 and start from bottom left from
 // whites point of view, they go left to right, bottom to top
@@ -658,9 +698,8 @@ int addKingMoves(u64 *gameState, int boardIndex, Move *movesArr, int moveIndex, 
 // the 3-fold repetition (4 bits) and the 50-move rule (9 bits)
 
 // side: 0 == white, 1 == black
-int generateMoves(Move *movesArr, int side) {
+int generateMovesWithoutCastling(Move *movesArr, int side) {
     int i;
-    int isKingInDanger;
 
     // next free index in moves array
     int moveIndex = 0;
@@ -693,17 +732,6 @@ int generateMoves(Move *movesArr, int side) {
 
             // check if square doesnt have a white piece
             if (!squareOccupied(whitePieces, i)) continue;
-
-            // remove piece to see if it causes king to be in check and do extra checking later
-            whitePieces &= ~bitIndex;
-            // is white king in danger
-            if (kingInDanger(gameState, side)) {
-                isKingInDanger = 1;
-            } else {
-                isKingInDanger = 0;
-            }
-            // add the piece back
-            whitePieces |= bitIndex;
 
             // check if square has a white pawn
             if (squareOccupied(whitePawns, i)) {
@@ -744,17 +772,6 @@ int generateMoves(Move *movesArr, int side) {
             // check if square doesnt have a black piece
             if (!blackPieces & (1ULL << i)) continue;
 
-            // remove piece to see if it causes king to be in check and do extra checking later
-            blackPieces &= ~bitIndex;
-            // is white king in danger
-            if (kingInDanger(gameState, side)) {
-                isKingInDanger = 1;
-            } else {
-                isKingInDanger = 0;
-            }
-            // add the piece back
-            blackPieces |= bitIndex;
-
             // check if square has a white pawn
             if (squareOccupied(blackPawns, i)) {
                 moveIndex = addPawnMoves(gameState, i, movesArr, moveIndex, side);
@@ -784,6 +801,167 @@ int generateMoves(Move *movesArr, int side) {
     }
 
     //printf("end gen\n\n");
+
+    return moveIndex;
+}
+
+bool shortWhiteCastlingSquaresEmpty() {
+    u64 *gameState = GAME_STATE_STACK[GAME_STATE_STACK_POINTER];
+
+    u64 whitePieces = gameState[0];
+    u64 blackPieces = gameState[7];
+
+    if (squareOccupied(whitePieces, 5) || squareOccupied(blackPieces, 5)) return false;
+
+    if (squareOccupied(whitePieces, 6) || squareOccupied(blackPieces, 6)) return false;
+
+    return true;
+}
+
+bool longWhiteCastlingSquaresEmpty() {
+    u64 *gameState = GAME_STATE_STACK[GAME_STATE_STACK_POINTER];
+
+    u64 whitePieces = gameState[0];
+    u64 blackPieces = gameState[7];
+
+    if (squareOccupied(whitePieces, 1) || squareOccupied(blackPieces, 1)) return false;
+
+    if (squareOccupied(whitePieces, 2) || squareOccupied(blackPieces, 2)) return false;
+
+    if (squareOccupied(whitePieces, 3) || squareOccupied(blackPieces, 3)) return false;
+
+    return true;
+}
+
+bool shortBlackCastlingSquaresEmpty() {
+    u64 *gameState = GAME_STATE_STACK[GAME_STATE_STACK_POINTER];
+
+    u64 whitePieces = gameState[0];
+    u64 blackPieces = gameState[7];
+
+    if (squareOccupied(whitePieces, 61) || squareOccupied(blackPieces, 61)) return false;
+
+    if (squareOccupied(whitePieces, 62) || squareOccupied(blackPieces, 62)) return false;
+
+    return true;
+}
+
+bool longBlackCastlingSquaresEmpty() {
+    u64 *gameState = GAME_STATE_STACK[GAME_STATE_STACK_POINTER];
+
+    u64 whitePieces = gameState[0];
+    u64 blackPieces = gameState[7];
+
+    if (squareOccupied(whitePieces, 57) || squareOccupied(blackPieces, 57)) return false;
+
+    if (squareOccupied(whitePieces, 58) || squareOccupied(blackPieces, 58)) return false;
+
+    if (squareOccupied(whitePieces, 59) || squareOccupied(blackPieces, 59)) return false;
+
+    return true;
+}
+
+int generateMoves(Move *movesArr, int side) {
+    int i;
+    int isKingInDanger;
+    // add one to the stack pointer to get an unused array
+    Move *castlingThreatMovesArr = MOVE_STACK[MOVE_STACK_POINTER + 1];
+    int castlingThreatMoveIndex = 0;
+    Move castlingThreatMove;
+    bool canCastle;
+
+    // next free index in moves array
+    int moveIndex = 0;
+    u64 *gameState = GAME_STATE_STACK[GAME_STATE_STACK_POINTER];
+    u64 otherGameInfo = gameState[14];
+
+    moveIndex = generateMovesWithoutCastling(movesArr, side);
+
+    // castling move generation
+    if (side == 1) {
+        if (canWhiteCastleShort(otherGameInfo)) {
+            if (shortWhiteCastlingSquaresEmpty()) {
+                castlingThreatMoveIndex = generateMovesWithoutCastling(castlingThreatMovesArr, -side);
+
+                canCastle = true;
+                for (i = 0; i < castlingThreatMoveIndex; i++) {
+                    castlingThreatMove = castlingThreatMovesArr[i];
+                    if (castlingThreatMove.to == 4 || castlingThreatMove.to == 5 || castlingThreatMove.to == 6 || castlingThreatMove.to == 7) {
+                        canCastle = false;
+                    }
+                }
+
+                if (canCastle) {
+                    movesArr[moveIndex] = createMove(4, 6, 0, 1, 0);
+                    moveIndex++;
+                }
+            }
+        }
+
+        if (canWhiteCastleLong(otherGameInfo)) {
+            if (longWhiteCastlingSquaresEmpty()) {
+                // no moves were generated in previous if block
+                if (castlingThreatMoveIndex == 0) {
+                    castlingThreatMoveIndex = generateMovesWithoutCastling(castlingThreatMovesArr, -side);
+                }
+
+                canCastle = true;
+                for (i = 0; i < castlingThreatMoveIndex; i++) {
+                    castlingThreatMove = castlingThreatMovesArr[i];
+                    if (castlingThreatMove.to == 4 || castlingThreatMove.to == 3 || castlingThreatMove.to == 2 || castlingThreatMove.to == 1 || castlingThreatMove.to == 0) {
+                        canCastle = false;
+                    }
+                }
+
+                if (canCastle) {
+                    movesArr[moveIndex] = createMove(4, 2, 0, 2, 0);
+                    moveIndex++;
+                }
+            }
+        }
+    }
+    else {
+        if (canBlackCastleShort(otherGameInfo)) {
+            if (shortBlackCastlingSquaresEmpty()) {
+                castlingThreatMoveIndex = generateMovesWithoutCastling(castlingThreatMovesArr, -side);
+
+                canCastle = true;
+                for (i = 0; i < castlingThreatMoveIndex; i++) {
+                    castlingThreatMove = castlingThreatMovesArr[i];
+                    if (castlingThreatMove.to == 60 || castlingThreatMove.to == 61 || castlingThreatMove.to == 62 || castlingThreatMove.to == 63) {
+                        canCastle = false;
+                    }
+                }
+
+                if (canCastle) {
+                    movesArr[moveIndex] = createMove(60, 62, 0, 3, 0);
+                    moveIndex++;
+                }
+            }
+        }
+
+        if (canBlackCastleLong(otherGameInfo)) {
+            if (longBlackCastlingSquaresEmpty()) {
+                // no moves were generated in previous if block
+                if (castlingThreatMoveIndex == 0) {
+                    castlingThreatMoveIndex = generateMovesWithoutCastling(castlingThreatMovesArr, -side);
+                }
+
+                canCastle = true;
+                for (i = 0; i < castlingThreatMoveIndex; i++) {
+                    castlingThreatMove = castlingThreatMovesArr[i];
+                    if (castlingThreatMove.to == 60 || castlingThreatMove.to == 59 || castlingThreatMove.to == 58 || castlingThreatMove.to == 57 || castlingThreatMove.to == 56) {
+                        canCastle = false;
+                    }
+                }
+
+                if (canCastle) {
+                    movesArr[moveIndex] = createMove(60, 58, 0, 4, 0);
+                    moveIndex++;
+                }
+            }
+        }
+    }
 
     return moveIndex;
 }

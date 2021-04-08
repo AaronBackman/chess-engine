@@ -13,6 +13,7 @@ void makeMove(Move move) {
     int to = move.to;
     int promotion = move.promotion;
     int castle = move.castling;
+    bool enPassant = move.enPassant;
 
     u64 *gameState = GAME_STATE_STACK[GAME_STATE_STACK_POINTER];
     u64 *newGameState = GAME_STATE_STACK[GAME_STATE_STACK_POINTER + 1];
@@ -34,60 +35,108 @@ void makeMove(Move move) {
     u64 blackKings = gameState[13];
 
     u64 otherGameInfo = gameState[14];
-    
 
+    // previous en passant possibility ends with this move
+    otherGameInfo = setEnPassantAllowed(otherGameInfo, false);
+    
     // castling is handled separately because it is the only move that moves 2 pieces at the same time
     if (castle != 0) {
         // white moving
-        if (squareOccupied(whiteKings, 4)) {
+        if (squareOccupied(whiteKings, move.from)) {
             // set white castling to 0
-            otherGameInfo &= ~(11LLU);
+            otherGameInfo = removeWhiteCastleShort(otherGameInfo);
+            otherGameInfo = removeWhiteCastleLong(otherGameInfo);
 
             // kingside
             if (castle == 1) {
                 whiteKings = emptySquare(whiteKings, 4);
+                whitePieces = emptySquare(whitePieces, 4);
                 whiteKings = fillSquare(whiteKings, 6);
+                whitePieces = fillSquare(whitePieces, 6);
 
                 whiteRooks = emptySquare(whiteRooks, 7);
+                whitePieces = emptySquare(whitePieces, 7);
                 whiteRooks = fillSquare(whiteRooks, 5);
+                whitePieces = fillSquare(whitePieces, 5);
             }
 
             // queenside
             else if (castle == 2) {
                 whiteKings = emptySquare(whiteKings, 4);
+                whitePieces = emptySquare(whitePieces, 4);
                 whiteKings = fillSquare(whiteKings, 2);
+                whitePieces = fillSquare(whitePieces, 2);
 
                 whiteRooks = emptySquare(whiteRooks, 0);
+                whitePieces = emptySquare(whitePieces, 0);
                 whiteRooks = fillSquare(whiteRooks, 3);
+                whitePieces = fillSquare(whitePieces, 3);
             }
         }
 
         // black moving
         else {
             // set black castling to 0
-            otherGameInfo &= ~(11LLU << 2);
+            otherGameInfo = removeBlackCastleShort(otherGameInfo);
+            otherGameInfo = removeBlackCastleLong(otherGameInfo);
 
             // kingside
-            if (castle == 1) {
+            if (castle == 3) {
                 blackKings = emptySquare(blackKings, 60);
+                blackPieces = emptySquare(blackPieces, 60);
                 blackKings = fillSquare(blackKings, 62);
+                blackPieces = fillSquare(blackPieces, 62);
 
                 blackRooks = emptySquare(blackRooks, 63);
+                blackPieces = emptySquare(blackPieces, 63);
                 blackRooks = fillSquare(blackRooks, 61);
+                blackPieces = fillSquare(blackPieces, 61);
+
             }
 
             // queenside
-            else if (castle == 2) {
+            else if (castle == 4) {
                 blackKings = emptySquare(blackKings, 60);
+                blackPieces = emptySquare(blackPieces, 60);
                 blackKings = fillSquare(blackKings, 58);
+                blackPieces = fillSquare(blackPieces, 58);
 
                 blackRooks = emptySquare(blackRooks, 56);
+                blackPieces = emptySquare(blackPieces, 56);
                 blackRooks = fillSquare(blackRooks, 59);
+                blackPieces = emptySquare(blackPieces, 59);
             }
         }
     }
 
-    // a normal move or promotion or en passant
+    else if (enPassant) {
+        int enPassantSquare = getEnPassantSquare(otherGameInfo);
+        if (squareOccupied(whitePawns, from)) {
+            whitePieces = emptySquare(whitePieces, from);
+            whitePawns = emptySquare(whitePawns, from);
+
+            whitePieces = fillSquare(whitePieces, to);
+            whitePawns = fillSquare(whitePawns, to);
+
+            blackPieces = emptySquare(blackPieces, enPassantSquare);
+            blackPawns = emptySquare(blackPawns, enPassantSquare);
+        }
+        else if (squareOccupied(blackPawns, from)) {
+            blackPieces = emptySquare(blackPieces, from);
+            blackPawns = emptySquare(blackPawns, from);
+
+            blackPieces = fillSquare(blackPieces, to);
+            blackPawns = fillSquare(blackPawns, to);
+
+            whitePieces = emptySquare(whitePieces, enPassantSquare);
+            whitePawns = emptySquare(whitePawns, enPassantSquare);
+        }
+        else {
+            printf("enpassant error\n");
+        }
+    }
+
+    // a normal move or promotion
     else {
         if (squareOccupied(whitePieces, to)) {
             whitePieces = emptySquare(whitePieces, to);
@@ -157,6 +206,13 @@ void makeMove(Move move) {
         if (squareOccupied(whitePawns, from)) {
             whitePawns = emptySquare(whitePawns, from);
             whitePawns = fillSquare(whitePawns, to);
+
+            // moved 2 squares, en passant possible on next move
+            if (to - from == 16) {
+                printf("set en passant %d\n", to);
+                otherGameInfo = setEnPassantAllowed(otherGameInfo, true);
+                otherGameInfo = setEnPassantSquare(otherGameInfo, to);
+            }
         }
 
         if (squareOccupied(whiteKnights, from)) {
@@ -194,6 +250,13 @@ void makeMove(Move move) {
         if (squareOccupied(blackPawns, from)) {
             blackPawns = emptySquare(blackPawns, from);
             blackPawns = fillSquare(blackPawns, to);
+
+            // moved 2 squares, en passant possible on next move
+            if (to - from == -16) {
+                printf("set en passant %d\n", to);
+                otherGameInfo = setEnPassantAllowed(otherGameInfo, true);
+                otherGameInfo = setEnPassantSquare(otherGameInfo, to);
+            }
         }
 
         if (squareOccupied(blackKnights, from)) {
@@ -223,8 +286,8 @@ void makeMove(Move move) {
 
         // handle promotion of pawn
         if (promotion != 0) {
-            //printf("promotion: %d, from: %d, to: %d\n", promotion, from, to);
             if (squareOccupied(whitePawns, to)) {
+                printf("promotion: %d, from: %d, to: %d\n", promotion, from, to);
                 whitePawns = emptySquare(whitePawns, to);
 
                 // promote to knight
@@ -237,15 +300,15 @@ void makeMove(Move move) {
                 }
                 // promote to rook
                 else if (promotion == 3) {
-                    whiteRooks == fillSquare(whiteRooks, to);
+                    whiteRooks = fillSquare(whiteRooks, to);
                 }
                 // promote to queen
                 else if (promotion == 4) {
-                    whiteQueens == fillSquare(whiteQueens, to);
+                    whiteQueens = fillSquare(whiteQueens, to);
                 }
 
                 else {
-                    printf("promotion something went wrong");
+                    printf("promotion something went wrong\n");
                 }
             }
             else {
@@ -261,11 +324,11 @@ void makeMove(Move move) {
                 }
                 // promote to rook
                 else if (promotion == 3) {
-                    blackRooks == fillSquare(blackRooks, to);
+                    blackRooks = fillSquare(blackRooks, to);
                 }
                 // promote to queen
                 else if (promotion == 4) {
-                    blackQueens == fillSquare(blackQueens, to);
+                    blackQueens = fillSquare(blackQueens, to);
                 }
 
                 else {
@@ -432,6 +495,7 @@ void gameLoop() {
         int i;
         Move legalMove;
         bool moveIsLegal;
+        Move selectedMove;
 
         printf("from:");
         scanf("%d", &inputFrom);
@@ -442,23 +506,24 @@ void gameLoop() {
         from = inputFrom / 10 - 1 + (inputFrom % 10 - 1) * 8;
         to = inputTo / 10 - 1 + (inputTo % 10 - 1) * 8;
 
-        bestMove = createMove(from, to, 0, 0, 0);
-
         legalMoveCount = generateMoves(legalMoves, side);
 
         moveIsLegal = false;
         for (i = 0; i < legalMoveCount; i++) {
             legalMove = legalMoves[i];
 
-            if (legalMove.from != bestMove.from) {
+            if (legalMove.promotion != 0 && legalMove.promotion != 4) continue;
+
+            if (legalMove.from != from) {
                 continue;
             }
 
-            if (legalMove.to != bestMove.to) {
+            if (legalMove.to != to) {
                 continue;
             }
 
             moveIsLegal = true;
+            selectedMove = legalMove;
             break;
         }
 
@@ -472,7 +537,7 @@ void gameLoop() {
             return;
         }
 
-        if (checkIfCheckMate(bestMove, side)) {
+        if (checkIfCheckMate(selectedMove, side)) {
             bool checkmate = true;
             int j;
             for (j = 0; j < legalMoveCount; j++) {
@@ -490,7 +555,7 @@ void gameLoop() {
         printf("side: %d   from: %d,   to: %d\n", side, from, to);
         
         // modifies the gamestate array
-        makeMove(bestMove);
+        makeMove(selectedMove);
         GAME_STATE_STACK_POINTER++;
 
         printBoard();
