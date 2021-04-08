@@ -390,28 +390,29 @@ bool checkIfCheckThreat(int side) {
     return false;
 }
 
-// does not notice stalemate
-bool checkIfCheckMate(int side) {
+// filters out pseudo-legal moves, basically notices checkmates and draws by no moves
+bool checkIfNoLegalMoves(int side) {
     int moveCount;
     int i;
 
-    // could be a stalemate
-    if (!checkIfCheckThreat(side)) return false;
-
     moveCount = generateMoves(checkMateMoves, side);
-    bool checkmate = true;
+
+    // no possible pseudo-legal moves -> no legal moves either
+    if (moveCount == 0) return true;
+
+    bool noMoves = true;
     for (i = 0; i < moveCount; i++) {
         makeMove(checkMateMoves[i]);
         GAME_STATE_STACK_POINTER++;
         if (!checkIfCheckThreat(side)) {
-            checkmate = false;
+            noMoves = false;
             GAME_STATE_STACK_POINTER--;
             break;
         }
         GAME_STATE_STACK_POINTER--;
     }
 
-    return checkmate;
+    return noMoves;
 }
 
 void printBoard() {
@@ -511,9 +512,13 @@ void gameLoop() {
 
         legalMoveCount = generateMoves(legalMoves, side);
 
-        // does not notice draws
-        if (checkIfCheckMate(side)) {
-            printf("checkmate\n");
+        if (checkIfNoLegalMoves(side)) {
+            if (checkIfCheckThreat(side)) {
+                printf("checkmate\n");
+            }
+            else {
+                printf("draw\n");
+            }
             return;
         }
 
