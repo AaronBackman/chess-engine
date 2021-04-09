@@ -22,4 +22,9 @@ u64 setEnPassantAllowed(u64 meta, bool enPassantAllowed);
 u64 setEnPassantSquare(u64 meta, u64 square);
 u64 getEnPassantSquare(u64 meta);
 
+int getSideToPlay(u64 meta);
+u64 setSideToPlay(u64 meta, int side);
+
+u64 *parseFen(u64 *gameState, char *fenStr);
+
 #endif

@@ -8,7 +8,7 @@ typedef struct move {
     u32 from : 6;
     u32 to : 6;
     u32 promotion : 3;
-    u32 castling : 2;
+    u32 castling : 3;
     u32 enPassant : 1;
 } Move;
 
