@@ -21,8 +21,9 @@ u64 perft(int depth, int side) {
   moveCount = generateMoves(moves, side);
   for (i = 0; i < moveCount; i++) {
     makeMove(moves[i]);
-    if (!checkIfCheckThreat(side))
+    if (!checkIfCheckThreat(side)) {
       nodes += perft(depth - 1, -side);
+    }
     unMakeMove();
   }
   return nodes;
@@ -44,13 +45,12 @@ void perftDivide(int depth) {
     u64 dividedNodes = 0;
     Move move = moves[i];
     makeMove(move);
-    GAME_STATE_STACK_POINTER++;
-    if (!checkIfCheckThreat(side))
+    if (!checkIfCheckThreat(side)) {
       dividedNodes = perft(depth - 1, -side);
       nodes += dividedNodes;
-
       printf("from: %d, to: %d, nodes: %d\n", move.from, move.to, dividedNodes);
-    GAME_STATE_STACK_POINTER--;
+    }
+    unMakeMove();
   }
 
   printf("total nodes: %d\n\n", nodes);
