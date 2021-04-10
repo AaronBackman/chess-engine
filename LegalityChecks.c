@@ -53,13 +53,12 @@ bool checkIfNoLegalMoves(int side) {
     bool noMoves = true;
     for (i = 0; i < moveCount; i++) {
         makeMove(checkMateMoves[i]);
-        GAME_STATE_STACK_POINTER++;
         if (!checkIfCheckThreat(side)) {
             noMoves = false;
-            GAME_STATE_STACK_POINTER--;
+            unMakeMove();
             break;
         }
-        GAME_STATE_STACK_POINTER--;
+        unMakeMove();
     }
 
     return noMoves;

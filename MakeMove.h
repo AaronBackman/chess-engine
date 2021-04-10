@@ -2,5 +2,6 @@
 #define MAKE_MOVE_H
 
 void makeMove(Move move);
+void unMakeMove();
 
 #endif

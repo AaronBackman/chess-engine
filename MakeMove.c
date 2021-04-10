@@ -33,8 +33,12 @@ void makeMove(Move move) {
 
   u64 otherGameInfo = gameState[14];
 
+  GAME_STATE_STACK_POINTER++;
+
   // previous en passant possibility ends with this move
   otherGameInfo = setEnPassantAllowed(otherGameInfo, false);
+  // switch side to play
+  otherGameInfo = setSideToPlay(otherGameInfo, -getSideToPlay(otherGameInfo));
   
   // castling is handled separately because it is the only move that moves 2 pieces at the same time
   if (castle != 0) {
@@ -349,4 +353,8 @@ void makeMove(Move move) {
   newGameState[13] = blackKings;
 
   newGameState[14] = otherGameInfo;
+}
+
+void unMakeMove() {
+    GAME_STATE_STACK_POINTER--;
 }

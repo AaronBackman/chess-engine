@@ -87,7 +87,6 @@ void printBoard() {
 }
 
 void gameLoop() {
-    int side = 1;
     Move bestMove;
     u64 *gameState = GAME_STATE_STACK[GAME_STATE_STACK_POINTER];
     int i = 0;
@@ -106,6 +105,10 @@ void gameLoop() {
         Move legalMove;
         bool moveIsLegal;
         Move selectedMove;
+        int side;
+
+        gameState = GAME_STATE_STACK[GAME_STATE_STACK_POINTER];
+        side = getSideToPlay(gameState[14]);
 
         legalMoveCount = generateMoves(legalMoves, side);
 
@@ -158,10 +161,9 @@ void gameLoop() {
         }
 
         makeMove(selectedMove);
-        GAME_STATE_STACK_POINTER++;
         if (checkIfCheckThreat(side)) {
             printf("move is not legal, you are in check\n");
-            GAME_STATE_STACK_POINTER--;
+            unMakeMove();
             continue;
         }
 
@@ -169,9 +171,6 @@ void gameLoop() {
         printf("move: castle: %d, promotion: %d, enpassant: %d\n", legalMove.castling, legalMove.promotion, legalMove.enPassant);
 
         printBoard();
-
-        // switch side after turn is completed
-        side *= -1;
 
         i++;
     }
@@ -181,7 +180,7 @@ void gameLoop() {
 void main(void) {
     GAME_STATE_STACK_POINTER++;
     u64 *gameState = GAME_STATE_STACK[GAME_STATE_STACK_POINTER];
-    char fenStr[] = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ";
+    char fenStr[] = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R b KQkq - ";
 
     gameState = parseFen(gameState, fenStr);
 

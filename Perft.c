@@ -21,10 +21,9 @@ u64 perft(int depth, int side) {
   moveCount = generateMoves(moves, side);
   for (i = 0; i < moveCount; i++) {
     makeMove(moves[i]);
-    GAME_STATE_STACK_POINTER++;
     if (!checkIfCheckThreat(side))
       nodes += perft(depth - 1, -side);
-    GAME_STATE_STACK_POINTER--;
+    unMakeMove();
   }
   return nodes;
 }
