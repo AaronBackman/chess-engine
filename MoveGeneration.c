@@ -20,9 +20,7 @@ int addPawnMoves(u64 *gameState, int boardIndex, Move *movesArr, int moveIndex, 
     // white
     if (side == 1) {
         if (!squareOccupied(whitePieces, boardIndex + 8) && !squareOccupied(blackPieces, boardIndex + 8)) {
-            movesArr[moveIndex] = createMove(boardIndex, boardIndex + 8, 0, 0, false);
-            moveIndex++;
-
+            // can promote pawn
             if (row == 6) {
                 // promote to knight
                 movesArr[moveIndex] = createMove(boardIndex, boardIndex + 8, 1, 0, false);
@@ -38,6 +36,10 @@ int addPawnMoves(u64 *gameState, int boardIndex, Move *movesArr, int moveIndex, 
 
                 // promote to queen
                 movesArr[moveIndex] = createMove(boardIndex, boardIndex + 8, 4, 0, false);
+                moveIndex++;
+            }
+            else {
+                movesArr[moveIndex] = createMove(boardIndex, boardIndex + 8, 0, 0, false);
                 moveIndex++;
             }
 
@@ -117,9 +119,7 @@ int addPawnMoves(u64 *gameState, int boardIndex, Move *movesArr, int moveIndex, 
     // black
     else if (side == -1) {
         if (!squareOccupied(blackPieces, boardIndex - 8) && !squareOccupied(whitePieces, boardIndex - 8)) {
-            movesArr[moveIndex] = createMove(boardIndex, boardIndex - 8, 0, 0, false);
-            moveIndex++;
-
+            // can promote pawn
             if (row == 1) {
                 // promote to knight
                 movesArr[moveIndex] = createMove(boardIndex, boardIndex - 8, 1, 0, false);
@@ -135,6 +135,10 @@ int addPawnMoves(u64 *gameState, int boardIndex, Move *movesArr, int moveIndex, 
 
                 // promote to queen
                 movesArr[moveIndex] = createMove(boardIndex, boardIndex - 8, 4, 0, false);
+                moveIndex++;
+            }
+            else {
+                movesArr[moveIndex] = createMove(boardIndex, boardIndex - 8, 0, 0, false);
                 moveIndex++;
             }
 
@@ -862,6 +866,22 @@ int generateMoves(Move *movesArr, int side) {
     // next free index in moves array
     int moveIndex = 0;
     u64 *gameState = GAME_STATE_STACK[GAME_STATE_STACK_POINTER];
+    u64 whitePieces = gameState[0];
+    u64 whitePawns = gameState[1];
+    u64 whiteKnights = gameState[2];
+    u64 whiteBishops = gameState[3];
+    u64 whiteRooks = gameState[4];
+    u64 whiteQueens = gameState[5];
+    u64 whiteKings = gameState[6];
+
+    u64 blackPieces = gameState[7];
+    u64 blackPawns = gameState[8];
+    u64 blackKnights = gameState[9];
+    u64 blackBishops = gameState[10];
+    u64 blackRooks = gameState[11];
+    u64 blackQueens = gameState[12];
+    u64 blackKings = gameState[13];
+
     u64 otherGameInfo = gameState[14];
 
     moveIndex = generateMovesWithoutCastling(movesArr, side);
@@ -875,9 +895,20 @@ int generateMoves(Move *movesArr, int side) {
                 canCastle = true;
                 for (i = 0; i < castlingThreatMoveIndex; i++) {
                     castlingThreatMove = castlingThreatMovesArr[i];
-                    if (castlingThreatMove.to == 4 || castlingThreatMove.to == 5 || castlingThreatMove.to == 6 || castlingThreatMove.to == 7) {
+                    // when castling, king cannot be in check, or move through attacked squares, rook on the other hand can
+                    if (castlingThreatMove.to == 4 || castlingThreatMove.to == 5 || castlingThreatMove.to == 6) {
                         canCastle = false;
+                        break;
                     }
+                }
+
+                // pawn threats have to be checked separately, because pawns move and take in different squares
+                if (
+                    squareOccupied(blackPawns, 11) || squareOccupied(blackPawns, 12) ||
+                    squareOccupied(blackPawns, 13) || squareOccupied(blackPawns, 14) ||
+                    squareOccupied(blackPawns, 15)
+                ) {
+                    canCastle = false;
                 }
 
                 if (canCastle) {
@@ -897,9 +928,20 @@ int generateMoves(Move *movesArr, int side) {
                 canCastle = true;
                 for (i = 0; i < castlingThreatMoveIndex; i++) {
                     castlingThreatMove = castlingThreatMovesArr[i];
-                    if (castlingThreatMove.to == 4 || castlingThreatMove.to == 3 || castlingThreatMove.to == 2 || castlingThreatMove.to == 1 || castlingThreatMove.to == 0) {
+                    // when castling, king cannot be in check, or move through attacked squares, rook on the other hand can
+                    if (castlingThreatMove.to == 4 || castlingThreatMove.to == 3 || castlingThreatMove.to == 2) {
                         canCastle = false;
+                        break;
                     }
+                }
+
+                // pawn threats have to be checked separately, because pawns move and take in different squares
+                if (
+                    squareOccupied(blackPawns, 9) || squareOccupied(blackPawns, 10) ||
+                    squareOccupied(blackPawns, 11) || squareOccupied(blackPawns, 12) ||
+                    squareOccupied(blackPawns, 13)
+                ) {
+                    canCastle = false;
                 }
 
                 if (canCastle) {
@@ -917,9 +959,20 @@ int generateMoves(Move *movesArr, int side) {
                 canCastle = true;
                 for (i = 0; i < castlingThreatMoveIndex; i++) {
                     castlingThreatMove = castlingThreatMovesArr[i];
-                    if (castlingThreatMove.to == 60 || castlingThreatMove.to == 61 || castlingThreatMove.to == 62 || castlingThreatMove.to == 63) {
+                    // when castling, king cannot be in check, or move through attacked squares, rook on the other hand can
+                    if (castlingThreatMove.to == 60 || castlingThreatMove.to == 61 || castlingThreatMove.to == 62) {
                         canCastle = false;
+                        break;
                     }
+                }
+
+                // pawn threats have to be checked separately, because pawns move and take in different squares
+                if (
+                    squareOccupied(whitePawns, 51) || squareOccupied(whitePawns, 52) ||
+                    squareOccupied(whitePawns, 53) || squareOccupied(whitePawns, 54) ||
+                    squareOccupied(whitePawns, 55)
+                ) {
+                    canCastle = false;
                 }
 
                 if (canCastle) {
@@ -939,14 +992,27 @@ int generateMoves(Move *movesArr, int side) {
                 canCastle = true;
                 for (i = 0; i < castlingThreatMoveIndex; i++) {
                     castlingThreatMove = castlingThreatMovesArr[i];
-                    if (castlingThreatMove.to == 60 || castlingThreatMove.to == 59 || castlingThreatMove.to == 58 || castlingThreatMove.to == 57 || castlingThreatMove.to == 56) {
+                    // when castling, king cannot be in check, or move through attacked squares, rook on the other hand can
+                    if (castlingThreatMove.to == 60 || castlingThreatMove.to == 59 || castlingThreatMove.to == 58) {
                         canCastle = false;
+                        break;
                     }
                 }
 
+                // pawn threats have to be checked separately, because pawns move and take in different squares
+                if (
+                    squareOccupied(whitePawns, 49) || squareOccupied(whitePawns, 50) ||
+                    squareOccupied(whitePawns, 51) || squareOccupied(whitePawns, 52) ||
+                    squareOccupied(whitePawns, 53)
+                ) {
+                    canCastle = false;
+                }
+
                 if (canCastle) {
-                    movesArr[moveIndex] = createMove(60, 58, 0, 4, 0);
-                    moveIndex++;
+                    if (canCastle) {
+                        movesArr[moveIndex] = createMove(60, 58, 0, 4, 0);
+                        moveIndex++; 
+                    }
                 }
             }
         }

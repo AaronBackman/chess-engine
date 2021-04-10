@@ -1,5 +1,7 @@
 #include <stdbool.h>
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 
 #include "Move.h"
 #include "Constants.h"
@@ -44,11 +46,28 @@ void perftDivide(int depth) {
   for (i = 0; i < moveCount; i++) {
     u64 dividedNodes = 0;
     Move move = moves[i];
+
     makeMove(move);
     if (!checkIfCheckThreat(side)) {
+      char *moveNotation;
+      char *moveNotationFrom;
+      char *moveNotationTo;
+
       dividedNodes = perft(depth - 1, -side);
       nodes += dividedNodes;
-      printf("from: %d, to: %d, nodes: %d\n", move.from, move.to, dividedNodes);
+
+      // allocate space for the string, +1 for the null character
+      moveNotation = (char*) malloc((4 + 1) * sizeof(char));
+
+      moveNotation[0] = 'a' + (move.from % 8);
+      moveNotation[1] = '1' + (move.from / 8);
+      moveNotation[2] = 'a' + (move.to % 8);
+      moveNotation[3] = '1' + (move.to / 8);
+      moveNotation[4] = '\0';
+
+      printf("%s: %d\n", moveNotation, dividedNodes);
+
+      free(moveNotation);
     }
     unMakeMove();
   }
