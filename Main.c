@@ -113,7 +113,8 @@ void gameLoop() {
         legalMoveCount = generateMoves(legalMoves, side);
 
         if (checkIfNoLegalMoves(side)) {
-            if (checkIfCheckThreat(side)) {
+            // difference between a stalemate and a checkmate
+            if (isKingThreatened(side)) {
                 printf("checkmate\n");
             }
             else {
@@ -161,7 +162,7 @@ void gameLoop() {
         }
 
         makeMove(selectedMove);
-        if (checkIfCheckThreat(side)) {
+        if (isKingThreatened(side)) {
             printf("move is not legal, you are in check\n");
             unMakeMove();
             continue;

@@ -6,6 +6,7 @@
 #include "Constants.h"
 #include "Move.h"
 #include "Utilities.h"
+#include "LegalityChecks.h"
 
 int addPawnMoves(u64 *gameState, int boardIndex, Move *movesArr, int moveIndex, int side) {
     u64 whitePieces = gameState[0];
@@ -855,14 +856,6 @@ bool longBlackCastlingSquaresEmpty() {
 }
 
 int generateMoves(Move *movesArr, int side) {
-    int i;
-    int isKingInDanger;
-    // add one to the stack pointer to get an unused array
-    Move *castlingThreatMovesArr = MOVE_STACK[MOVE_STACK_POINTER + 1];
-    int castlingThreatMoveIndex = 0;
-    Move castlingThreatMove;
-    bool canCastle;
-
     // next free index in moves array
     int moveIndex = 0;
     u64 *gameState = GAME_STATE_STACK[GAME_STATE_STACK_POINTER];
@@ -890,28 +883,8 @@ int generateMoves(Move *movesArr, int side) {
     if (side == 1) {
         if (canWhiteCastleShort(otherGameInfo)) {
             if (shortWhiteCastlingSquaresEmpty()) {
-                castlingThreatMoveIndex = generateMovesWithoutCastling(castlingThreatMovesArr, -side);
-
-                canCastle = true;
-                for (i = 0; i < castlingThreatMoveIndex; i++) {
-                    castlingThreatMove = castlingThreatMovesArr[i];
-                    // when castling, king cannot be in check, or move through attacked squares, rook on the other hand can
-                    if (castlingThreatMove.to == 4 || castlingThreatMove.to == 5 || castlingThreatMove.to == 6) {
-                        canCastle = false;
-                        break;
-                    }
-                }
-
-                // pawn threats have to be checked separately, because pawns move and take in different squares
-                if (
-                    squareOccupied(blackPawns, 11) || squareOccupied(blackPawns, 12) ||
-                    squareOccupied(blackPawns, 13) || squareOccupied(blackPawns, 14) ||
-                    squareOccupied(blackPawns, 15)
-                ) {
-                    canCastle = false;
-                }
-
-                if (canCastle) {
+                // king cant be or move through any threatened squares
+                if (!isSquareThreatened(4, side) && !isSquareThreatened(5, side) && !isSquareThreatened(5, side)) {
                     movesArr[moveIndex] = createMove(4, 6, 0, 1, 0);
                     moveIndex++;
                 }
@@ -920,31 +893,8 @@ int generateMoves(Move *movesArr, int side) {
 
         if (canWhiteCastleLong(otherGameInfo)) {
             if (longWhiteCastlingSquaresEmpty()) {
-                // no moves were generated in previous if block
-                if (castlingThreatMoveIndex == 0) {
-                    castlingThreatMoveIndex = generateMovesWithoutCastling(castlingThreatMovesArr, -side);
-                }
-
-                canCastle = true;
-                for (i = 0; i < castlingThreatMoveIndex; i++) {
-                    castlingThreatMove = castlingThreatMovesArr[i];
-                    // when castling, king cannot be in check, or move through attacked squares, rook on the other hand can
-                    if (castlingThreatMove.to == 4 || castlingThreatMove.to == 3 || castlingThreatMove.to == 2) {
-                        canCastle = false;
-                        break;
-                    }
-                }
-
-                // pawn threats have to be checked separately, because pawns move and take in different squares
-                if (
-                    squareOccupied(blackPawns, 9) || squareOccupied(blackPawns, 10) ||
-                    squareOccupied(blackPawns, 11) || squareOccupied(blackPawns, 12) ||
-                    squareOccupied(blackPawns, 13)
-                ) {
-                    canCastle = false;
-                }
-
-                if (canCastle) {
+                // king cant be or move through any threatened squares
+                if (!isSquareThreatened(2, side) && !isSquareThreatened(3, side) && !isSquareThreatened(4, side)) {
                     movesArr[moveIndex] = createMove(4, 2, 0, 2, 0);
                     moveIndex++;
                 }
@@ -954,28 +904,8 @@ int generateMoves(Move *movesArr, int side) {
     else {
         if (canBlackCastleShort(otherGameInfo)) {
             if (shortBlackCastlingSquaresEmpty()) {
-                castlingThreatMoveIndex = generateMovesWithoutCastling(castlingThreatMovesArr, -side);
-
-                canCastle = true;
-                for (i = 0; i < castlingThreatMoveIndex; i++) {
-                    castlingThreatMove = castlingThreatMovesArr[i];
-                    // when castling, king cannot be in check, or move through attacked squares, rook on the other hand can
-                    if (castlingThreatMove.to == 60 || castlingThreatMove.to == 61 || castlingThreatMove.to == 62) {
-                        canCastle = false;
-                        break;
-                    }
-                }
-
-                // pawn threats have to be checked separately, because pawns move and take in different squares
-                if (
-                    squareOccupied(whitePawns, 51) || squareOccupied(whitePawns, 52) ||
-                    squareOccupied(whitePawns, 53) || squareOccupied(whitePawns, 54) ||
-                    squareOccupied(whitePawns, 55)
-                ) {
-                    canCastle = false;
-                }
-
-                if (canCastle) {
+                // king cant be or move through any threatened squares
+                if (!isSquareThreatened(60, side) && !isSquareThreatened(61, side) && !isSquareThreatened(62, side)) {
                     movesArr[moveIndex] = createMove(60, 62, 0, 3, 0);
                     moveIndex++;
                 }
@@ -984,35 +914,10 @@ int generateMoves(Move *movesArr, int side) {
 
         if (canBlackCastleLong(otherGameInfo)) {
             if (longBlackCastlingSquaresEmpty()) {
-                // no moves were generated in previous if block
-                if (castlingThreatMoveIndex == 0) {
-                    castlingThreatMoveIndex = generateMovesWithoutCastling(castlingThreatMovesArr, -side);
-                }
-
-                canCastle = true;
-                for (i = 0; i < castlingThreatMoveIndex; i++) {
-                    castlingThreatMove = castlingThreatMovesArr[i];
-                    // when castling, king cannot be in check, or move through attacked squares, rook on the other hand can
-                    if (castlingThreatMove.to == 60 || castlingThreatMove.to == 59 || castlingThreatMove.to == 58) {
-                        canCastle = false;
-                        break;
-                    }
-                }
-
-                // pawn threats have to be checked separately, because pawns move and take in different squares
-                if (
-                    squareOccupied(whitePawns, 49) || squareOccupied(whitePawns, 50) ||
-                    squareOccupied(whitePawns, 51) || squareOccupied(whitePawns, 52) ||
-                    squareOccupied(whitePawns, 53)
-                ) {
-                    canCastle = false;
-                }
-
-                if (canCastle) {
-                    if (canCastle) {
-                        movesArr[moveIndex] = createMove(60, 58, 0, 4, 0);
-                        moveIndex++; 
-                    }
+                // king cant be or move through any threatened squares
+                if (!isSquareThreatened(58, side) && !isSquareThreatened(59, side) && !isSquareThreatened(60, side)) {
+                    movesArr[moveIndex] = createMove(60, 58, 0, 4, 0);
+                    moveIndex++; 
                 }
             }
         }

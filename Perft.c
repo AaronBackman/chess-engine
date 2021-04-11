@@ -23,7 +23,7 @@ u64 perft(int depth, int side) {
   moveCount = generateMoves(moves, side);
   for (i = 0; i < moveCount; i++) {
     makeMove(moves[i]);
-    if (!checkIfCheckThreat(side)) {
+    if (!isKingThreatened(side)) {
       nodes += perft(depth - 1, -side);
     }
     unMakeMove();
@@ -48,7 +48,7 @@ void perftDivide(int depth) {
     Move move = moves[i];
 
     makeMove(move);
-    if (!checkIfCheckThreat(side)) {
+    if (!isKingThreatened(side)) {
       char *moveNotation;
       char *moveNotationFrom;
       char *moveNotationTo;
@@ -65,12 +65,12 @@ void perftDivide(int depth) {
       moveNotation[3] = '1' + (move.to / 8);
       moveNotation[4] = '\0';
 
-      printf("%s: %d\n", moveNotation, dividedNodes);
+      printf("%s: %llu\n", moveNotation, dividedNodes);
 
       free(moveNotation);
     }
     unMakeMove();
   }
 
-  printf("total nodes: %d\n\n", nodes);
+  printf("total nodes: %llu\n\n", nodes);
 }
