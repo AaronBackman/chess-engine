@@ -1,22 +1,7 @@
-#ifndef CONSTANTS_H
-#define CONSTANTS_H
+#ifndef INIT_H
+#define INIT_H
 
 #include "Move.h"
-
-typedef unsigned long long u64;
-typedef unsigned int u32;
-typedef unsigned char BYTE;
-
-#define BOARD_SIZE 64
-#define MAX_TURNS 1024
-#define MAX_MOVES 500
-#define MAX_DEPTH 30
-
-extern u64 GAME_STATE_STACK[MAX_DEPTH + MAX_TURNS][15];
-extern int GAME_STATE_STACK_POINTER;
-
-extern int MOVE_STACK_POINTER;
-extern Move MOVE_STACK[MAX_DEPTH][MAX_MOVES];
 
 // precalculated bit shifts, for example singleBitLookUp[15] == 1LLU << 15
 extern u64 SINGLE_BIT_LOOKUP[64];
@@ -25,6 +10,11 @@ extern u64 NORTH_EAST_LOOKUP_PATTERN[64];
 extern u64 NORTH_WEST_LOOKUP_PATTERN[64];
 extern u64 SOUTH_EAST_LOOKUP_PATTERN[64];
 extern u64 SOUTH_WEST_LOOKUP_PATTERN[64];
+
+extern u64 NORTH_LOOKUP_PATTERN[64];
+extern u64 WEST_LOOKUP_PATTERN[64];
+extern u64 SOUTH_LOOKUP_PATTERN[64];
+extern u64 EAST_LOOKUP_PATTERN[64];
 
 void setLookUpTables();
 

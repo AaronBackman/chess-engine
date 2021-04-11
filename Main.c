@@ -10,6 +10,7 @@
 #include "LegalityChecks.h"
 #include "Utilities.h"
 #include "Perft.h"
+#include "Init.h"
 
 void printBoard() {
     u64 *gameState = GAME_STATE_STACK[GAME_STATE_STACK_POINTER];
@@ -189,12 +190,12 @@ void main(void) {
 
     gameState = parseFen(gameState, fenStr);
 
-    leastBit = bitScanForward(gameState[9]);
+    leastBit = bitScanForward(EAST_LOOKUP_PATTERN[34]);
 
     printf("least bit: %d\n", leastBit);
 
     //gameLoop();
-    perftDivide(6);
+    //perftDivide(6);
 }
 
 // compile with gcc -o Program *.c

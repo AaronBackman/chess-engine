@@ -417,25 +417,20 @@ bool isSquareThreatened(int originSquare, int side) {
 
 bool isKingThreatened(int side) {
     int i;
+    int kingIndex;
     u64 *gameState = GAME_STATE_STACK[GAME_STATE_STACK_POINTER];
     u64 whiteKings = gameState[6];
     u64 blackKings = gameState[13];
 
     if (side == 1) {
-        // find the white king
-        for (i = 0; i < 64; i++) {
-            if (!squareOccupied(whiteKings, i)) continue;
-
-            return isSquareThreatened(i, side);
-        }
+        // find the kings square first
+        kingIndex = bitScanForward(whiteKings);
+        return isSquareThreatened(kingIndex, side);
     }
     else {
-        // find the black king
-        for (i = 0; i < 64; i++) {
-            if (!squareOccupied(blackKings, i)) continue;
-
-            return isSquareThreatened(i, side);
-        }
+        // find the kings square first
+        kingIndex = bitScanForward(blackKings);
+        return isSquareThreatened(kingIndex, side);
     }
 }
 
