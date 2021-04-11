@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
+#include <assert.h>
 
 #include "Constants.h"
 #include "Move.h"
@@ -13,7 +14,7 @@ Move createMove(int from, int to, int promotion, int castle, bool enPassant) {
 }
 
 bool squareOccupied(u64 board, int index) {
-    u64 bitIndex = (1ULL << index);
+    u64 bitIndex = SINGLE_BIT_LOOKUP[index];
 
     if ((board & bitIndex) == 0LLU) {
         return false;
@@ -22,11 +23,11 @@ bool squareOccupied(u64 board, int index) {
 }
 
 u64 emptySquare(u64 board, int index) {
-    return board & ~(1LLU << index);
+    return board & ~SINGLE_BIT_LOOKUP[index];
 }
 
 u64 fillSquare(u64 board, int index) {
-    return board | (1LLU << index);
+    return board | SINGLE_BIT_LOOKUP[index];
 }
 
 bool canWhiteCastleShort(u64 meta) {
@@ -34,15 +35,15 @@ bool canWhiteCastleShort(u64 meta) {
 }
 
 bool canWhiteCastleLong(u64 meta) {
-    return (meta & (1LLU << 1)) > 0;
+    return (meta & SINGLE_BIT_LOOKUP[1]) > 0;
 }
 
 bool canBlackCastleShort(u64 meta) {
-    return (meta & (1LLU << 2)) > 0;
+    return (meta & SINGLE_BIT_LOOKUP[2]) > 0;
 }
 
 bool canBlackCastleLong(u64 meta) {
-    return (meta & (1LLU << 3)) > 0;
+    return (meta & SINGLE_BIT_LOOKUP[3]) > 0;
 }
 
 u64 removeWhiteCastleShort(u64 meta) {
@@ -50,15 +51,15 @@ u64 removeWhiteCastleShort(u64 meta) {
 }
 
 u64 removeWhiteCastleLong(u64 meta) {
-    return meta & ~(1LLU << 1);
+    return meta & ~SINGLE_BIT_LOOKUP[1];
 }
 
 u64 removeBlackCastleShort(u64 meta) {
-    return meta & ~(1LLU << 2);
+    return meta & ~SINGLE_BIT_LOOKUP[2];
 }
 
 u64 removeBlackCastleLong(u64 meta) {
-    return meta &=~(1LLU << 3);
+    return meta &=~SINGLE_BIT_LOOKUP[3];
 }
 
 u64 setWhiteCastleShort(u64 meta) {
@@ -66,27 +67,27 @@ u64 setWhiteCastleShort(u64 meta) {
 }
 
 u64 setWhiteCastleLong(u64 meta) {
-    return meta |= (1LLU << 1);
+    return meta |= SINGLE_BIT_LOOKUP[1];
 }
 
 u64 setBlackCastleShort(u64 meta) {
-    return meta |= (1LLU << 2);
+    return meta |= SINGLE_BIT_LOOKUP[2];
 }
 
 u64 setBlackCastleLong(u64 meta) {
-    return meta |= (1LLU << 3);
+    return meta |= SINGLE_BIT_LOOKUP[3];
 }
 
 bool isEnPassantAllowed(u64 meta) {
-    return (meta & (1LLU << 4)) > 0;
+    return (meta & SINGLE_BIT_LOOKUP[4]) > 0;
 }
 
 u64 setEnPassantAllowed(u64 meta, bool enPassantAllowed) {
     if (enPassantAllowed) {
-        meta |= (1LLU << 4);
+        meta |= SINGLE_BIT_LOOKUP[4];
     }
     else {
-        meta &= ~(1LLU << 4);
+        meta &= ~SINGLE_BIT_LOOKUP[4];
     }
 
     return meta;
@@ -105,7 +106,7 @@ u64 getEnPassantSquare(u64 meta) {
 
 // 1 == white plays, -1 == black plays
 int getSideToPlay(u64 meta) {
-    if ((meta & (1LLU << 11)) > 0) {
+    if ((meta & SINGLE_BIT_LOOKUP[11]) > 0) {
         return 1;
     }
     else {
@@ -117,11 +118,11 @@ int getSideToPlay(u64 meta) {
 u64 setSideToPlay(u64 meta, int side) {
     if (side == 1) {
         // set 12th bit to 1
-        meta |= (1LLU << 11);
+        meta |= SINGLE_BIT_LOOKUP[11];
     }
     else {
         // set 12th bit to 0
-        meta &= ~(1LLU << 11);
+        meta &= ~SINGLE_BIT_LOOKUP[11];
     }
 
     return meta;
@@ -337,4 +338,22 @@ u64 *parseFen(u64 *gameState, char *fenStr) {
     gameState[14] = otherGameInfo;
 
     return gameState;
+}
+
+const int index64[64] = {
+    0,  1, 48,  2, 57, 49, 28,  3,
+   61, 58, 50, 42, 38, 29, 17,  4,
+   62, 55, 59, 36, 53, 51, 43, 22,
+   45, 39, 33, 30, 24, 18, 12,  5,
+   63, 47, 56, 27, 60, 41, 37, 16,
+   54, 35, 52, 21, 44, 32, 23, 11,
+   46, 26, 40, 15, 34, 20, 31, 10,
+   25, 14, 19,  9, 13,  8,  7,  6
+};
+
+// gets the least significant bit using kim walisch bitscan algorithm
+int bitScanForward(u64 board) {
+    const u64 debruijn64 = 0x03f79d71b4cb0a89;
+    assert (board != 0);
+    return index64[((board & -board) * debruijn64) >> 58];
 }

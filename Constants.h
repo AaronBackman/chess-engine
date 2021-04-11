@@ -18,4 +18,8 @@ extern int GAME_STATE_STACK_POINTER;
 extern int MOVE_STACK_POINTER;
 extern Move MOVE_STACK[MAX_DEPTH][MAX_MOVES];
 
+// precalculated bit shifts, for example singleBitLookUp[15] == 1LLU << 15
+extern u64 SINGLE_BIT_LOOKUP[64];
+void setLookUpTables();
+
 #endif

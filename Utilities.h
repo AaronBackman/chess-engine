@@ -26,5 +26,6 @@ int getSideToPlay(u64 meta);
 u64 setSideToPlay(u64 meta, int side);
 
 u64 *parseFen(u64 *gameState, char *fenStr);
+int bitScanForward(u64 board);
 
 #endif
