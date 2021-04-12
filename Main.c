@@ -113,6 +113,10 @@ void gameLoop() {
 
         legalMoveCount = generateMoves(legalMoves, side);
 
+        if (legalMoveCount == 0) {
+            printf("no moves generated\n");
+        }
+
         if (checkIfNoLegalMoves(side)) {
             // difference between a stalemate and a checkmate
             if (isKingThreatened(side)) {
@@ -136,6 +140,8 @@ void gameLoop() {
         moveIsLegal = false;
         for (i = 0; i < legalMoveCount; i++) {
             legalMove = legalMoves[i];
+
+            printf("some move: from: %d, to: %d\n", legalMoves[i].from, legalMoves[i].to);
 
             if (legalMove.promotion != 0 && legalMove.promotion != 4) continue;
 
@@ -190,12 +196,12 @@ void main(void) {
 
     gameState = parseFen(gameState, fenStr);
 
-    leastBit = bitScanForward(EAST_LOOKUP_PATTERN[34]);
+    leastBit = bitScanForward(KNIGHT_LOOKUP_PATTERN[1]);
 
-    printf("least bit: %d\n", leastBit);
+    //printf("least bit: %d\n", leastBit);
 
     //gameLoop();
-    //perftDivide(6);
+    perftDivide(6);
 }
 
 // compile with gcc -o Program *.c

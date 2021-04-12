@@ -14,6 +14,13 @@ u64 WEST_LOOKUP_PATTERN[64];
 u64 SOUTH_LOOKUP_PATTERN[64];
 u64 EAST_LOOKUP_PATTERN[64];
 
+u64 KING_LOOKUP_PATTERN[64];
+u64 KNIGHT_LOOKUP_PATTERN[64];
+u64 WHITE_PAWN_ATTACK_LOOKUP_PATTERN[64];
+u64 WHITE_PAWN_MOVE_LOOKUP_PATTERN[64];
+u64 BLACK_PAWN_ATTACK_LOOKUP_PATTERN[64];
+u64 BLACK_PAWN_MOVE_LOOKUP_PATTERN[64];
+
 void setSingleBitLookUp() {
   int i;
 
@@ -187,6 +194,163 @@ void setEastLookUp() {
   }
 }
 
+void setKingLookUp() {
+  int boardIndex;
+
+  for (boardIndex = 0; boardIndex < 64; boardIndex++) {
+    int destinationSquare;
+    int i;
+    int j;
+    u64 pattern = 0;
+
+    for (i = -1; i < 2; i++) {
+        for (j = -1; j < 2; j++) {
+            if ((boardIndex % 8 + j < 0) || (boardIndex % 8 + j > 7)) continue;
+            if ((boardIndex + i * 8 < 0) || (boardIndex + i * 8 > 63)) continue;
+
+            destinationSquare = boardIndex + j + i * 8;
+            pattern = fillSquare(pattern, destinationSquare);
+        }
+    }
+    KING_LOOKUP_PATTERN[boardIndex] = pattern;
+  }
+}
+
+void setKnightLookUp() {
+  int boardIndex;
+
+  for (boardIndex = 0; boardIndex < 64; boardIndex++) {
+    int destinationSquare;
+    int i;
+    int j;
+    u64 pattern = 0;
+
+    for (i = -2; i < 3; i++) {
+      for (j = -2; j < 3; j++) {
+          if (boardIndex % 8 + j > 7 || boardIndex % 8 + j < 0) continue;
+
+          if (j * i == 2 || j * i == -2) {
+              destinationSquare = boardIndex + i * 8 + j;
+
+              // cant move outside the board
+              if (destinationSquare > 63 || destinationSquare < 0) continue;
+
+              pattern = fillSquare(pattern, destinationSquare);
+          }
+      }
+    }
+    KNIGHT_LOOKUP_PATTERN[boardIndex] = pattern;
+  }
+}
+
+void setWhitePawnAttackLookUp() {
+  int boardIndex;
+
+  for (boardIndex = 0; boardIndex < 64; boardIndex++) {
+    int destinationSquare;
+    int i;
+    int j;
+    int row;
+    int column;
+    u64 pattern = 0;
+    
+    row = boardIndex / 8;
+    column = boardIndex % 8;
+
+    if (column != 0) {
+      pattern = fillSquare(pattern, boardIndex + 7);
+    }
+    if (column != 7) {
+      pattern = fillSquare(pattern, boardIndex + 9);
+    }
+
+    
+    WHITE_PAWN_ATTACK_LOOKUP_PATTERN[boardIndex] = pattern;
+  }
+}
+
+void setWhitePawnMoveLookUp() {
+  int boardIndex;
+
+  for (boardIndex = 0; boardIndex < 64; boardIndex++) {
+    int destinationSquare;
+    int i;
+    int j;
+    int row;
+    int column;
+    u64 pattern = 0;
+    
+    row = boardIndex / 8;
+    column = boardIndex % 8;
+
+    // first pawn move can be 2 squares
+    if (row == 1) {
+      pattern = fillSquare(pattern, boardIndex + 16);
+    }
+    // no pawns can be on first and last rows
+    if (row != 0 && row != 7) {
+      pattern = fillSquare(pattern, boardIndex + 8);
+    }
+
+    
+    WHITE_PAWN_MOVE_LOOKUP_PATTERN[boardIndex] = pattern;
+  }
+}
+
+void setBlackPawnAttackLookUp() {
+  int boardIndex;
+
+  for (boardIndex = 0; boardIndex < 64; boardIndex++) {
+    int destinationSquare;
+    int i;
+    int j;
+    int row;
+    int column;
+    u64 pattern = 0;
+    
+    row = boardIndex / 8;
+    column = boardIndex % 8;
+
+    if (column != 0) {
+      pattern = fillSquare(pattern, boardIndex - 9);
+    }
+    if (column != 7) {
+      pattern = fillSquare(pattern, boardIndex - 7);
+    }
+
+    
+    BLACK_PAWN_ATTACK_LOOKUP_PATTERN[boardIndex] = pattern;
+  }
+}
+
+void setBlackPawnMoveLookUp() {
+  int boardIndex;
+
+  for (boardIndex = 0; boardIndex < 64; boardIndex++) {
+    int destinationSquare;
+    int i;
+    int j;
+    int row;
+    int column;
+    u64 pattern = 0;
+    
+    row = boardIndex / 8;
+    column = boardIndex % 8;
+
+    // first pawn move can be 2 squares
+    if (row == 6) {
+      pattern = fillSquare(pattern, boardIndex - 16);
+    }
+    // no pawns can be on first and last rows
+    if (row != 0 && row != 7) {
+      pattern = fillSquare(pattern, boardIndex - 8);
+    }
+
+    
+    BLACK_PAWN_MOVE_LOOKUP_PATTERN[boardIndex] = pattern;
+  }
+}
+
 void setLookUpTables() {
   setSingleBitLookUp();
 
@@ -201,4 +365,11 @@ void setLookUpTables() {
   setWestLookUp();
   setSouthLookUp();
   setEastLookUp();
+
+  setKingLookUp();
+  setKnightLookUp();
+  setWhitePawnAttackLookUp();
+  setWhitePawnMoveLookUp();
+  setBlackPawnAttackLookUp();
+  setBlackPawnMoveLookUp();
 }

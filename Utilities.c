@@ -340,7 +340,7 @@ u64 *parseFen(u64 *gameState, char *fenStr) {
     return gameState;
 }
 
-const int index64[64] = {
+const int index64Forward[64] = {
     0,  1, 48,  2, 57, 49, 28,  3,
    61, 58, 50, 42, 38, 29, 17,  4,
    62, 55, 59, 36, 53, 51, 43, 22,
@@ -351,9 +351,33 @@ const int index64[64] = {
    25, 14, 19,  9, 13,  8,  7,  6
 };
 
-// gets the least significant bit using kim walisch bitscan algorithm
+// gets the least significant bit using de brujn bitscan algorithm
 int bitScanForward(u64 board) {
     const u64 debruijn64 = 0x03f79d71b4cb0a89;
     assert (board != 0);
-    return index64[((board & -board) * debruijn64) >> 58];
+    return index64Forward[((board & -board) * debruijn64) >> 58];
+}
+
+const int index64Reverse[64] = {
+    0, 47,  1, 56, 48, 27,  2, 60,
+   57, 49, 41, 37, 28, 16,  3, 61,
+   54, 58, 35, 52, 50, 42, 21, 44,
+   38, 32, 29, 23, 17, 11,  4, 62,
+   46, 55, 26, 59, 40, 36, 15, 53,
+   34, 51, 20, 43, 31, 22, 10, 45,
+   25, 39, 14, 33, 19, 30,  9, 24,
+   13, 18,  8, 12,  7,  6,  5, 63
+};
+
+// gets the most significant bit using de brujn bitscan algorithm
+int bitScanReverse(u64 board) {
+   const u64 debruijn64 = 0x03f79d71b4cb0a89;
+   assert (board != 0);
+   board |= board >> 1; 
+   board |= board >> 2;
+   board |= board >> 4;
+   board |= board >> 8;
+   board |= board >> 16;
+   board |= board >> 32;
+   return index64Reverse[(board * debruijn64) >> 58];
 }

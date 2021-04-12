@@ -141,201 +141,198 @@ void makeMove(Move move) {
     else {
         if (squareOccupied(whitePieces, to)) {
             whitePieces = emptySquare(whitePieces, to);
-        }
 
-        if (squareOccupied(whitePawns, to)) {
-            whitePawns = emptySquare(whitePawns, to);
-        }
-
-        if (squareOccupied(whiteKnights, to)) {
-            whiteKnights = emptySquare(whiteKnights, to);
-        }
-        
-        if (squareOccupied(whiteBishops, to)) {
-            whiteBishops = emptySquare(whiteBishops, to);
-        }
-        
-        if (squareOccupied(whiteRooks, to)) {
-            whiteRooks = emptySquare(whiteRooks, to);
-
-            // cant castle anymore if the castling took is taken
-            if (to == 0 && canWhiteCastleLong(otherGameInfo)) {
-                otherGameInfo = removeWhiteCastleLong(otherGameInfo);
+            if (squareOccupied(whitePawns, to)) {
+                whitePawns = emptySquare(whitePawns, to);
             }
-            // cant castle anymore if the castling took is taken
-            else if (to == 7 && canWhiteCastleShort(otherGameInfo)) {
-                otherGameInfo = removeWhiteCastleShort(otherGameInfo);
+
+            else if (squareOccupied(whiteKnights, to)) {
+                whiteKnights = emptySquare(whiteKnights, to);
+            }
+            
+            else if (squareOccupied(whiteBishops, to)) {
+                whiteBishops = emptySquare(whiteBishops, to);
+            }
+            
+            else if (squareOccupied(whiteRooks, to)) {
+                whiteRooks = emptySquare(whiteRooks, to);
+
+                // cant castle anymore if the castling took is taken
+                if (to == 0 && canWhiteCastleLong(otherGameInfo)) {
+                    otherGameInfo = removeWhiteCastleLong(otherGameInfo);
+                }
+                // cant castle anymore if the castling took is taken
+                else if (to == 7 && canWhiteCastleShort(otherGameInfo)) {
+                    otherGameInfo = removeWhiteCastleShort(otherGameInfo);
+                }
+            }
+            
+            else if (squareOccupied(whiteQueens, to)) {
+                whiteQueens = emptySquare(whiteQueens, to);
+            }
+            
+            else if (squareOccupied(whiteKings, to)) {
+                whiteKings = emptySquare(whiteKings, to);
             }
         }
-        
-        if (squareOccupied(whiteQueens, to)) {
-            whiteQueens = emptySquare(whiteQueens, to);
-        }
-        
-        if (squareOccupied(whiteKings, to)) {
-            whiteKings = emptySquare(whiteKings, to);
-        }
 
 
-
-        if (squareOccupied(blackPieces, to)) {
+        else {
             blackPieces = emptySquare(blackPieces, to);
-        }
 
-        if (squareOccupied(blackPawns, to)) {
-            blackPawns = emptySquare(blackPawns, to);
-        }
-
-        if (squareOccupied(blackKnights, to)) {
-            blackKnights = emptySquare(blackKnights, to);
-        }
-        
-        if (squareOccupied(blackBishops, to)) {
-            blackBishops = emptySquare(blackBishops, to);
-        }
-        
-        if (squareOccupied(blackRooks, to)) {
-            blackRooks = emptySquare(blackRooks, to);
-
-            // cant castle anymore if the castling took is taken
-            if (to == 56 && canBlackCastleLong(otherGameInfo)) {
-                otherGameInfo = removeBlackCastleLong(otherGameInfo);
+            if (squareOccupied(blackPawns, to)) {
+                blackPawns = emptySquare(blackPawns, to);
             }
-            // cant castle anymore if the castling took is taken
-            else if (to == 63 && canBlackCastleShort(otherGameInfo)) {
-                otherGameInfo = removeBlackCastleShort(otherGameInfo);
+
+            else if (squareOccupied(blackKnights, to)) {
+                blackKnights = emptySquare(blackKnights, to);
+            }
+            
+            else if (squareOccupied(blackBishops, to)) {
+                blackBishops = emptySquare(blackBishops, to);
+            }
+            
+            else if (squareOccupied(blackRooks, to)) {
+                blackRooks = emptySquare(blackRooks, to);
+
+                // cant castle anymore if the castling took is taken
+                if (to == 56 && canBlackCastleLong(otherGameInfo)) {
+                    otherGameInfo = removeBlackCastleLong(otherGameInfo);
+                }
+                // cant castle anymore if the castling took is taken
+                else if (to == 63 && canBlackCastleShort(otherGameInfo)) {
+                    otherGameInfo = removeBlackCastleShort(otherGameInfo);
+                }
+            }
+            
+            else if (squareOccupied(blackQueens, to)) {
+                blackQueens = emptySquare(blackQueens, to);
+            }
+            
+            else if (squareOccupied(blackKings, to)) {
+                blackKings = emptySquare(blackKings, to);
             }
         }
-        
-        if (squareOccupied(blackQueens, to)) {
-            blackQueens = emptySquare(blackQueens, to);
-        }
-        
-        if (squareOccupied(blackKings, to)) {
-            blackKings = emptySquare(blackKings, to);
-        }
-
-
 
         if (squareOccupied(whitePieces, from)) {
             whitePieces = emptySquare(whitePieces, from);
             whitePieces = fillSquare(whitePieces, to);
-        }
 
-        if (squareOccupied(whitePawns, from)) {
-            whitePawns = emptySquare(whitePawns, from);
-            whitePawns = fillSquare(whitePawns, to);
+            if (squareOccupied(whitePawns, from)) {
+                whitePawns = emptySquare(whitePawns, from);
+                whitePawns = fillSquare(whitePawns, to);
 
-            // moved 2 squares, en passant possible on next move
-            if (to - from == 16) {
-                otherGameInfo = setEnPassantAllowed(otherGameInfo, true);
-                otherGameInfo = setEnPassantSquare(otherGameInfo, to);
+                // moved 2 squares, en passant possible on next move
+                if (to - from == 16) {
+                    otherGameInfo = setEnPassantAllowed(otherGameInfo, true);
+                    otherGameInfo = setEnPassantSquare(otherGameInfo, to);
+                }
+            }
+
+            else if (squareOccupied(whiteKnights, from)) {
+                whiteKnights = emptySquare(whiteKnights, from);
+                whiteKnights = fillSquare(whiteKnights, to);
+            }
+            
+            else if (squareOccupied(whiteBishops, from)) {
+                whiteBishops = emptySquare(whiteBishops, from);
+                whiteBishops = fillSquare(whiteBishops, to);
+            }
+            
+            else if (squareOccupied(whiteRooks, from)) {
+                whiteRooks = emptySquare(whiteRooks, from);
+                whiteRooks = fillSquare(whiteRooks, to);
+
+                // remove castling rights, if rook moves
+                if (from == 0 && canWhiteCastleLong(otherGameInfo)) {
+                    otherGameInfo = removeWhiteCastleLong(otherGameInfo);
+                }
+
+                if (from == 7 && canWhiteCastleShort(otherGameInfo)) {
+                    otherGameInfo = removeWhiteCastleShort(otherGameInfo);
+                }
+            }
+            
+            else if (squareOccupied(whiteQueens, from)) {
+                whiteQueens = emptySquare(whiteQueens, from);
+                whiteQueens = fillSquare(whiteQueens, to);
+            }
+            
+            else if (squareOccupied(whiteKings, from)) {
+                whiteKings = emptySquare(whiteKings, from);
+                whiteKings = fillSquare(whiteKings, to);
+
+                // remove both castling rights, if king moves
+                if (from == 4 && canWhiteCastleLong(otherGameInfo)) {
+                    otherGameInfo = removeWhiteCastleLong(otherGameInfo);
+                }
+
+                if (from == 4 && canWhiteCastleShort(otherGameInfo)) {
+                    otherGameInfo = removeWhiteCastleShort(otherGameInfo);
+                }
             }
         }
 
-        if (squareOccupied(whiteKnights, from)) {
-            whiteKnights = emptySquare(whiteKnights, from);
-            whiteKnights = fillSquare(whiteKnights, to);
-        }
-        
-        if (squareOccupied(whiteBishops, from)) {
-            whiteBishops = emptySquare(whiteBishops, from);
-            whiteBishops = fillSquare(whiteBishops, to);
-        }
-        
-        if (squareOccupied(whiteRooks, from)) {
-            whiteRooks = emptySquare(whiteRooks, from);
-            whiteRooks = fillSquare(whiteRooks, to);
 
-            // remove castling rights, if rook moves
-            if (from == 0 && canWhiteCastleLong(otherGameInfo)) {
-                otherGameInfo = removeWhiteCastleLong(otherGameInfo);
-            }
-
-            if (from == 7 && canWhiteCastleShort(otherGameInfo)) {
-                otherGameInfo = removeWhiteCastleShort(otherGameInfo);
-            }
-        }
-        
-        if (squareOccupied(whiteQueens, from)) {
-            whiteQueens = emptySquare(whiteQueens, from);
-            whiteQueens = fillSquare(whiteQueens, to);
-        }
-        
-        if (squareOccupied(whiteKings, from)) {
-            whiteKings = emptySquare(whiteKings, from);
-            whiteKings = fillSquare(whiteKings, to);
-
-            // remove both castling rights, if king moves
-            if (from == 4 && canWhiteCastleLong(otherGameInfo)) {
-                otherGameInfo = removeWhiteCastleLong(otherGameInfo);
-            }
-
-            if (from == 4 && canWhiteCastleShort(otherGameInfo)) {
-                otherGameInfo = removeWhiteCastleShort(otherGameInfo);
-            }
-        }
-
-
-
-        if (squareOccupied(blackPieces, from)) {
+        else {
             blackPieces = emptySquare(blackPieces, from);
             blackPieces = fillSquare(blackPieces, to);
-        }
 
-        if (squareOccupied(blackPawns, from)) {
-            blackPawns = emptySquare(blackPawns, from);
-            blackPawns = fillSquare(blackPawns, to);
+            if (squareOccupied(blackPawns, from)) {
+                blackPawns = emptySquare(blackPawns, from);
+                blackPawns = fillSquare(blackPawns, to);
 
-            // moved 2 squares, en passant possible on next move
-            if (to - from == -16) {
-                otherGameInfo = setEnPassantAllowed(otherGameInfo, true);
-                otherGameInfo = setEnPassantSquare(otherGameInfo, to);
+                // moved 2 squares, en passant possible on next move
+                if (to - from == -16) {
+                    otherGameInfo = setEnPassantAllowed(otherGameInfo, true);
+                    otherGameInfo = setEnPassantSquare(otherGameInfo, to);
+                }
+            }
+
+            else if (squareOccupied(blackKnights, from)) {
+                blackKnights = emptySquare(blackKnights, from);
+                blackKnights = fillSquare(blackKnights, to);
+            }
+            
+            else if (squareOccupied(blackBishops, from)) {
+                blackBishops = emptySquare(blackBishops, from);
+                blackBishops = fillSquare(blackBishops, to);
+            }
+            
+            else if (squareOccupied(blackRooks, from)) {
+                blackRooks = emptySquare(blackRooks, from);
+                blackRooks = fillSquare(blackRooks, to);
+
+                // remove castling rights, if rook moves
+                if (from == 56 && canBlackCastleLong(otherGameInfo)) {
+                    otherGameInfo = removeBlackCastleLong(otherGameInfo);
+                }
+
+                if (from == 63 && canBlackCastleShort(otherGameInfo)) {
+                    otherGameInfo = removeBlackCastleShort(otherGameInfo);
+                }
+            }
+            
+            else if (squareOccupied(blackQueens, from)) {
+                blackQueens = emptySquare(blackQueens, from);
+                blackQueens = fillSquare(blackQueens, to);
+            }
+            
+            else if (squareOccupied(blackKings, from)) {
+                blackKings = emptySquare(blackKings, from);
+                blackKings = fillSquare(blackKings, to);
+
+                // remove both castling rights, if king moves
+                if (from == 60 && canBlackCastleLong(otherGameInfo)) {
+                    otherGameInfo = removeBlackCastleLong(otherGameInfo);
+                }
+
+                if (from == 60 && canBlackCastleShort(otherGameInfo)) {
+                    otherGameInfo = removeBlackCastleShort(otherGameInfo);
+                }
             }
         }
 
-        if (squareOccupied(blackKnights, from)) {
-            blackKnights = emptySquare(blackKnights, from);
-            blackKnights = fillSquare(blackKnights, to);
-        }
-        
-        if (squareOccupied(blackBishops, from)) {
-            blackBishops = emptySquare(blackBishops, from);
-            blackBishops = fillSquare(blackBishops, to);
-        }
-        
-        if (squareOccupied(blackRooks, from)) {
-            blackRooks = emptySquare(blackRooks, from);
-            blackRooks = fillSquare(blackRooks, to);
-
-            // remove castling rights, if rook moves
-            if (from == 56 && canBlackCastleLong(otherGameInfo)) {
-                otherGameInfo = removeBlackCastleLong(otherGameInfo);
-            }
-
-            if (from == 63 && canBlackCastleShort(otherGameInfo)) {
-                otherGameInfo = removeBlackCastleShort(otherGameInfo);
-            }
-        }
-        
-        if (squareOccupied(blackQueens, from)) {
-            blackQueens = emptySquare(blackQueens, from);
-            blackQueens = fillSquare(blackQueens, to);
-        }
-        
-        if (squareOccupied(blackKings, from)) {
-            blackKings = emptySquare(blackKings, from);
-            blackKings = fillSquare(blackKings, to);
-
-            // remove both castling rights, if king moves
-            if (from == 60 && canBlackCastleLong(otherGameInfo)) {
-                otherGameInfo = removeBlackCastleLong(otherGameInfo);
-            }
-
-            if (from == 60 && canBlackCastleShort(otherGameInfo)) {
-                otherGameInfo = removeBlackCastleShort(otherGameInfo);
-            }
-        }
 
         // handle promotion of pawn
         if (promotion != 0) {
