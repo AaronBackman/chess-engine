@@ -189,7 +189,7 @@ void main(void) {
     int leastBit;
     GAME_STATE_STACK_POINTER++;
     u64 *gameState = GAME_STATE_STACK[GAME_STATE_STACK_POINTER];
-    char fenStr[] = "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10 ";
+    char fenStr[] = "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - ";
 
     // some important initializations
     setLookUpTables();
@@ -201,7 +201,7 @@ void main(void) {
     //printf("least bit: %d\n", leastBit);
 
     //gameLoop();
-    perftDivide(5);
+    perftDivide(7);
 }
 
 // compile with gcc -o Program *.c

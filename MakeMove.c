@@ -32,28 +32,29 @@ void makeMove(Move move) {
     u64 blackKings = gameState[13];
 
     u64 otherGameInfo = gameState[14];
+    u64 movePattern = SINGLE_BIT_LOOKUP[from] | SINGLE_BIT_LOOKUP[to];
+
+    int side = getSideToPlay(otherGameInfo);
 
     GAME_STATE_STACK_POINTER++;
 
     // previous en passant possibility ends with this move
     otherGameInfo = setEnPassantAllowed(otherGameInfo, false);
     // switch side to play
-    otherGameInfo = setSideToPlay(otherGameInfo, -getSideToPlay(otherGameInfo));
+    otherGameInfo = setSideToPlay(otherGameInfo, -side);
     
     // castling is handled separately because it is the only move that moves 2 pieces at the same time
     if (castle != 0) {
         // white moving
-        if (squareOccupied(whiteKings, move.from)) {
+        if (side == 1) {
             // set white castling to 0
             otherGameInfo = removeWhiteCastleShort(otherGameInfo);
             otherGameInfo = removeWhiteCastleLong(otherGameInfo);
 
             // kingside
             if (castle == 1) {
-                whiteKings = emptySquare(whiteKings, 4);
-                whitePieces = emptySquare(whitePieces, 4);
-                whiteKings = fillSquare(whiteKings, 6);
-                whitePieces = fillSquare(whitePieces, 6);
+                whiteKings ^= movePattern;
+                whitePieces ^= movePattern;
 
                 whiteRooks = emptySquare(whiteRooks, 7);
                 whitePieces = emptySquare(whitePieces, 7);
@@ -63,10 +64,8 @@ void makeMove(Move move) {
 
             // queenside
             else if (castle == 2) {
-                whiteKings = emptySquare(whiteKings, 4);
-                whitePieces = emptySquare(whitePieces, 4);
-                whiteKings = fillSquare(whiteKings, 2);
-                whitePieces = fillSquare(whitePieces, 2);
+                whiteKings ^= movePattern;
+                whitePieces ^= movePattern;
 
                 whiteRooks = emptySquare(whiteRooks, 0);
                 whitePieces = emptySquare(whitePieces, 0);
@@ -83,10 +82,8 @@ void makeMove(Move move) {
 
             // kingside
             if (castle == 3) {
-                blackKings = emptySquare(blackKings, 60);
-                blackPieces = emptySquare(blackPieces, 60);
-                blackKings = fillSquare(blackKings, 62);
-                blackPieces = fillSquare(blackPieces, 62);
+                blackKings ^= movePattern;
+                blackPieces ^= movePattern;
 
                 blackRooks = emptySquare(blackRooks, 63);
                 blackPieces = emptySquare(blackPieces, 63);
@@ -97,10 +94,8 @@ void makeMove(Move move) {
 
             // queenside
             else if (castle == 4) {
-                blackKings = emptySquare(blackKings, 60);
-                blackPieces = emptySquare(blackPieces, 60);
-                blackKings = fillSquare(blackKings, 58);
-                blackPieces = fillSquare(blackPieces, 58);
+                blackKings ^= movePattern;
+                blackPieces ^= movePattern;
 
                 blackRooks = emptySquare(blackRooks, 56);
                 blackPieces = emptySquare(blackPieces, 56);
@@ -111,29 +106,20 @@ void makeMove(Move move) {
     }
 
     else if (enPassant) {
-        int enPassantSquare = getEnPassantSquare(otherGameInfo);
-        if (squareOccupied(whitePawns, from)) {
-            whitePieces = emptySquare(whitePieces, from);
-            whitePawns = emptySquare(whitePawns, from);
+        u64 enPassantBit = SINGLE_BIT_LOOKUP[getEnPassantSquare(otherGameInfo)];
+        if (side == 1) {
+            whitePieces ^= movePattern;
+            whitePawns ^= movePattern;
 
-            whitePieces = fillSquare(whitePieces, to);
-            whitePawns = fillSquare(whitePawns, to);
-
-            blackPieces = emptySquare(blackPieces, enPassantSquare);
-            blackPawns = emptySquare(blackPawns, enPassantSquare);
-        }
-        else if (squareOccupied(blackPawns, from)) {
-            blackPieces = emptySquare(blackPieces, from);
-            blackPawns = emptySquare(blackPawns, from);
-
-            blackPieces = fillSquare(blackPieces, to);
-            blackPawns = fillSquare(blackPawns, to);
-
-            whitePieces = emptySquare(whitePieces, enPassantSquare);
-            whitePawns = emptySquare(whitePawns, enPassantSquare);
+            blackPieces ^= enPassantBit;
+            blackPawns ^= enPassantBit;
         }
         else {
-            printf("enpassant error\n");
+            blackPieces ^= movePattern;
+            blackPawns ^= movePattern;
+
+            whitePieces ^= enPassantBit;
+            whitePawns ^= enPassantBit;
         }
     }
 
@@ -171,13 +157,13 @@ void makeMove(Move move) {
                 whiteQueens = emptySquare(whiteQueens, to);
             }
             
-            else if (squareOccupied(whiteKings, to)) {
+            else {
                 whiteKings = emptySquare(whiteKings, to);
             }
         }
 
 
-        else {
+        else if (squareOccupied(blackPieces, to)) {
             blackPieces = emptySquare(blackPieces, to);
 
             if (squareOccupied(blackPawns, to)) {
@@ -209,18 +195,16 @@ void makeMove(Move move) {
                 blackQueens = emptySquare(blackQueens, to);
             }
             
-            else if (squareOccupied(blackKings, to)) {
+            else {
                 blackKings = emptySquare(blackKings, to);
             }
         }
 
-        if (squareOccupied(whitePieces, from)) {
-            whitePieces = emptySquare(whitePieces, from);
-            whitePieces = fillSquare(whitePieces, to);
+        if (side == 1) {
+            whitePieces ^= movePattern;
 
             if (squareOccupied(whitePawns, from)) {
-                whitePawns = emptySquare(whitePawns, from);
-                whitePawns = fillSquare(whitePawns, to);
+                whitePawns ^= movePattern;
 
                 // moved 2 squares, en passant possible on next move
                 if (to - from == 16) {
@@ -230,18 +214,15 @@ void makeMove(Move move) {
             }
 
             else if (squareOccupied(whiteKnights, from)) {
-                whiteKnights = emptySquare(whiteKnights, from);
-                whiteKnights = fillSquare(whiteKnights, to);
+                whiteKnights ^= movePattern;
             }
             
             else if (squareOccupied(whiteBishops, from)) {
-                whiteBishops = emptySquare(whiteBishops, from);
-                whiteBishops = fillSquare(whiteBishops, to);
+                whiteBishops ^= movePattern;
             }
             
             else if (squareOccupied(whiteRooks, from)) {
-                whiteRooks = emptySquare(whiteRooks, from);
-                whiteRooks = fillSquare(whiteRooks, to);
+                whiteRooks ^= movePattern;
 
                 // remove castling rights, if rook moves
                 if (from == 0 && canWhiteCastleLong(otherGameInfo)) {
@@ -254,13 +235,11 @@ void makeMove(Move move) {
             }
             
             else if (squareOccupied(whiteQueens, from)) {
-                whiteQueens = emptySquare(whiteQueens, from);
-                whiteQueens = fillSquare(whiteQueens, to);
+                whiteQueens ^= movePattern;
             }
             
-            else if (squareOccupied(whiteKings, from)) {
-                whiteKings = emptySquare(whiteKings, from);
-                whiteKings = fillSquare(whiteKings, to);
+            else {
+                whiteKings ^= movePattern;
 
                 // remove both castling rights, if king moves
                 if (from == 4 && canWhiteCastleLong(otherGameInfo)) {
@@ -275,12 +254,10 @@ void makeMove(Move move) {
 
 
         else {
-            blackPieces = emptySquare(blackPieces, from);
-            blackPieces = fillSquare(blackPieces, to);
+            blackPieces ^= movePattern;
 
             if (squareOccupied(blackPawns, from)) {
-                blackPawns = emptySquare(blackPawns, from);
-                blackPawns = fillSquare(blackPawns, to);
+                blackPawns ^= movePattern;
 
                 // moved 2 squares, en passant possible on next move
                 if (to - from == -16) {
@@ -290,18 +267,15 @@ void makeMove(Move move) {
             }
 
             else if (squareOccupied(blackKnights, from)) {
-                blackKnights = emptySquare(blackKnights, from);
-                blackKnights = fillSquare(blackKnights, to);
+                blackKnights ^= movePattern;
             }
             
             else if (squareOccupied(blackBishops, from)) {
-                blackBishops = emptySquare(blackBishops, from);
-                blackBishops = fillSquare(blackBishops, to);
+                blackBishops ^= movePattern;
             }
             
             else if (squareOccupied(blackRooks, from)) {
-                blackRooks = emptySquare(blackRooks, from);
-                blackRooks = fillSquare(blackRooks, to);
+                blackRooks ^= movePattern;
 
                 // remove castling rights, if rook moves
                 if (from == 56 && canBlackCastleLong(otherGameInfo)) {
@@ -314,13 +288,11 @@ void makeMove(Move move) {
             }
             
             else if (squareOccupied(blackQueens, from)) {
-                blackQueens = emptySquare(blackQueens, from);
-                blackQueens = fillSquare(blackQueens, to);
+                blackQueens ^= movePattern;
             }
             
-            else if (squareOccupied(blackKings, from)) {
-                blackKings = emptySquare(blackKings, from);
-                blackKings = fillSquare(blackKings, to);
+            else {
+                blackKings ^= movePattern;
 
                 // remove both castling rights, if king moves
                 if (from == 60 && canBlackCastleLong(otherGameInfo)) {
@@ -336,7 +308,7 @@ void makeMove(Move move) {
 
         // handle promotion of pawn
         if (promotion != 0) {
-            if (squareOccupied(whitePawns, to)) {
+            if (side == 1) {
                 whitePawns = emptySquare(whitePawns, to);
 
                 // promote to knight
@@ -352,12 +324,8 @@ void makeMove(Move move) {
                     whiteRooks = fillSquare(whiteRooks, to);
                 }
                 // promote to queen
-                else if (promotion == 4) {
-                    whiteQueens = fillSquare(whiteQueens, to);
-                }
-
                 else {
-                    printf("promotion something went wrong\n");
+                    whiteQueens = fillSquare(whiteQueens, to);
                 }
             }
             else {
@@ -376,12 +344,8 @@ void makeMove(Move move) {
                     blackRooks = fillSquare(blackRooks, to);
                 }
                 // promote to queen
-                else if (promotion == 4) {
-                    blackQueens = fillSquare(blackQueens, to);
-                }
-
                 else {
-                    printf("promotion something went wrong");
+                    blackQueens = fillSquare(blackQueens, to);
                 }
             }
         }

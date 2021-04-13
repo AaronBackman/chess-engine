@@ -21,6 +21,7 @@ u64 perft(int depth, int side) {
     return 1ULL;
 
   moveCount = generateMoves(moves, side);
+
   for (i = 0; i < moveCount; i++) {
     makeMove(moves[i]);
     if (!isKingThreatened(side)) {
