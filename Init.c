@@ -249,7 +249,6 @@ void setWhitePawnAttackLookUp() {
   for (boardIndex = 0; boardIndex < 64; boardIndex++) {
     int destinationSquare;
     int i;
-    int j;
     int row;
     int column;
     u64 pattern = 0;
@@ -257,13 +256,14 @@ void setWhitePawnAttackLookUp() {
     row = boardIndex / 8;
     column = boardIndex % 8;
 
-    if (column != 0) {
-      pattern = fillSquare(pattern, boardIndex + 7);
+    if (row != 7) {
+      if (column != 0) {
+        pattern = fillSquare(pattern, boardIndex + 7);
+      }
+      if (column != 7) {
+        pattern = fillSquare(pattern, boardIndex + 9);
+      }
     }
-    if (column != 7) {
-      pattern = fillSquare(pattern, boardIndex + 9);
-    }
-
     
     WHITE_PAWN_ATTACK_LOOKUP_PATTERN[boardIndex] = pattern;
   }
@@ -275,7 +275,6 @@ void setWhitePawnMoveLookUp() {
   for (boardIndex = 0; boardIndex < 64; boardIndex++) {
     int destinationSquare;
     int i;
-    int j;
     int row;
     int column;
     u64 pattern = 0;
@@ -283,15 +282,16 @@ void setWhitePawnMoveLookUp() {
     row = boardIndex / 8;
     column = boardIndex % 8;
 
-    // first pawn move can be 2 squares
-    if (row == 1) {
-      pattern = fillSquare(pattern, boardIndex + 16);
+    if (row != 7) {
+      // first pawn move can be 2 squares
+      if (row == 1) {
+        pattern = fillSquare(pattern, boardIndex + 16);
+      }
+      // no pawns can be on first and last rows
+      if (row != 0 && row != 7) {
+        pattern = fillSquare(pattern, boardIndex + 8);
+      }
     }
-    // no pawns can be on first and last rows
-    if (row != 0 && row != 7) {
-      pattern = fillSquare(pattern, boardIndex + 8);
-    }
-
     
     WHITE_PAWN_MOVE_LOOKUP_PATTERN[boardIndex] = pattern;
   }
@@ -303,7 +303,6 @@ void setBlackPawnAttackLookUp() {
   for (boardIndex = 0; boardIndex < 64; boardIndex++) {
     int destinationSquare;
     int i;
-    int j;
     int row;
     int column;
     u64 pattern = 0;
@@ -311,13 +310,14 @@ void setBlackPawnAttackLookUp() {
     row = boardIndex / 8;
     column = boardIndex % 8;
 
-    if (column != 0) {
-      pattern = fillSquare(pattern, boardIndex - 9);
+    if (row != 0) {
+      if (column != 0) {
+        pattern = fillSquare(pattern, boardIndex - 9);
+      }
+      if (column != 7) {
+        pattern = fillSquare(pattern, boardIndex - 7);
+      }
     }
-    if (column != 7) {
-      pattern = fillSquare(pattern, boardIndex - 7);
-    }
-
     
     BLACK_PAWN_ATTACK_LOOKUP_PATTERN[boardIndex] = pattern;
   }
@@ -329,7 +329,6 @@ void setBlackPawnMoveLookUp() {
   for (boardIndex = 0; boardIndex < 64; boardIndex++) {
     int destinationSquare;
     int i;
-    int j;
     int row;
     int column;
     u64 pattern = 0;
@@ -337,15 +336,16 @@ void setBlackPawnMoveLookUp() {
     row = boardIndex / 8;
     column = boardIndex % 8;
 
-    // first pawn move can be 2 squares
-    if (row == 6) {
-      pattern = fillSquare(pattern, boardIndex - 16);
+    if (row != 0) {
+      // first pawn move can be 2 squares
+      if (row == 6) {
+        pattern = fillSquare(pattern, boardIndex - 16);
+      }
+      // no pawns can be on first and last rows
+      if (row != 0 && row != 7) {
+        pattern = fillSquare(pattern, boardIndex - 8);
+      }
     }
-    // no pawns can be on first and last rows
-    if (row != 0 && row != 7) {
-      pattern = fillSquare(pattern, boardIndex - 8);
-    }
-
     
     BLACK_PAWN_MOVE_LOOKUP_PATTERN[boardIndex] = pattern;
   }

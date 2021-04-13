@@ -6,8 +6,9 @@
 #include "Constants.h"
 #include "MoveGeneration.h"
 #include "Utilities.h"
+#include "AttackMaps.h"
 
-bool isSquareThreatened(int originSquare, int side) {
+u64 getThreatMap(int originSquare, int side) {
     int i;
     int j;
     int squareIndex;
@@ -30,389 +31,69 @@ bool isSquareThreatened(int originSquare, int side) {
     u64 blackKings = gameState[13];
 
     u64 otherGameInfo = gameState[14];
+    u64 whiteDiagonals = whiteBishops | whiteQueens;
+    u64 whiteLinears = whiteRooks | whiteQueens;
+    u64 blackDiagonals = blackBishops | blackQueens;
+    u64 blackLinears = blackRooks | blackQueens;
+
+    u64 threatMap = 0;
+    u64 pawnPattern;
+    u64 knightPattern;
+    u64 diagonalPattern;
+    u64 linearPattern;
+    u64 kingPattern;
 
     if (side == 1) {
-        int column = originSquare % 8;
-        int row = originSquare / 8;
+        // pawns can always attack each other
+        pawnPattern = getWhitePawnAttackMaps(gameState, originSquare);
+        threatMap |= (pawnPattern & blackPawns);
 
-        // check linear, non-diagonal attacks from up
-        for (i = 1; originSquare + i * 8 < 64; i++) {
-            squareIndex = originSquare + i * 8;
-            // cant be threatened by an empty square
-            if (!squareOccupied(whitePieces | blackPieces, squareIndex)) continue;
-
-            // cant be threatened by own pieces
-            if(squareOccupied(whitePieces, squareIndex)) break;
-
-            // only rook and queen move linearly
-            if (squareOccupied(blackRooks, squareIndex)) return true;
-            if (squareOccupied(blackQueens, squareIndex)) return true;
-
-            // other black piece, blocks any further attacks
-            break;
-        }
-
-        // check linear, non-diagonal attacks from down
-        for (i = 1; originSquare - i * 8 >= 0; i++) {
-            squareIndex = originSquare - i * 8;
-            // cant be threatened by an empty square
-            if (!squareOccupied(whitePieces | blackPieces, squareIndex)) continue;
-
-            // cant be threatened by own pieces
-            if(squareOccupied(whitePieces, squareIndex)) break;
-
-            // only rook and queen move linearly
-            if (squareOccupied(blackRooks, squareIndex)) return true;
-            if (squareOccupied(blackQueens, squareIndex)) return true;
-
-            // other black piece, blocks any further attacks
-            break;
-        }
-
-        // check linear, non-diagonal attacks from left
-        for (i = 1; originSquare % 8 - i >= 0; i++) {
-            squareIndex = originSquare - i;
-            // cant be threatened by an empty square
-            if (!squareOccupied(whitePieces | blackPieces, squareIndex)) continue;
-
-            // cant be threatened by own pieces
-            if(squareOccupied(whitePieces, squareIndex)) break;
-
-            // only rook and queen move linearly
-            if (squareOccupied(blackRooks, squareIndex)) return true;
-            if (squareOccupied(blackQueens, squareIndex)) return true;
-
-            // other black piece, blocks any further attacks
-            break;
-        }
-
-        // check linear, non-diagonal attacks from right
-        for (i = 1; originSquare % 8 + i < 8; i++) {
-            squareIndex = originSquare + i;
-            // cant be threatened by an empty square
-            if (!squareOccupied(whitePieces | blackPieces, squareIndex)) continue;
-
-            // cant be threatened by own pieces
-            if(squareOccupied(whitePieces, squareIndex)) break;
-
-            // only rook and queen move linearly
-            if (squareOccupied(blackRooks, squareIndex)) return true;
-            if (squareOccupied(blackQueens, squareIndex)) return true;
-
-            // other black piece, blocks any further attacks
-            break;
-        }
-
-
-        // check diagonal attacks from top left
-        j = 1;
-        for (i = 1; (originSquare + i * 8 < 64) && (originSquare % 8 - j >= 0); i++) {
-            squareIndex = originSquare + i * 8 - j;
-            j++;
-            // cant be threatened by an empty square
-            if (!squareOccupied(whitePieces | blackPieces, squareIndex)) continue;
-
-            // cant be threatened by own pieces
-            if(squareOccupied(whitePieces, squareIndex)) break;
-
-            // only bishop and queen move linearly
-            if (squareOccupied(blackBishops, squareIndex)) return true;
-            if (squareOccupied(blackQueens, squareIndex)) return true;
-
-            // other black piece, blocks any further attacks
-            break;
-        }
-
-        // check diagonal attacks from top right
-        j = 1;
-        for (i = 1; (originSquare + i * 8 < 64) && (originSquare % 8 + j < 8); i++) {
-            squareIndex = originSquare + i * 8 + j;
-            j++;
-            // cant be threatened by an empty square
-            if (!squareOccupied(whitePieces | blackPieces, squareIndex)) continue;
-
-            // cant be threatened by own pieces
-            if(squareOccupied(whitePieces, squareIndex)) break;
-
-            // only bishop and queen move linearly
-            if (squareOccupied(blackBishops, squareIndex)) return true;
-            if (squareOccupied(blackQueens, squareIndex)) return true;
-
-            // other black piece, blocks any further attacks
-            break;
-        }
-
-        // check diagonal attacks from bottom left
-        j = 1;
-        for (i = 1; (originSquare - i * 8 >= 0) && (originSquare % 8 - j >= 0); i++) {
-            squareIndex = originSquare - i * 8 - j;
-            j++;
-            // cant be threatened by an empty square
-            if (!squareOccupied(whitePieces | blackPieces, squareIndex)) continue;
-
-            // cant be threatened by own pieces
-            if(squareOccupied(whitePieces, squareIndex)) break;
-
-            // only bishop and queen move linearly
-            if (squareOccupied(blackBishops, squareIndex)) return true;
-            if (squareOccupied(blackQueens, squareIndex)) return true;
-
-            // other black piece, blocks any further attacks
-            break;
-        }
-
-        // check diagonal attacks from bottom right
-        j = 1;
-        for (i = 1; (originSquare - i * 8 >= 0) && (originSquare % 8 + j < 8); i++) {
-            squareIndex = originSquare - i * 8 + j;
-            j++;
-            // cant be threatened by an empty square
-            if (!squareOccupied(whitePieces | blackPieces, squareIndex)) continue;
-
-            // cant be threatened by own pieces
-            if(squareOccupied(whitePieces, squareIndex)) break;
-
-            // only bishop and queen move linearly
-            if (squareOccupied(blackBishops, squareIndex)) return true;
-            if (squareOccupied(blackQueens, squareIndex)) return true;
-
-            // other black piece, blocks any further attacks
-            break;
-        }
-
-        if (column != 0) {
-            // a pawn attack
-            if (squareOccupied(blackPawns, originSquare + 7)) {
-                return true;
+        if (originSquare == 57) {
+            if (threatMap != 0) {
+                printf("threat from: %d\n", bitScanForward(threatMap));
             }
         }
 
-        if (column != 7) {
-            // a pawn attack
-            if (squareOccupied(blackPawns, originSquare + 9)) {
-                return true;
-            }
-        }
+        knightPattern = getKnightMaps(gameState, originSquare);
+        threatMap |= (knightPattern & blackKnights);
 
-        // check king attacks
-        for (i = -1; i < 2; i++) {
-            for (j = -1; j < 2; j++) {
-                if ((originSquare % 8 + j < 0) || (originSquare % 8 + j > 7)) continue;
-                if ((originSquare + i * 8 < 0) || (originSquare + i * 8 > 63)) continue;
+        diagonalPattern = getDiagonalMaps(gameState, originSquare);
+        threatMap |= (diagonalPattern & blackDiagonals);
 
-                squareIndex = originSquare + j + i * 8;
-                if (squareOccupied(blackKings, squareIndex)) return true;
-            }
-        }
+        linearPattern = getLinearMaps(gameState, originSquare);
+        threatMap |= (linearPattern & blackLinears);
 
-        // check knight attacks
-        for (i = -2; i < 3; i++) {
-            for (j = -2; j < 3; j++) {
-                if (originSquare % 8 + j > 7 || originSquare % 8 + j < 0) continue;
-
-                if (j * i == 2 || j * i == -2) {
-                    squareIndex = originSquare + i * 8 + j;
-
-                    // cant move outside the board
-                    if (squareIndex > 63 || squareIndex < 0) continue;
-
-                    if (squareOccupied(blackKnights, squareIndex)) return true;
-                }
-            }
-        }
+        kingPattern = getKingMaps(gameState, originSquare);
+        threatMap |= (kingPattern & blackKings);
     }
     else {
-        int column = originSquare % 8;
-        int row = originSquare / 8;
+        // pawns can always attack each other
+        pawnPattern = getBlackPawnAttackMaps(gameState, originSquare);
+        threatMap |= (pawnPattern & whitePawns);
 
-        // check linear, non-diagonal attacks from up
-        for (i = 1; originSquare + i * 8 < 64; i++) {
-            squareIndex = originSquare + i * 8;
-            // cant be threatened by an empty square
-            if (!squareOccupied(whitePieces | blackPieces, squareIndex)) continue;
+        knightPattern = getKnightMaps(gameState, originSquare);
+        threatMap |= (knightPattern & whiteKnights);
 
-            // cant be threatened by own pieces
-            if(squareOccupied(blackPieces, squareIndex)) break;
+        diagonalPattern = getDiagonalMaps(gameState, originSquare);
+        threatMap |= (diagonalPattern & whiteDiagonals);
 
-            // only rook and queen move linearly
-            if (squareOccupied(whiteRooks, squareIndex)) return true;
-            if (squareOccupied(whiteQueens, squareIndex)) return true;
+        linearPattern = getLinearMaps(gameState, originSquare);
+        threatMap |= (linearPattern & whiteLinears);
 
-            // other black piece, blocks any further attacks
-            break;
-        }
-
-        // check linear, non-diagonal attacks from down
-        for (i = 1; originSquare - i * 8 >= 0; i++) {
-            squareIndex = originSquare - i * 8;
-            // cant be threatened by an empty square
-            if (!squareOccupied(whitePieces | blackPieces, squareIndex)) continue;
-
-            // cant be threatened by own pieces
-            if(squareOccupied(blackPieces, squareIndex)) break;
-
-            // only rook and queen move linearly
-            if (squareOccupied(whiteRooks, squareIndex)) return true;
-            if (squareOccupied(whiteQueens, squareIndex)) return true;
-
-            // other black piece, blocks any further attacks
-            break;
-        }
-
-        // check linear, non-diagonal attacks from left
-        for (i = 1; originSquare % 8 - i >= 0; i++) {
-            squareIndex = originSquare - i;
-            // cant be threatened by an empty square
-            if (!squareOccupied(whitePieces | blackPieces, squareIndex)) continue;
-
-            // cant be threatened by own pieces
-            if(squareOccupied(blackPieces, squareIndex)) break;
-
-            // only rook and queen move linearly
-            if (squareOccupied(whiteRooks, squareIndex)) return true;
-            if (squareOccupied(whiteQueens, squareIndex)) return true;
-
-            // other black piece, blocks any further attacks
-            break;
-        }
-
-        // check linear, non-diagonal attacks from right
-        for (i = 1; originSquare % 8 + i < 8; i++) {
-            squareIndex = originSquare + i;
-            // cant be threatened by an empty square
-            if (!squareOccupied(whitePieces | blackPieces, squareIndex)) continue;
-
-            // cant be threatened by own pieces
-            if(squareOccupied(blackPieces, squareIndex)) break;
-
-            // only rook and queen move linearly
-            if (squareOccupied(whiteRooks, squareIndex)) return true;
-            if (squareOccupied(whiteQueens, squareIndex)) return true;
-
-            // other black piece, blocks any further attacks
-            break;
-        }
-
-
-        // check diagonal attacks from top left
-        j = 1;
-        for (i = 1; (originSquare + i * 8 < 64) && (originSquare % 8 - j >= 0); i++) {
-            squareIndex = originSquare + i * 8 - j;
-            j++;
-            // cant be threatened by an empty square
-            if (!squareOccupied(whitePieces | blackPieces, squareIndex)) continue;
-
-            // cant be threatened by own pieces
-            if(squareOccupied(blackPieces, squareIndex)) break;
-
-            // only bishop and queen move linearly
-            if (squareOccupied(whiteBishops, squareIndex)) return true;
-            if (squareOccupied(whiteQueens, squareIndex)) return true;
-
-            // other black piece, blocks any further attacks
-            break;
-        }
-
-        // check diagonal attacks from top right
-        j = 1;
-        for (i = 1; (originSquare + i * 8 < 64) && (originSquare % 8 + j < 8); i++) {
-            squareIndex = originSquare + i * 8 + j;
-            j++;
-            // cant be threatened by an empty square
-            if (!squareOccupied(whitePieces | blackPieces, squareIndex)) continue;
-
-            // cant be threatened by own pieces
-            if(squareOccupied(blackPieces, squareIndex)) break;
-
-            // only bishop and queen move linearly
-            if (squareOccupied(whiteBishops, squareIndex)) return true;
-            if (squareOccupied(whiteQueens, squareIndex)) return true;
-
-            // other black piece, blocks any further attacks
-            break;
-        }
-
-        // check diagonal attacks from bottom left
-        j = 1;
-        for (i = 1; (originSquare - i * 8 >= 0) && (originSquare % 8 - j >= 0); i++) {
-            squareIndex = originSquare - i * 8 - j;
-            j++;
-            // cant be threatened by an empty square
-            if (!squareOccupied(whitePieces | blackPieces, squareIndex)) continue;
-
-            // cant be threatened by own pieces
-            if(squareOccupied(blackPieces, squareIndex)) break;
-
-            // only bishop and queen move linearly
-            if (squareOccupied(whiteBishops, squareIndex)) return true;
-            if (squareOccupied(whiteQueens, squareIndex)) return true;
-
-            // other black piece, blocks any further attacks
-            break;
-        }
-
-        // check diagonal attacks from bottom right
-        j = 1;
-        for (i = 1; (originSquare - i * 8 >= 0) && (originSquare % 8 + j < 8); i++) {
-            squareIndex = originSquare - i * 8 + j;
-            j++;
-            // cant be threatened by an empty square
-            if (!squareOccupied(whitePieces | blackPieces, squareIndex)) continue;
-
-            // cant be threatened by own pieces
-            if(squareOccupied(blackPieces, squareIndex)) break;
-
-            // only bishop and queen move linearly
-            if (squareOccupied(whiteBishops, squareIndex)) return true;
-            if (squareOccupied(whiteQueens, squareIndex)) return true;
-
-            // other black piece, blocks any further attacks
-            break;
-        }
-
-        if (column != 0) {
-            // a pawn attack
-            if (squareOccupied(whitePawns, originSquare - 9)) {
-                return true;
-            }
-        }
-
-        if (column != 7) {
-            // a pawn attack
-            if (squareOccupied(whitePawns, originSquare - 7)) {
-                return true;
-            }
-        }
-
-        // check king attacks
-        for (i = -1; i < 2; i++) {
-            for (j = -1; j < 2; j++) {
-                if ((originSquare % 8 + j < 0) || (originSquare % 8 + j > 7)) continue;
-                if ((originSquare + i * 8 < 0) || (originSquare + i * 8 > 63)) continue;
-
-                squareIndex = originSquare + j + i * 8;
-                if (squareOccupied(whiteKings, squareIndex)) return true;
-            }
-        }
-
-        // check knight attacks
-        for (i = -2; i < 3; i++) {
-            for (j = -2; j < 3; j++) {
-                if (originSquare % 8 + j > 7 || originSquare % 8 + j < 0) continue;
-
-                if (j * i == 2 || j * i == -2) {
-                    squareIndex = originSquare + i * 8 + j;
-
-                    // cant move outside the board
-                    if (squareIndex > 63 || squareIndex < 0) continue;
-
-                    if (squareOccupied(whiteKnights, squareIndex)) return true;
-                }
-            }
-        }
+        kingPattern = getKingMaps(gameState, originSquare);
+        threatMap |= (kingPattern & whiteKings);
     }
 
-    return false;
+    return threatMap;
+}
+
+bool isSquareThreatened(int originSquare, int side) {
+    u64 threatMap;
+
+    threatMap = getThreatMap(originSquare, side);
+
+    // if threats are not an empty set, square is threatened
+    return threatMap != 0;
 }
 
 bool isKingThreatened(int side) {

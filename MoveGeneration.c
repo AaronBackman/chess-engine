@@ -7,7 +7,7 @@
 #include "Move.h"
 #include "Utilities.h"
 #include "LegalityChecks.h"
-#include "Init.h"
+#include "AttackMaps.h"
 
 // includes moves, not captures
 typedef struct moveTable {
@@ -27,165 +27,26 @@ typedef struct captureTable {
 MoveTable moveTables[18];
 CaptureTable captureTables[18];
 
-// includes squares blocked by own pieces
-u64 getDiagonalMaps(u64 *gameState, int square) {
-    u64 blocker;
-    int blockerSquare;
-    u64 combinedMap;
-
-    u64 whitePieces = gameState[0];
-    u64 blackPieces = gameState[7];
-    u64 occupied = whitePieces | blackPieces;
-    u64 northEast = NORTH_EAST_LOOKUP_PATTERN[square];
-    u64 northWest = NORTH_WEST_LOOKUP_PATTERN[square];
-    u64 southEast = SOUTH_EAST_LOOKUP_PATTERN[square];
-    u64 southWest = SOUTH_WEST_LOOKUP_PATTERN[square];
-
-    blocker = occupied & northEast;
-    if (blocker) {
-        blockerSquare = bitScanForward(blocker);
-        northEast ^= NORTH_EAST_LOOKUP_PATTERN[blockerSquare];
-    }
-
-    blocker = occupied & northWest;
-    if (blocker) {
-        blockerSquare = bitScanForward(blocker);
-        northWest ^= NORTH_WEST_LOOKUP_PATTERN[blockerSquare];
-    }
-
-    blocker = occupied & southEast;
-    if (blocker) {
-        blockerSquare = bitScanReverse(blocker);
-        southEast ^= SOUTH_EAST_LOOKUP_PATTERN[blockerSquare];
-    }
-
-    blocker = occupied & southWest;
-    if (blocker) {
-        blockerSquare = bitScanReverse(blocker);
-        southWest ^= SOUTH_WEST_LOOKUP_PATTERN[blockerSquare];
-    }
-
-    combinedMap = northEast | northWest | southEast | southWest;
-
-    return combinedMap;
-}
-
-// includes squares blocked by own pieces
-u64 getLinearMaps(u64 *gameState, int square) {
-    u64 blocker;
-    int blockerSquare;
-    u64 combinedMap;
-
-    u64 whitePieces = gameState[0];
-    u64 blackPieces = gameState[7];
-    u64 occupied = whitePieces | blackPieces;
-    u64 north = NORTH_LOOKUP_PATTERN[square];
-    u64 west = WEST_LOOKUP_PATTERN[square];
-    u64 east = EAST_LOOKUP_PATTERN[square];
-    u64 south = SOUTH_LOOKUP_PATTERN[square];
-
-    blocker = occupied & north;
-    if (blocker) {
-        blockerSquare = bitScanForward(blocker);
-        north ^= NORTH_LOOKUP_PATTERN[blockerSquare];
-    }
-
-    blocker = occupied & east;
-    if (blocker) {
-        blockerSquare = bitScanForward(blocker);
-        east ^= EAST_LOOKUP_PATTERN[blockerSquare];
-    }
-
-    blocker = occupied & west;
-    if (blocker) {
-        blockerSquare = bitScanReverse(blocker);
-        west ^= WEST_LOOKUP_PATTERN[blockerSquare];
-    }
-
-    blocker = occupied & south;
-    if (blocker) {
-        blockerSquare = bitScanReverse(blocker);
-        south ^= SOUTH_LOOKUP_PATTERN[blockerSquare];
-    }
-
-    combinedMap = north | east | west | south;
-
-    return combinedMap;
-}
-
-// gets squares where the pawn can move
-u64 getWhitePawnMoveMaps(u64 *gameState, int square) {
-    u64 blocker;
-    int blockerSquare;
-
-    u64 whitePieces = gameState[0];
-    u64 blackPieces = gameState[7];
-    u64 occupied = whitePieces | blackPieces;
-    u64 pawnMovePattern = WHITE_PAWN_MOVE_LOOKUP_PATTERN[square];
-
-    blocker = occupied & pawnMovePattern;
+int getNumberOfKingAttackers(int kingIndex, int side) {
+    u64 threatMap;
+    int leastBit;
     
-    if (blocker == 0) return pawnMovePattern;
+    threatMap = getThreatMap(kingIndex, side);
 
-    // no possible moves
-    if (squareOccupied(occupied, square + 8)) return 0LLU;
-    
-    // otherwise is double pawn push blocked 2 squares forward -> one available move
-    pawnMovePattern ^= blocker;
+    if (threatMap == 0) return threatMap;
 
-    return pawnMovePattern;
+    leastBit = bitScanForward(threatMap);
+
+    // remove the found bit
+    threatMap ^= SINGLE_BIT_LOOKUP[leastBit];
+
+    // threatmap is empty after removing 1 attacker
+    if (threatMap == 0) return 1;
+
+    // king can only have 2 attackers in legal positions
+    return 2;
 }
 
-// gets squares where the pawn can move
-u64 getBlackPawnMoveMaps(u64 *gameState, int square) {
-    u64 blocker;
-    int blockerSquare;
-
-    u64 whitePieces = gameState[0];
-    u64 blackPieces = gameState[7];
-    u64 occupied = whitePieces | blackPieces;
-    u64 pawnMovePattern = BLACK_PAWN_MOVE_LOOKUP_PATTERN[square];
-
-    blocker = occupied & pawnMovePattern;
-    
-    if (blocker == 0) return pawnMovePattern;
-
-    // no possible moves
-    if (squareOccupied(occupied, square - 8)) return 0LLU;
-    
-    // otherwise is double pawn push blocked 2 squares forward -> one available move
-    pawnMovePattern ^= blocker;
-
-    return pawnMovePattern;
-}
-
-// gets squares where the pawn can attack, no en passant
-u64 getWhitePawnAttackMaps(u64 *gameState, int square) {
-    u64 blackPieces = gameState[7];
-    u64 pawnAttackPattern = WHITE_PAWN_ATTACK_LOOKUP_PATTERN[square];
-
-    pawnAttackPattern &= blackPieces;
-
-    return pawnAttackPattern;
-}
-
-// gets squares where the pawn can attack, no en passant
-u64 getBlackPawnAttackMaps(u64 *gameState, int square) {
-    u64 whitePieces = gameState[0];
-    u64 pawnAttackPattern = BLACK_PAWN_ATTACK_LOOKUP_PATTERN[square];
-
-    pawnAttackPattern &= whitePieces;
-
-    return pawnAttackPattern;
-}
-
-u64 getKnightMaps(u64 *gameState, int square) {
-    return KNIGHT_LOOKUP_PATTERN[square];
-}
-
-u64 getKingMaps(u64 *gameState, int square) {
-    return KING_LOOKUP_PATTERN[square];
-}
 
 void addWhitePawnPatterns(u64 *gameState, int square, int patternIndex) {
     CaptureTable captureTable = {square, 0, 1};
@@ -569,14 +430,14 @@ int generateMoves(Move *movesArr, int side) {
         // pawn move
         if (type == 1) {
             int row;
-            // if row is 7 or 1, there is a possibility of promotion
+            // if row is 6 or 1, there is a possibility of promotion
             row = from / 8;
             while (pattern != 0) {
                 to = bitScanForward(pattern);
                 pattern &= (pattern - 1);
 
                 // promotion
-                if ((row == 7 && side == 1) || (row == 1 && side == -1)) {
+                if ((row == 6 && side == 1) || (row == 1 && side == -1)) {
                     movesArr[moveIndex] = createMove(from, to, 1, 0, 0);
                     moveIndex++;
                     movesArr[moveIndex] = createMove(from, to, 2, 0, 0);
@@ -619,14 +480,14 @@ int generateMoves(Move *movesArr, int side) {
 
         // pawn move
         if (type == 1) {
-            // if row is 7 or 1, there is a possibility of promotion
+            // if row is 6 or 1, there is a possibility of promotion
             int row = from / 8;
             while (pattern != 0) {
                 to = bitScanForward(pattern);
                 pattern &= (pattern - 1);
 
                 // promotion
-                if ((row == 7 && side == 1) || (row == 1 && side == -1)) {
+                if ((row == 6 && side == 1) || (row == 1 && side == -1)) {
                     movesArr[moveIndex] = createMove(from, to, 1, 0, 0);
                     moveIndex++;
                     movesArr[moveIndex] = createMove(from, to, 2, 0, 0);
