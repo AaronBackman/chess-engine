@@ -1,0 +1,901 @@
+-------------------------------------------------------------------------------- Profile data file 
+'callgrind.out.8426' (creator: callgrind-3.16.1) 
+-------------------------------------------------------------------------------- I1 cache: D1 cache: LL cache: 
+Timerange: Basic block 0 - 24664920 Trigger: Program termination Profiled target: ./Program (PID 8426, part 1) 
+Events recorded: Ir Events shown: Ir Event sort order: Ir Thresholds: 99 Include dirs: User annotated: 
+Auto-annotation: on -------------------------------------------------------------------------------- Ir 
+-------------------------------------------------------------------------------- 261,723,838 (100.0%) PROGRAM TOTALS 
+-------------------------------------------------------------------------------- Ir file:function 
+-------------------------------------------------------------------------------- 48,231,875 (18.43%) 
+MakeMove.c:makeMove [/home/main/portfolio/chess/Program] 28,413,766 (10.86%) Utilities.c:bitScanReverse 
+[/home/main/portfolio/chess/Program] 25,288,574 ( 9.66%) LegalityChecks.c:getThreatMap 
+[/home/main/portfolio/chess/Program] 22,395,328 ( 8.56%) AttackMaps.c:getLinearMaps 
+[/home/main/portfolio/chess/Program] 20,757,452 ( 7.93%) MoveGeneration.c:generateMoves 
+[/home/main/portfolio/chess/Program] 19,570,058 ( 7.48%) AttackMaps.c:getDiagonalMaps 
+[/home/main/portfolio/chess/Program] 14,957,820 ( 5.72%) Utilities.c:bitScanForward 
+[/home/main/portfolio/chess/Program] 14,019,125 ( 5.36%) Utilities.c:squareOccupied 
+[/home/main/portfolio/chess/Program] 11,388,520 ( 4.35%) Utilities.c:createMove [/home/main/portfolio/chess/Program]
+ 9,386,753 ( 3.59%) Perft.c:perft'2 [/home/main/portfolio/chess/Program] 6,634,970 ( 2.54%) 
+ LegalityChecks.c:isKingThreatened [/home/main/portfolio/chess/Program] 5,993,064 ( 2.29%) 
+ MoveGeneration.c:addBlackPawnPatterns [/home/main/portfolio/chess/Program] 4,850,784 ( 1.85%) 
+ AttackMaps.c:getBlackPawnAttackMaps [/home/main/portfolio/chess/Program] 3,535,064 ( 1.35%) 
+ Utilities.c:setEnPassantAllowed [/home/main/portfolio/chess/Program] 3,105,960 ( 1.19%) 
+ LegalityChecks.c:isSquareThreatened [/home/main/portfolio/chess/Program] 2,484,780 ( 0.95%) 
+ Utilities.c:setSideToPlay [/home/main/portfolio/chess/Program] 2,482,766 ( 0.95%) AttackMaps.c:getKnightMaps 
+ [/home/main/portfolio/chess/Program] 2,380,257 ( 0.91%) AttackMaps.c:getKingMaps 
+ [/home/main/portfolio/chess/Program] 2,301,876 ( 0.88%) MoveGeneration.c:addBlackDiagonalPatterns 
+ [/home/main/portfolio/chess/Program] 2,301,876 ( 0.88%) MoveGeneration.c:addBlackLinearPatterns 
+ [/home/main/portfolio/chess/Program] 2,089,836 ( 0.80%) AttackMaps.c:getBlackPawnMoveMaps 
+ [/home/main/portfolio/chess/Program] 2,079,573 ( 0.79%) Utilities.c:getSideToPlay 
+ [/home/main/portfolio/chess/Program] 1,656,512 ( 0.63%) MakeMove.c:unMakeMove [/home/main/portfolio/chess/Program] 
+ 1,534,240 ( 0.59%) MoveGeneration.c:addBlackKnightPatterns [/home/main/portfolio/chess/Program]
+   785,136 ( 0.30%) MoveGeneration.c:addBlackKingPatterns [/home/main/portfolio/chess/Program] 713,504 ( 0.27%) 
+   Utilities.c:setEnPassantSquare [/home/main/portfolio/chess/Program]
+-------------------------------------------------------------------------------- -- Auto-annotated source: 
+LegalityChecks.c -------------------------------------------------------------------------------- Ir -- line 3 
+----------------------------------------
+        . .  #include "Move.h" .  #include "MakeMove.h" .  #include "Constants.h" .  #include "MoveGeneration.h" .  
+        #include "Utilities.h"
+        .  #include "AttackMaps.h" . 1,035,320 ( 0.40%) u64 getThreatMap(int originSquare, int side) { .  int i; .  
+        int j; .  int squareIndex;
+1,863,576 ( 0.71%) u64 *gameState = GAME_STATE_STACK[GAME_STATE_STACK_POINTER]; . 621,192 ( 0.24%) u64 whitePieces = 
+  gameState[0]; 621,192 ( 0.24%) u64 whitePawns = gameState[1]; 621,192 ( 0.24%) u64 whiteKnights = gameState[2]; 
+  621,192 ( 0.24%) u64 whiteBishops = gameState[3]; 621,192 ( 0.24%) u64 whiteRooks = gameState[4]; 621,192 ( 0.24%) 
+  u64 whiteQueens = gameState[5]; 621,192 ( 0.24%) u64 whiteKings = gameState[6];
+        . 621,192 ( 0.24%) u64 blackPieces = gameState[7]; 621,192 ( 0.24%) u64 blackPawns = gameState[8]; 621,192 ( 
+  0.24%) u64 blackKnights = gameState[9]; 621,192 ( 0.24%) u64 blackBishops = gameState[10]; 621,192 ( 0.24%) u64 
+  blackRooks = gameState[11]; 621,192 ( 0.24%) u64 blackQueens = gameState[12]; 621,192 ( 0.24%) u64 blackKings = 
+  gameState[13];
+        . 621,192 ( 0.24%) u64 otherGameInfo = gameState[14]; 621,192 ( 0.24%) u64 whiteDiagonals = whiteBishops | 
+  whiteQueens; 621,192 ( 0.24%) u64 whiteLinears = whiteRooks | whiteQueens; 621,192 ( 0.24%) u64 blackDiagonals = 
+  blackBishops | blackQueens; 621,192 ( 0.24%) u64 blackLinears = blackRooks | blackQueens;
+        . 207,064 ( 0.08%) u64 threatMap = 0; .  u64 pawnPattern; .  u64 knightPattern; .  u64 diagonalPattern; .  
+        u64 linearPattern; .  u64 kingPattern; .
+  414,128 ( 0.16%) if (side == 1) { .  // pawns can always attack each other 53,532 ( 0.02%) pawnPattern = 
+   getWhitePawnAttackMaps(gameState, originSquare);
+  160,596 ( 0.06%) => /home/main/portfolio/chess/AttackMaps.c:getWhitePawnAttackMaps (8,922x) 26,766 ( 0.01%) 
+   threatMap |= (pawnPattern & blackPawns);
+        . 17,844 ( 0.01%) if (originSquare == 57) { .  if (threatMap != 0) { .  printf("threat from: %d\n", 
+        bitScanForward(threatMap)); .  } .  } .
+   53,532 ( 0.02%) knightPattern = getKnightMaps(gameState, originSquare); 98,142 ( 0.04%) => 
+   /home/main/portfolio/chess/AttackMaps.c:getKnightMaps (8,922x) 26,766 ( 0.01%) threatMap |= (knightPattern & 
+   blackKnights);
+        . 53,532 ( 0.02%) diagonalPattern = getDiagonalMaps(gameState, originSquare); 1,017,096 ( 0.39%) => 
+/home/main/portfolio/chess/AttackMaps.c:getDiagonalMaps (8,922x)
+   26,766 ( 0.01%) threatMap |= (diagonalPattern & blackDiagonals); . 53,532 ( 0.02%) linearPattern = 
+   getLinearMaps(gameState, originSquare);
+1,484,572 ( 0.57%) => /home/main/portfolio/chess/AttackMaps.c:getLinearMaps (8,922x) 26,766 ( 0.01%) threatMap |= 
+   (linearPattern & blackLinears);
+        . 53,532 ( 0.02%) kingPattern = getKingMaps(gameState, originSquare); 98,142 ( 0.04%) => 
+   /home/main/portfolio/chess/AttackMaps.c:getKingMaps (8,922x) 35,688 ( 0.01%) threatMap |= (kingPattern & 
+   blackKings);
+        .  } .  else { .  // pawns can always attack each other 1,188,852 ( 0.45%) pawnPattern = 
+getBlackPawnAttackMaps(gameState, originSquare); 3,566,556 ( 1.36%) => 
+/home/main/portfolio/chess/AttackMaps.c:getBlackPawnAttackMaps (198,142x)
+  594,426 ( 0.23%) threatMap |= (pawnPattern & whitePawns); . 1,188,852 ( 0.45%) knightPattern = 
+getKnightMaps(gameState, originSquare); 2,179,562 ( 0.83%) => /home/main/portfolio/chess/AttackMaps.c:getKnightMaps 
+(198,142x)
+  594,426 ( 0.23%) threatMap |= (knightPattern & whiteKnights); . 1,188,852 ( 0.45%) diagonalPattern = 
+getDiagonalMaps(gameState, originSquare); 27,966,664 (10.69%) => 
+/home/main/portfolio/chess/AttackMaps.c:getDiagonalMaps (198,142x)
+  594,426 ( 0.23%) threatMap |= (diagonalPattern & whiteDiagonals); . 1,188,852 ( 0.45%) linearPattern = 
+getLinearMaps(gameState, originSquare); 36,111,740 (13.80%) => /home/main/portfolio/chess/AttackMaps.c:getLinearMaps 
+(198,142x)
+  594,426 ( 0.23%) threatMap |= (linearPattern & whiteLinears); . 1,188,852 ( 0.45%) kingPattern = 
+getKingMaps(gameState, originSquare); 2,179,562 ( 0.83%) => /home/main/portfolio/chess/AttackMaps.c:getKingMaps 
+(198,142x)
+  594,426 ( 0.23%) threatMap |= (kingPattern & whiteKings); .  } . 207,064 ( 0.08%) return threatMap; 414,128 ( 
+  0.16%) }
+        . 1,035,320 ( 0.40%) bool isSquareThreatened(int originSquare, int side) { .  u64 threatMap; . 1,242,384 ( 
+0.47%) threatMap = getThreatMap(originSquare, side); 100,151,206 (38.27%) => LegalityChecks.c:getThreatMap 
+(207,064x)
+        . .  // if threats are not an empty set, square is threatened 414,128 ( 0.16%) return threatMap != 0; 
+  414,128 ( 0.16%) }
+        . 828,256 ( 0.32%) bool isKingThreatened(int side) { .  int i; .  int kingIndex; 1,863,576 ( 0.71%) u64 
+*gameState = GAME_STATE_STACK[GAME_STATE_STACK_POINTER];
+  621,192 ( 0.24%) u64 whiteKings = gameState[6]; 621,192 ( 0.24%) u64 blackKings = gameState[13]; . 414,128 ( 
+  0.16%) if (side == 1) {
+        .  // find the kings square first 35,688 ( 0.01%) kingIndex = bitScanForward(whiteKings); 160,596 ( 0.06%) 
+  => /home/main/portfolio/chess/Utilities.c:bitScanForward (8,922x)
+   53,532 ( 0.02%) return isSquareThreatened(kingIndex, side); 4,107,628 ( 1.57%) => 
+LegalityChecks.c:isSquareThreatened (8,922x)
+        .  } .  else { .  // find the kings square first 792,568 ( 0.30%) kingIndex = bitScanForward(blackKings); 
+3,566,556 ( 1.36%) => /home/main/portfolio/chess/Utilities.c:bitScanForward (198,142x)
+  990,710 ( 0.38%) return isSquareThreatened(kingIndex, side); 99,149,538 (37.88%) => 
+LegalityChecks.c:isSquareThreatened (198,142x)
+        .  } 414,128 ( 0.16%) } . .  // filters out pseudo-legal moves, basically notices checkmates and draws by no 
+        moves .  bool checkIfNoLegalMoves(int side) { .  int moveCount; .  int i; .  Move checkMateMoves[MAX_MOVES]; 
+        . .  moveCount = generateMoves(checkMateMoves, side);
+-- line 124 ---------------------------------------- 
+-------------------------------------------------------------------------------- -- Auto-annotated source: 
+MakeMove.c -------------------------------------------------------------------------------- Ir
+        .  #include <stdbool.h> .  #include <stdio.h> . .  #include "Constants.h" .  #include "Move.h" .  #include 
+        "Utilities.h" .
+  828,256 ( 0.32%) void makeMove(Move move) { 828,256 ( 0.32%) int from = move.from; 1,035,320 ( 0.40%) int to = 
+move.to; 1,035,320 ( 0.40%) int promotion = move.promotion; 1,035,320 ( 0.40%) int castle = move.castling; 1,449,448 
+( 0.55%) bool enPassant = move.enPassant;
+        . 1,863,576 ( 0.71%) u64 *gameState = GAME_STATE_STACK[GAME_STATE_STACK_POINTER]; 2,070,640 ( 0.79%) u64 
+*newGameState = GAME_STATE_STACK[GAME_STATE_STACK_POINTER + 1];
+        . 621,192 ( 0.24%) u64 whitePieces = gameState[0]; 621,192 ( 0.24%) u64 whitePawns = gameState[1]; 621,192 ( 
+  0.24%) u64 whiteKnights = gameState[2]; 621,192 ( 0.24%) u64 whiteBishops = gameState[3]; 621,192 ( 0.24%) u64 
+  whiteRooks = gameState[4]; 621,192 ( 0.24%) u64 whiteQueens = gameState[5]; 621,192 ( 0.24%) u64 whiteKings = 
+  gameState[6];
+        . 621,192 ( 0.24%) u64 blackPieces = gameState[7]; 621,192 ( 0.24%) u64 blackPawns = gameState[8]; 621,192 ( 
+  0.24%) u64 blackKnights = gameState[9]; 621,192 ( 0.24%) u64 blackBishops = gameState[10]; 621,192 ( 0.24%) u64 
+  blackRooks = gameState[11]; 621,192 ( 0.24%) u64 blackQueens = gameState[12]; 621,192 ( 0.24%) u64 blackKings = 
+  gameState[13];
+        . 621,192 ( 0.24%) u64 otherGameInfo = gameState[14]; 2,484,768 ( 0.95%) u64 movePattern = 
+SINGLE_BIT_LOOKUP[from] | SINGLE_BIT_LOOKUP[to];
+        . 828,256 ( 0.32%) int side = getSideToPlay(otherGameInfo); 2,079,562 ( 0.79%) => 
+/home/main/portfolio/chess/Utilities.c:getSideToPlay (207,064x)
+        . 621,192 ( 0.24%) GAME_STATE_STACK_POINTER++; . .  // previous en passant possibility ends with this move 
+1,035,320 ( 0.40%) otherGameInfo = setEnPassantAllowed(otherGameInfo, false); 2,691,832 ( 1.03%) => 
+/home/main/portfolio/chess/Utilities.c:setEnPassantAllowed (207,064x)
+        .  // switch side to play 1,656,512 ( 0.63%) otherGameInfo = setSideToPlay(otherGameInfo, -side); 2,484,768 
+( 0.95%) => /home/main/portfolio/chess/Utilities.c:setSideToPlay (207,064x)
+        . .  // castling is handled separately because it is the only move that moves 2 pieces at the same time 
+  414,128 ( 0.16%) if (castle != 0) {
+        .  // white moving .  if (side == 1) { .  // set white castling to 0 .  otherGameInfo = 
+        removeWhiteCastleShort(otherGameInfo); .  otherGameInfo = removeWhiteCastleLong(otherGameInfo); . .  // 
+        kingside .  if (castle == 1) {
+-- line 55 ---------------------------------------- -- line 100 ---------------------------------------- .  
+        blackRooks = emptySquare(blackRooks, 56); .  blackPieces = emptySquare(blackPieces, 56); .  blackRooks = 
+        fillSquare(blackRooks, 59); .  blackPieces = fillSquare(blackPieces, 59); .  } .  } .  } .
+  414,128 ( 0.16%) else if (enPassant) { .  u64 enPassantBit = SINGLE_BIT_LOOKUP[getEnPassantSquare(otherGameInfo)]; 
+        .  if (side == 1) { .  whitePieces ^= movePattern; .  whitePawns ^= movePattern; . .  blackPieces ^= 
+        enPassantBit; .  blackPawns ^= enPassantBit; .  }
+-- line 116 ---------------------------------------- -- line 120 ---------------------------------------- . .  
+        whitePieces ^= enPassantBit; .  whitePawns ^= enPassantBit; .  } .  } . .  // a normal move or promotion .  
+        else {
+1,449,448 ( 0.55%) if (squareOccupied(whitePieces, to)) { 3,725,573 ( 1.42%) => 
+/home/main/portfolio/chess/Utilities.c:squareOccupied (207,064x)
+    9,474 ( 0.00%) whitePieces = emptySquare(whitePieces, to); 20,527 ( 0.01%) => 
+   /home/main/portfolio/chess/Utilities.c:emptySquare (1,579x)
+        . 11,053 ( 0.00%) if (squareOccupied(whitePawns, to)) { 27,204 ( 0.01%) => 
+   /home/main/portfolio/chess/Utilities.c:squareOccupied (1,579x)
+    8,526 ( 0.00%) whitePawns = emptySquare(whitePawns, to); 15,834 ( 0.01%) => 
+   /home/main/portfolio/chess/Utilities.c:emptySquare (1,218x)
+        .  } . 2,527 ( 0.00%) else if (squareOccupied(whiteKnights, to)) { 6,337 ( 0.00%) => 
+    /home/main/portfolio/chess/Utilities.c:squareOccupied (361x) 1,127 ( 0.00%) whiteKnights = 
+    emptySquare(whiteKnights, to); 2,093 ( 0.00%) => /home/main/portfolio/chess/Utilities.c:emptySquare (161x)
+        .  } . 1,400 ( 0.00%) else if (squareOccupied(whiteBishops, to)) { 3,424 ( 0.00%) => 
+    /home/main/portfolio/chess/Utilities.c:squareOccupied (200x) 1,232 ( 0.00%) whiteBishops = 
+    emptySquare(whiteBishops, to); 2,288 ( 0.00%) => /home/main/portfolio/chess/Utilities.c:emptySquare (176x)
+        .  } . 168 ( 0.00%) else if (squareOccupied(whiteRooks, to)) { 428 ( 0.00%) => 
+      /home/main/portfolio/chess/Utilities.c:squareOccupied (24x)
+       24 ( 0.00%) whiteRooks = emptySquare(whiteRooks, to); 52 ( 0.00%) => 
+       /home/main/portfolio/chess/Utilities.c:emptySquare (4x)
+        . .  // cant castle anymore if the castling took is taken 8 ( 0.00%) if (to == 0 && 
+        canWhiteCastleLong(otherGameInfo)) { .  otherGameInfo = removeWhiteCastleLong(otherGameInfo); .  } .  // 
+        cant castle anymore if the castling took is taken 8 ( 0.00%) else if (to == 7 && 
+        canWhiteCastleShort(otherGameInfo)) { .  otherGameInfo = removeWhiteCastleShort(otherGameInfo); .  } .  } .
+      140 ( 0.00%) else if (squareOccupied(whiteQueens, to)) { 340 ( 0.00%) => 
+      /home/main/portfolio/chess/Utilities.c:squareOccupied (20x) 140 ( 0.00%) whiteQueens = 
+      emptySquare(whiteQueens, to); 260 ( 0.00%) => /home/main/portfolio/chess/Utilities.c:emptySquare (20x)
+        .  } . .  else { .  whiteKings = emptySquare(whiteKings, to); .  } .  } . . 1,438,395 ( 0.55%) else if 
+(squareOccupied(blackPieces, to)) { 3,698,696 ( 1.41%) => /home/main/portfolio/chess/Utilities.c:squareOccupied 
+(205,485x)
+      204 ( 0.00%) blackPieces = emptySquare(blackPieces, to); 442 ( 0.00%) => 
+      /home/main/portfolio/chess/Utilities.c:emptySquare (34x)
+        . 238 ( 0.00%) if (squareOccupied(blackPawns, to)) { 582 ( 0.00%) => 
+      /home/main/portfolio/chess/Utilities.c:squareOccupied (34x) 210 ( 0.00%) blackPawns = emptySquare(blackPawns, 
+      to); 390 ( 0.00%) => /home/main/portfolio/chess/Utilities.c:emptySquare (30x)
+        .  } . 28 ( 0.00%) else if (squareOccupied(blackKnights, to)) { 68 ( 0.00%) => 
+       /home/main/portfolio/chess/Utilities.c:squareOccupied (4x) 28 ( 0.00%) blackKnights = 
+       emptySquare(blackKnights, to); 52 ( 0.00%) => /home/main/portfolio/chess/Utilities.c:emptySquare (4x)
+        .  } . .  else if (squareOccupied(blackBishops, to)) { .  blackBishops = emptySquare(blackBishops, to); .  } 
+        . .  else if (squareOccupied(blackRooks, to)) { .  blackRooks = emptySquare(blackRooks, to);
+-- line 182 ---------------------------------------- -- line 195 ---------------------------------------- .  
+        blackQueens = emptySquare(blackQueens, to); .  } . .  else { .  blackKings = emptySquare(blackKings, to); .  
+        }
+        .  } . 414,128 ( 0.16%) if (side == 1) { 17,844 ( 0.01%) whitePieces ^= movePattern; . 62,454 ( 0.02%) if 
+   (squareOccupied(whitePawns, from)) {
+  154,654 ( 0.06%) => /home/main/portfolio/chess/Utilities.c:squareOccupied (8,922x) 11,884 ( 0.00%) whitePawns ^= 
+   movePattern;
+        . .  // moved 2 squares, en passant possible on next move 23,768 ( 0.01%) if (to - from == 16) { 14,040 ( 
+   0.01%) otherGameInfo = setEnPassantAllowed(otherGameInfo, true); 36,504 ( 0.01%) => 
+   /home/main/portfolio/chess/Utilities.c:setEnPassantAllowed (2,808x) 22,464 ( 0.01%) otherGameInfo = 
+   setEnPassantSquare(otherGameInfo, to); 30,888 ( 0.01%) => 
+   /home/main/portfolio/chess/Utilities.c:setEnPassantSquare (2,808x)
+        .  } .  } . 20,860 ( 0.01%) else if (squareOccupied(whiteKnights, from)) { 51,876 ( 0.02%) => 
+   /home/main/portfolio/chess/Utilities.c:squareOccupied (2,980x)
+    5,292 ( 0.00%) whiteKnights ^= movePattern; .  } . 8,512 ( 0.00%) else if (squareOccupied(whiteBishops, from)) { 
+   21,332 ( 0.01%) => /home/main/portfolio/chess/Utilities.c:squareOccupied (1,216x)
+    1,668 ( 0.00%) whiteBishops ^= movePattern; .  } . 4,620 ( 0.00%) else if (squareOccupied(whiteRooks, from)) { 
+   11,680 ( 0.00%) => /home/main/portfolio/chess/Utilities.c:squareOccupied (660x)
+      400 ( 0.00%) whiteRooks ^= movePattern; . .  // remove castling rights, if rook moves 900 ( 0.00%) if (from == 
+      0 && canWhiteCastleLong(otherGameInfo)) { 900 ( 0.00%) => 
+      /home/main/portfolio/chess/Utilities.c:canWhiteCastleLong (100x) 400 ( 0.00%) otherGameInfo = 
+      removeWhiteCastleLong(otherGameInfo); 800 ( 0.00%) => 
+      /home/main/portfolio/chess/Utilities.c:removeWhiteCastleLong (100x)
+        .  } . 900 ( 0.00%) if (from == 7 && canWhiteCastleShort(otherGameInfo)) { 900 ( 0.00%) => 
+      /home/main/portfolio/chess/Utilities.c:canWhiteCastleShort (100x) 500 ( 0.00%) otherGameInfo = 
+      removeWhiteCastleShort(otherGameInfo); 700 ( 0.00%) => 
+      /home/main/portfolio/chess/Utilities.c:removeWhiteCastleShort (100x)
+        .  } .  } . 3,220 ( 0.00%) else if (squareOccupied(whiteQueens, from)) { 7,940 ( 0.00%) => 
+    /home/main/portfolio/chess/Utilities.c:squareOccupied (460x) 1,020 ( 0.00%) whiteQueens ^= movePattern;
+        .  } . .  else { 240 ( 0.00%) whiteKings ^= movePattern; . .  // remove both castling rights, if king moves 
+      840 ( 0.00%) if (from == 4 && canWhiteCastleLong(otherGameInfo)) {
+    1,080 ( 0.00%) => /home/main/portfolio/chess/Utilities.c:canWhiteCastleLong (120x) 480 ( 0.00%) otherGameInfo = 
+      removeWhiteCastleLong(otherGameInfo); 960 ( 0.00%) => 
+      /home/main/portfolio/chess/Utilities.c:removeWhiteCastleLong (120x)
+        .  } . 840 ( 0.00%) if (from == 4 && canWhiteCastleShort(otherGameInfo)) { 1,080 ( 0.00%) => 
+    /home/main/portfolio/chess/Utilities.c:canWhiteCastleShort (120x)
+      600 ( 0.00%) otherGameInfo = removeWhiteCastleShort(otherGameInfo); 840 ( 0.00%) => 
+      /home/main/portfolio/chess/Utilities.c:removeWhiteCastleShort (120x)
+        .  } .  } .  } . . .  else { 396,284 ( 0.15%) blackPieces ^= movePattern; . 1,386,994 ( 0.53%) if 
+(squareOccupied(blackPawns, from)) { 3,434,652 ( 1.31%) => /home/main/portfolio/chess/Utilities.c:squareOccupied 
+(198,142x)
+  263,808 ( 0.10%) blackPawns ^= movePattern; . .  // moved 2 squares, en passant possible on next move 527,616 ( 
+  0.20%) if (to - from == -16) { 310,280 ( 0.12%) otherGameInfo = setEnPassantAllowed(otherGameInfo, true); 806,728 
+  ( 0.31%) => /home/main/portfolio/chess/Utilities.c:setEnPassantAllowed (62,056x) 496,448 ( 0.19%) otherGameInfo = 
+  setEnPassantSquare(otherGameInfo, to); 682,616 ( 0.26%) => 
+  /home/main/portfolio/chess/Utilities.c:setEnPassantSquare (62,056x)
+        .  } .  } . 463,666 ( 0.18%) else if (squareOccupied(blackKnights, from)) { 1,153,042 ( 0.44%) => 
+/home/main/portfolio/chess/Utilities.c:squareOccupied (66,238x)
+  117,726 ( 0.04%) blackKnights ^= movePattern; .  } . 188,972 ( 0.07%) else if (squareOccupied(blackBishops, from)) 
+  { 473,630 ( 0.18%) => /home/main/portfolio/chess/Utilities.c:squareOccupied (26,996x)
+   36,894 ( 0.01%) blackBishops ^= movePattern; .  } . 102,886 ( 0.04%) else if (squareOccupied(blackRooks, from)) { 
+  260,106 ( 0.10%) => /home/main/portfolio/chess/Utilities.c:squareOccupied (14,698x)
+    8,916 ( 0.00%) blackRooks ^= movePattern; . .  // remove castling rights, if rook moves 20,056 ( 0.01%) if (from 
+   == 56 && canBlackCastleLong(otherGameInfo)) { 20,052 ( 0.01%) => 
+   /home/main/portfolio/chess/Utilities.c:canBlackCastleLong (2,228x)
+    8,912 ( 0.00%) otherGameInfo = removeBlackCastleLong(otherGameInfo); 20,052 ( 0.01%) => 
+   /home/main/portfolio/chess/Utilities.c:removeBlackCastleLong (2,228x)
+        .  } . 20,066 ( 0.01%) if (from == 63 && canBlackCastleShort(otherGameInfo)) { 20,070 ( 0.01%) => 
+   /home/main/portfolio/chess/Utilities.c:canBlackCastleShort (2,230x) 11,150 ( 0.00%) otherGameInfo = 
+   removeBlackCastleShort(otherGameInfo); 17,840 ( 0.01%) => 
+   /home/main/portfolio/chess/Utilities.c:removeBlackCastleShort (2,230x)
+        .  } .  } . 71,680 ( 0.03%) else if (squareOccupied(blackQueens, from)) { 176,753 ( 0.07%) => 
+  /home/main/portfolio/chess/Utilities.c:squareOccupied (10,240x)
+   22,701 ( 0.01%) blackQueens ^= movePattern; .  } . .  else { 5,346 ( 0.00%) blackKings ^= movePattern; . .  // 
+        remove both castling rights, if king moves
+   18,711 ( 0.01%) if (from == 60 && canBlackCastleLong(otherGameInfo)) { 24,057 ( 0.01%) => 
+   /home/main/portfolio/chess/Utilities.c:canBlackCastleLong (2,673x) 10,692 ( 0.00%) otherGameInfo = 
+   removeBlackCastleLong(otherGameInfo); 24,057 ( 0.01%) => 
+   /home/main/portfolio/chess/Utilities.c:removeBlackCastleLong (2,673x)
+        .  } . 18,711 ( 0.01%) if (from == 60 && canBlackCastleShort(otherGameInfo)) { 24,057 ( 0.01%) => 
+   /home/main/portfolio/chess/Utilities.c:canBlackCastleShort (2,673x) 10,692 ( 0.00%) otherGameInfo = 
+   removeBlackCastleShort(otherGameInfo); 21,384 ( 0.01%) => 
+   /home/main/portfolio/chess/Utilities.c:removeBlackCastleShort (2,673x)
+        .  } .  } .  } . . .  // handle promotion of pawn 414,128 ( 0.16%) if (promotion != 0) { .  if (side == 1) { 
+        .  whitePawns = emptySquare(whitePawns, to); . .  // promote to knight .  if (promotion == 1) { .  
+        whiteKnights = fillSquare(whiteKnights, to); .  } .  // promote to bishop
+-- line 318 ---------------------------------------- -- line 346 ---------------------------------------- .  // 
+        promote to queen .  else { .  blackQueens = fillSquare(blackQueens, to); .  } .  } .  } .  } .
+  621,192 ( 0.24%) newGameState[0] = whitePieces; 828,256 ( 0.32%) newGameState[1] = whitePawns; 828,256 ( 0.32%) 
+  newGameState[2] = whiteKnights; 828,256 ( 0.32%) newGameState[3] = whiteBishops; 828,256 ( 0.32%) newGameState[4] 
+  = whiteRooks; 828,256 ( 0.32%) newGameState[5] = whiteQueens; 828,256 ( 0.32%) newGameState[6] = whiteKings;
+        . 828,256 ( 0.32%) newGameState[7] = blackPieces; 828,256 ( 0.32%) newGameState[8] = blackPawns; 828,256 ( 
+  0.32%) newGameState[9] = blackKnights; 828,256 ( 0.32%) newGameState[10] = blackBishops; 828,256 ( 0.32%) 
+  newGameState[11] = blackRooks; 828,256 ( 0.32%) newGameState[12] = blackQueens; 828,256 ( 0.32%) newGameState[13] 
+  = blackKings;
+        . 828,256 ( 0.32%) newGameState[14] = otherGameInfo; 621,192 ( 0.24%) } . 414,128 ( 0.16%) void unMakeMove() 
+  { 621,192 ( 0.24%) GAME_STATE_STACK_POINTER--; 621,192 ( 0.24%) }
+-------------------------------------------------------------------------------- -- Auto-annotated source: Perft.c 
+-------------------------------------------------------------------------------- Ir -- line 6 
+----------------------------------------
+        .  #include "Move.h" .  #include "Constants.h" .  #include "MakeMove.h" .  #include "LegalityChecks.h" .  
+        #include "MoveGeneration.h"
+        .  #include "MakeMove.h" .  #include "Utilities.h" . 1,652,824 ( 0.63%) u64 perft(int depth, int side) { .  
+        Move moves[MAX_MOVES]; .  int moveCount; .  int i;
+  206,603 ( 0.08%) u64 nodes = 0; . 413,206 ( 0.16%) if (depth == 0) 394,562 ( 0.15%) return 1ULL; . 55,932 ( 0.02%) 
+   moveCount = generateMoves(moves, side);
+  138,548 ( 0.05%) => /home/main/portfolio/chess/MoveGeneration.c:generateMoves (20x) . 874,786 ( 0.33%) for (i = 0; 
+  i < moveCount; i++) {
+1,035,220 ( 0.40%) makeMove(moves[i]); 132,880 ( 0.05%) => /home/main/portfolio/chess/MakeMove.c:makeMove (400x) 
+1,449,308 ( 0.55%) if (!isKingThreatened(side)) {
+  221,768 ( 0.08%) => /home/main/portfolio/chess/LegalityChecks.c:isKingThreatened (400x) 1,859,247 ( 0.71%) nodes 
++= perft(depth - 1, -side); 260,848,500 (99.67%) => Perft.c:perft'2 (400x)
+        .  } 414,088 ( 0.16%) unMakeMove(); 3,200 ( 0.00%) => /home/main/portfolio/chess/MakeMove.c:unMakeMove 
+    (400x)
+        .  } 9,322 ( 0.00%) return nodes; 1,033,015 ( 0.39%) } . . 7 ( 0.00%) void perftDivide(int depth) { .  Move 
+        moves[MAX_MOVES]; .  int moveCount; .  int i; 1 ( 0.00%) u64 nodes = 0;
+       12 ( 0.00%) int side = getSideToPlay(GAME_STATE_STACK[GAME_STATE_STACK_POINTER][14]); 11 ( 0.00%) => 
+       /home/main/portfolio/chess/Utilities.c:getSideToPlay (1x)
+        . 2 ( 0.00%) if (depth == 0) .  return; . 6 ( 0.00%) moveCount = generateMoves(moves, side); 6,708 ( 0.00%) 
+    => /home/main/portfolio/chess/MoveGeneration.c:generateMoves (1x)
+       85 ( 0.00%) for (i = 0; i < moveCount; i++) { 20 ( 0.00%) u64 dividedNodes = 0; 80 ( 0.00%) Move move = 
+       moves[i];
+        . 60 ( 0.00%) makeMove(move); 6,664 ( 0.00%) => /home/main/portfolio/chess/MakeMove.c:makeMove (20x) 140 ( 
+      0.00%) if (!isKingThreatened(side)) {
+   10,268 ( 0.00%) => /home/main/portfolio/chess/LegalityChecks.c:isKingThreatened (20x) .  char *moveNotation; .  
+        char *moveNotationFrom; .  char *moveNotationTo; .
+      180 ( 0.00%) dividedNodes = perft(depth - 1, -side); 261,356,256 (99.86%) => Perft.c:perft (20x) 40 ( 0.00%) 
+       nodes += dividedNodes;
+        . .  // allocate space for the string, +1 for the null character 84 ( 0.00%) moveNotation = (char*) 
+       malloc((4 + 1) * sizeof(char));
+    2,343 ( 0.00%) => ???:_dl_runtime_resolve_xsave (1x) 760 ( 0.00%) => ???:malloc (19x) . 140 ( 0.00%) 
+      moveNotation[0] = 'a' + (move.from % 8); 220 ( 0.00%) moveNotation[1] = '1' + (move.from / 8); 160 ( 0.00%) 
+      moveNotation[2] = 'a' + (move.to % 8); 240 ( 0.00%) moveNotation[3] = '1' + (move.to / 8);
+       60 ( 0.00%) moveNotation[4] = '\0'; . 144 ( 0.00%) printf("%s: %llu\n", moveNotation, dividedNodes); 22,705 ( 
+   0.01%) => ???:printf (19x)
+    2,500 ( 0.00%) => ???:_dl_runtime_resolve_xsave (1x) . 84 ( 0.00%) free(moveNotation); 732 ( 0.00%) => 
+      ???:_dl_runtime_resolve_xsave (1x)
+    1,710 ( 0.00%) => ???:free (19x) .  } 40 ( 0.00%) unMakeMove(); 160 ( 0.00%) => 
+      /home/main/portfolio/chess/MakeMove.c:unMakeMove (20x)
+        .  } . 7 ( 0.00%) printf("total nodes: %llu\n\n", nodes); 1,002 ( 0.00%) => ???:printf (1x) 5 ( 0.00%) } 
+-------------------------------------------------------------------------------- -- Auto-annotated source: 
+AttackMaps.c -------------------------------------------------------------------------------- Ir
+        .  #include <stdbool.h> . .  #include "Constants.h" .  #include "Init.h" .  #include "Utilities.h" . .  // 
+        includes squares blocked by own pieces
+1,175,165 ( 0.45%) u64 getDiagonalMaps(u64 *gameState, int square) { .  u64 blocker; .  int blockerSquare; .  u64 
+        combinedMap; .
+  705,099 ( 0.27%) u64 whitePieces = gameState[0]; 705,099 ( 0.27%) u64 blackPieces = gameState[7]; 705,099 ( 0.27%) 
+  u64 occupied = whitePieces | blackPieces;
+1,410,198 ( 0.54%) u64 northEast = NORTH_EAST_LOOKUP_PATTERN[square]; 1,410,198 ( 0.54%) u64 northWest = 
+NORTH_WEST_LOOKUP_PATTERN[square]; 1,410,198 ( 0.54%) u64 southEast = SOUTH_EAST_LOOKUP_PATTERN[square]; 1,410,198 ( 
+0.54%) u64 southWest = SOUTH_WEST_LOOKUP_PATTERN[square];
+        . 705,099 ( 0.27%) blocker = occupied & northEast; 470,066 ( 0.18%) if (blocker) { 41,680 ( 0.02%) 
+   blockerSquare = bitScanForward(blocker);
+  187,560 ( 0.07%) => /home/main/portfolio/chess/Utilities.c:bitScanForward (10,420x) 62,520 ( 0.02%) northEast ^= 
+   NORTH_EAST_LOOKUP_PATTERN[blockerSquare];
+        .  } . 705,099 ( 0.27%) blocker = occupied & northWest; 470,066 ( 0.18%) if (blocker) { 41,468 ( 0.02%) 
+   blockerSquare = bitScanForward(blocker);
+  186,606 ( 0.07%) => /home/main/portfolio/chess/Utilities.c:bitScanForward (10,367x) 62,202 ( 0.02%) northWest ^= 
+   NORTH_WEST_LOOKUP_PATTERN[blockerSquare];
+        .  } . 705,099 ( 0.27%) blocker = occupied & southEast; 470,066 ( 0.18%) if (blocker) { 769,428 ( 0.29%) 
+  blockerSquare = bitScanReverse(blocker);
+6,540,138 ( 2.50%) => /home/main/portfolio/chess/Utilities.c:bitScanReverse (192,357x) 1,154,142 ( 0.44%) southEast 
+^= SOUTH_EAST_LOOKUP_PATTERN[blockerSquare];
+        .  } . 705,099 ( 0.27%) blocker = occupied & southWest; 470,066 ( 0.18%) if (blocker) { 770,576 ( 0.29%) 
+  blockerSquare = bitScanReverse(blocker);
+6,549,896 ( 2.50%) => /home/main/portfolio/chess/Utilities.c:bitScanReverse (192,644x) 1,155,864 ( 0.44%) southWest 
+^= SOUTH_WEST_LOOKUP_PATTERN[blockerSquare];
+        .  } . 1,175,165 ( 0.45%) combinedMap = northEast | northWest | southEast | southWest; . 235,033 ( 0.09%) 
+  return combinedMap; 470,066 ( 0.18%) }
+        . .  // includes squares blocked by own pieces 1,175,165 ( 0.45%) u64 getLinearMaps(u64 *gameState, int 
+square) {
+        .  u64 blocker; .  int blockerSquare; .  u64 combinedMap; . 705,099 ( 0.27%) u64 whitePieces = gameState[0]; 
+  705,099 ( 0.27%) u64 blackPieces = gameState[7]; 705,099 ( 0.27%) u64 occupied = whitePieces | blackPieces;
+1,410,198 ( 0.54%) u64 north = NORTH_LOOKUP_PATTERN[square]; 1,410,198 ( 0.54%) u64 west = 
+WEST_LOOKUP_PATTERN[square]; 1,410,198 ( 0.54%) u64 east = EAST_LOOKUP_PATTERN[square]; 1,410,198 ( 0.54%) u64 south 
+= SOUTH_LOOKUP_PATTERN[square];
+        . 705,099 ( 0.27%) blocker = occupied & north; 470,066 ( 0.18%) if (blocker) { 47,628 ( 0.02%) blockerSquare 
+   = bitScanForward(blocker);
+  214,326 ( 0.08%) => /home/main/portfolio/chess/Utilities.c:bitScanForward (11,907x) 71,442 ( 0.03%) north ^= 
+   NORTH_LOOKUP_PATTERN[blockerSquare];
+        .  } . 705,099 ( 0.27%) blocker = occupied & east; 470,066 ( 0.18%) if (blocker) { 902,840 ( 0.34%) 
+  blockerSquare = bitScanForward(blocker);
+4,062,780 ( 1.55%) => /home/main/portfolio/chess/Utilities.c:bitScanForward (225,710x) 1,354,260 ( 0.52%) east ^= 
+EAST_LOOKUP_PATTERN[blockerSquare];
+        .  } . 705,099 ( 0.27%) blocker = occupied & west; 470,066 ( 0.18%) if (blocker) { 902,840 ( 0.34%) 
+  blockerSquare = bitScanReverse(blocker);
+7,674,140 ( 2.93%) => /home/main/portfolio/chess/Utilities.c:bitScanReverse (225,710x) 1,354,260 ( 0.52%) west ^= 
+WEST_LOOKUP_PATTERN[blockerSquare];
+        .  } . 705,099 ( 0.27%) blocker = occupied & south; 470,066 ( 0.18%) if (blocker) { 899,952 ( 0.34%) 
+  blockerSquare = bitScanReverse(blocker);
+7,649,592 ( 2.92%) => /home/main/portfolio/chess/Utilities.c:bitScanReverse (224,988x) 1,349,928 ( 0.52%) south ^= 
+SOUTH_LOOKUP_PATTERN[blockerSquare];
+        .  } . 1,175,165 ( 0.45%) combinedMap = north | east | west | south; . 235,033 ( 0.09%) return combinedMap; 
+  470,066 ( 0.18%) }
+        . .  // gets squares where the pawn can move 16,040 ( 0.01%) u64 getWhitePawnMoveMaps(u64 *gameState, int 
+   square) {
+        .  u64 blocker; .  int blockerSquare; . 9,624 ( 0.00%) u64 whitePieces = gameState[0]; 9,624 ( 0.00%) u64 
+    blackPieces = gameState[7]; 9,624 ( 0.00%) u64 occupied = whitePieces | blackPieces;
+   19,248 ( 0.01%) u64 pawnMovePattern = WHITE_PAWN_MOVE_LOOKUP_PATTERN[square]; . 9,624 ( 0.00%) blocker = occupied 
+    & pawnMovePattern;
+        . 12,656 ( 0.00%) if (blocker == 0) return pawnMovePattern; . .  // no possible moves 880 ( 0.00%) if 
+      (squareOccupied(occupied, square + 8)) return 0LLU;
+    1,496 ( 0.00%) => /home/main/portfolio/chess/Utilities.c:squareOccupied (88x) . .  // otherwise is double pawn 
+        push blocked 2 squares forward -> one available move .  pawnMovePattern ^= blocker; . .  return 
+        pawnMovePattern;
+    6,416 ( 0.00%) } . .  // gets squares where the pawn can move 356,730 ( 0.14%) u64 getBlackPawnMoveMaps(u64 
+  *gameState, int square) {
+        .  u64 blocker; .  int blockerSquare; . 214,038 ( 0.08%) u64 whitePieces = gameState[0]; 214,038 ( 0.08%) 
+  u64 blackPieces = gameState[7]; 214,038 ( 0.08%) u64 occupied = whitePieces | blackPieces; 428,076 ( 0.16%) u64 
+  pawnMovePattern = BLACK_PAWN_MOVE_LOOKUP_PATTERN[square];
+        . 214,038 ( 0.08%) blocker = occupied & pawnMovePattern; . 280,272 ( 0.11%) if (blocker == 0) return 
+  pawnMovePattern;
+        . .  // no possible moves 24,852 ( 0.01%) if (squareOccupied(occupied, square - 8)) return 0LLU; 43,806 ( 
+   0.02%) => /home/main/portfolio/chess/Utilities.c:squareOccupied (2,556x)
+        . .  // otherwise is double pawn push blocked 2 squares forward -> one available move 708 ( 0.00%) 
+      pawnMovePattern ^= blocker;
+        . 354 ( 0.00%) return pawnMovePattern; 142,692 ( 0.05%) } . .  // gets squares where the pawn can attack, no 
+        en passant
+   48,520 ( 0.02%) u64 getWhitePawnAttackMaps(u64 *gameState, int square) { 36,390 ( 0.01%) u64 blackPieces = 
+   gameState[7]; 72,780 ( 0.03%) u64 pawnAttackPattern = WHITE_PAWN_ATTACK_LOOKUP_PATTERN[square];
+        . 24,260 ( 0.01%) pawnAttackPattern &= blackPieces; . 12,130 ( 0.00%) return pawnAttackPattern; 24,260 ( 
+   0.01%) }
+        . .  // gets squares where the pawn can attack, no en passant 1,077,952 ( 0.41%) u64 
+getBlackPawnAttackMaps(u64 *gameState, int square) {
+  808,464 ( 0.31%) u64 whitePieces = gameState[0]; 1,616,928 ( 0.62%) u64 pawnAttackPattern = 
+BLACK_PAWN_ATTACK_LOOKUP_PATTERN[square];
+        . 538,976 ( 0.21%) pawnAttackPattern &= whitePieces; . 269,488 ( 0.10%) return pawnAttackPattern; 538,976 ( 
+  0.21%) }
+        . 902,824 ( 0.34%) u64 getKnightMaps(u64 *gameState, int square) { 1,128,530 ( 0.43%) return 
+KNIGHT_LOOKUP_PATTERN[square];
+  451,412 ( 0.17%) } . 865,548 ( 0.33%) u64 getKingMaps(u64 *gameState, int square) { 1,081,935 ( 0.41%) return 
+KING_LOOKUP_PATTERN[square];
+  432,774 ( 0.17%) } -------------------------------------------------------------------------------- -- 
+Auto-annotated source: MoveGeneration.c 
+-------------------------------------------------------------------------------- Ir -- line 43 
+----------------------------------------
+        .  // threatmap is empty after removing 1 attacker .  if (threatMap == 0) return 1; . .  // king can only 
+        have 2 attackers in legal positions .  return 2; .  } . .
+   19,248 ( 0.01%) void addWhitePawnPatterns(u64 *gameState, int square, int patternIndex) { 41,704 ( 0.02%) 
+   CaptureTable captureTable = {square, 0, 1}; 41,704 ( 0.02%) MoveTable moveTable = {square, 0, 1};
+    9,624 ( 0.00%) u64 blackPieces = gameState[7]; 19,248 ( 0.01%) u64 movePattern = getWhitePawnMoveMaps(gameState, 
+   square); 95,232 ( 0.04%) => /home/main/portfolio/chess/AttackMaps.c:getWhitePawnMoveMaps (3,208x) 19,248 ( 0.01%) 
+   u64 attackPattern = getWhitePawnAttackMaps(gameState, square); 57,744 ( 0.02%) => 
+   /home/main/portfolio/chess/AttackMaps.c:getWhitePawnAttackMaps (3,208x)
+        . 6,416 ( 0.00%) attackPattern &= blackPieces; . 6,416 ( 0.00%) captureTable.captureBitMap = attackPattern; 
+    6,416 ( 0.00%) moveTable.moveBitMap = movePattern;
+   44,912 ( 0.02%) captureTables[patternIndex] = captureTable; 44,912 ( 0.02%) moveTables[patternIndex] = moveTable; 
+    9,624 ( 0.00%) }
+        . 428,076 ( 0.16%) void addBlackPawnPatterns(u64 *gameState, int square, int patternIndex) { 927,498 ( 
+  0.35%) CaptureTable captureTable = {square, 0, 1}; 927,498 ( 0.35%) MoveTable moveTable = {square, 0, 1}; 214,038 
+  ( 0.08%) u64 whitePieces = gameState[0]; 428,076 ( 0.16%) u64 movePattern = getBlackPawnMoveMaps(gameState, 
+  square);
+2,133,642 ( 0.82%) => /home/main/portfolio/chess/AttackMaps.c:getBlackPawnMoveMaps (71,346x) 428,076 ( 0.16%) u64 
+  attackPattern = getBlackPawnAttackMaps(gameState, square);
+1,284,228 ( 0.49%) => /home/main/portfolio/chess/AttackMaps.c:getBlackPawnAttackMaps (71,346x) . 142,692 ( 0.05%) 
+  attackPattern &= whitePieces;
+        . 142,692 ( 0.05%) captureTable.captureBitMap = attackPattern; 142,692 ( 0.05%) moveTable.moveBitMap = 
+  movePattern; 998,844 ( 0.38%) captureTables[patternIndex] = captureTable; 998,844 ( 0.38%) 
+  moveTables[patternIndex] = moveTable; 214,038 ( 0.08%) }
+        . 4,812 ( 0.00%) void addWhiteKnightPatterns(u64 *gameState, int square, int patternIndex) { 9,624 ( 0.00%) 
+    CaptureTable captureTable = {square, 0, 0}; 9,624 ( 0.00%) MoveTable moveTable = {square, 0, 0}; 2,406 ( 0.00%) 
+    u64 whitePieces = gameState[0]; 2,406 ( 0.00%) u64 blackPieces = gameState[7];
+        .  u64 attackPattern; .  u64 movePattern; 4,812 ( 0.00%) u64 pattern = getKnightMaps(gameState, square); 
+    8,822 ( 0.00%) => /home/main/portfolio/chess/AttackMaps.c:getKnightMaps (802x)
+        . 2,406 ( 0.00%) attackPattern = pattern & blackPieces; 2,406 ( 0.00%) movePattern = pattern ^ 
+    attackPattern; 2,406 ( 0.00%) movePattern &= (~whitePieces);
+        . 1,604 ( 0.00%) captureTable.captureBitMap = attackPattern; 1,604 ( 0.00%) moveTable.moveBitMap = 
+    movePattern;
+   11,228 ( 0.00%) captureTables[patternIndex] = captureTable; 11,228 ( 0.00%) moveTables[patternIndex] = moveTable; 
+    2,406 ( 0.00%) }
+        . 107,040 ( 0.04%) void addBlackKnightPatterns(u64 *gameState, int square, int patternIndex) { 214,080 ( 
+  0.08%) CaptureTable captureTable = {square, 0, 0}; 214,080 ( 0.08%) MoveTable moveTable = {square, 0, 0};
+   53,520 ( 0.02%) u64 whitePieces = gameState[0]; 53,520 ( 0.02%) u64 blackPieces = gameState[7]; .  u64 
+        attackPattern; .  u64 movePattern;
+  107,040 ( 0.04%) u64 pattern = getKnightMaps(gameState, square); 196,240 ( 0.07%) => 
+  /home/main/portfolio/chess/AttackMaps.c:getKnightMaps (17,840x)
+        . 53,520 ( 0.02%) attackPattern = pattern & whitePieces; 53,520 ( 0.02%) movePattern = pattern ^ 
+   attackPattern; 53,520 ( 0.02%) movePattern &= (~blackPieces);
+        . 35,680 ( 0.01%) captureTable.captureBitMap = attackPattern; 35,680 ( 0.01%) moveTable.moveBitMap = 
+   movePattern;
+  249,760 ( 0.10%) captureTables[patternIndex] = captureTable; 249,760 ( 0.10%) moveTables[patternIndex] = 
+  moveTable;
+   53,520 ( 0.02%) } . 2,406 ( 0.00%) void addWhiteKingPatterns(u64 *gameState, int square, int patternIndex) { 
+    5,213 ( 0.00%) CaptureTable captureTable = {square, 0, 2}; 5,213 ( 0.00%) MoveTable moveTable = {square, 0, 2}; 
+    1,203 ( 0.00%) u64 whitePieces = gameState[0]; 1,203 ( 0.00%) u64 blackPieces = gameState[7];
+        .  u64 attackPattern; .  u64 movePattern; 2,406 ( 0.00%) u64 pattern = getKingMaps(gameState, square); 4,411 
+    ( 0.00%) => /home/main/portfolio/chess/AttackMaps.c:getKingMaps (401x)
+        . 1,203 ( 0.00%) attackPattern = pattern & blackPieces; 1,203 ( 0.00%) movePattern = pattern ^ 
+    attackPattern; 1,203 ( 0.00%) movePattern &= (~whitePieces);
+        . 802 ( 0.00%) captureTable.captureBitMap = attackPattern; 802 ( 0.00%) moveTable.moveBitMap = movePattern; 
+    5,614 ( 0.00%) captureTables[patternIndex] = captureTable; 5,614 ( 0.00%) moveTables[patternIndex] = moveTable; 
+    1,203 ( 0.00%) }
+        . 53,532 ( 0.02%) void addBlackKingPatterns(u64 *gameState, int square, int patternIndex) { 115,986 ( 0.04%) 
+  CaptureTable captureTable = {square, 0, 2}; 115,986 ( 0.04%) MoveTable moveTable = {square, 0, 2};
+   26,766 ( 0.01%) u64 whitePieces = gameState[0]; 26,766 ( 0.01%) u64 blackPieces = gameState[7]; .  u64 
+        attackPattern; .  u64 movePattern;
+   53,532 ( 0.02%) u64 pattern = getKingMaps(gameState, square); 98,142 ( 0.04%) => 
+   /home/main/portfolio/chess/AttackMaps.c:getKingMaps (8,922x)
+        . 26,766 ( 0.01%) attackPattern = pattern & whitePieces; 26,766 ( 0.01%) movePattern = pattern ^ 
+   attackPattern; 26,766 ( 0.01%) movePattern &= (~blackPieces);
+        . 17,844 ( 0.01%) captureTable.captureBitMap = attackPattern; 17,844 ( 0.01%) moveTable.moveBitMap = 
+   movePattern;
+  124,908 ( 0.05%) captureTables[patternIndex] = captureTable; 124,908 ( 0.05%) moveTables[patternIndex] = 
+  moveTable;
+   26,766 ( 0.01%) } . 7,218 ( 0.00%) void addWhiteDiagonalPatterns(u64 *gameState, int square, int patternIndex) { 
+   14,436 ( 0.01%) CaptureTable captureTable = {square, 0, 0}; 14,436 ( 0.01%) MoveTable moveTable = {square, 0, 0};
+    3,609 ( 0.00%) u64 whitePieces = gameState[0]; 3,609 ( 0.00%) u64 blackPieces = gameState[7]; .  u64 
+        attackPattern; .  u64 movePattern;
+    7,218 ( 0.00%) u64 pattern = getDiagonalMaps(gameState, square); 140,438 ( 0.05%) => 
+  /home/main/portfolio/chess/AttackMaps.c:getDiagonalMaps (1,203x)
+        . 3,609 ( 0.00%) attackPattern = pattern & blackPieces; 3,609 ( 0.00%) movePattern = pattern ^ 
+    attackPattern; 3,609 ( 0.00%) movePattern &= (~whitePieces);
+        . 2,406 ( 0.00%) captureTable.captureBitMap = attackPattern; 2,406 ( 0.00%) moveTable.moveBitMap = 
+    movePattern;
+   16,842 ( 0.01%) captureTables[patternIndex] = captureTable; 16,842 ( 0.01%) moveTables[patternIndex] = moveTable; 
+    3,609 ( 0.00%) }
+        . 160,596 ( 0.06%) void addBlackDiagonalPatterns(u64 *gameState, int square, int patternIndex) { 321,192 ( 
+  0.12%) CaptureTable captureTable = {square, 0, 0}; 321,192 ( 0.12%) MoveTable moveTable = {square, 0, 0};
+   80,298 ( 0.03%) u64 whitePieces = gameState[0]; 80,298 ( 0.03%) u64 blackPieces = gameState[7]; .  u64 
+        attackPattern; .  u64 movePattern;
+  160,596 ( 0.06%) u64 pattern = getDiagonalMaps(gameState, square); 3,910,060 ( 1.49%) => 
+/home/main/portfolio/chess/AttackMaps.c:getDiagonalMaps (26,766x)
+        . 80,298 ( 0.03%) attackPattern = pattern & whitePieces; 80,298 ( 0.03%) movePattern = pattern ^ 
+   attackPattern; 80,298 ( 0.03%) movePattern &= (~blackPieces);
+        . 53,532 ( 0.02%) captureTable.captureBitMap = attackPattern; 53,532 ( 0.02%) moveTable.moveBitMap = 
+   movePattern;
+  374,724 ( 0.14%) captureTables[patternIndex] = captureTable; 374,724 ( 0.14%) moveTables[patternIndex] = 
+  moveTable;
+   80,298 ( 0.03%) } . 7,218 ( 0.00%) void addWhiteLinearPatterns(u64 *gameState, int square, int patternIndex) { 
+   14,436 ( 0.01%) CaptureTable captureTable = {square, 0, 0}; 14,436 ( 0.01%) MoveTable moveTable = {square, 0, 0};
+    3,609 ( 0.00%) u64 whitePieces = gameState[0]; 3,609 ( 0.00%) u64 blackPieces = gameState[7]; .  u64 
+        attackPattern; .  u64 movePattern;
+    7,218 ( 0.00%) u64 pattern = getLinearMaps(gameState, square); 170,826 ( 0.07%) => 
+  /home/main/portfolio/chess/AttackMaps.c:getLinearMaps (1,203x)
+        . 3,609 ( 0.00%) attackPattern = pattern & blackPieces; 3,609 ( 0.00%) movePattern = pattern ^ 
+    attackPattern; 3,609 ( 0.00%) movePattern &= (~whitePieces);
+        . 2,406 ( 0.00%) captureTable.captureBitMap = attackPattern; 2,406 ( 0.00%) moveTable.moveBitMap = 
+    movePattern;
+   16,842 ( 0.01%) captureTables[patternIndex] = captureTable; 16,842 ( 0.01%) moveTables[patternIndex] = moveTable; 
+    3,609 ( 0.00%) }
+        . 160,596 ( 0.06%) void addBlackLinearPatterns(u64 *gameState, int square, int patternIndex) { 321,192 ( 
+  0.12%) CaptureTable captureTable = {square, 0, 0}; 321,192 ( 0.12%) MoveTable moveTable = {square, 0, 0};
+   80,298 ( 0.03%) u64 whitePieces = gameState[0]; 80,298 ( 0.03%) u64 blackPieces = gameState[7]; .  u64 
+        attackPattern; .  u64 movePattern;
+  160,596 ( 0.06%) u64 pattern = getLinearMaps(gameState, square); 4,229,028 ( 1.62%) => 
+/home/main/portfolio/chess/AttackMaps.c:getLinearMaps (26,766x)
+        . 80,298 ( 0.03%) attackPattern = pattern & whitePieces; 80,298 ( 0.03%) movePattern = pattern ^ 
+   attackPattern; 80,298 ( 0.03%) movePattern &= (~blackPieces);
+        . 53,532 ( 0.02%) captureTable.captureBitMap = attackPattern; 53,532 ( 0.02%) moveTable.moveBitMap = 
+   movePattern;
+  374,724 ( 0.14%) captureTables[patternIndex] = captureTable; 374,724 ( 0.14%) moveTables[patternIndex] = 
+  moveTable;
+   80,298 ( 0.03%) } . . . 1,203 ( 0.00%) bool shortWhiteCastlingSquaresEmpty() { 3,609 ( 0.00%) u64 *gameState = 
+    GAME_STATE_STACK[GAME_STATE_STACK_POINTER];
+        . 1,203 ( 0.00%) u64 whitePieces = gameState[0]; 1,203 ( 0.00%) u64 blackPieces = gameState[7]; . 3,208 ( 
+    0.00%) if (squareOccupied(whitePieces, 5) || squareOccupied(blackPieces, 5)) return false; 6,817 ( 0.00%) => 
+    /home/main/portfolio/chess/Utilities.c:squareOccupied (401x)
+        . .  if (squareOccupied(whitePieces, 6) || squareOccupied(blackPieces, 6)) return false; . .  return true; 
+      802 ( 0.00%) }
+        . 1,203 ( 0.00%) bool longWhiteCastlingSquaresEmpty() { 3,609 ( 0.00%) u64 *gameState = 
+    GAME_STATE_STACK[GAME_STATE_STACK_POINTER];
+        . 1,203 ( 0.00%) u64 whitePieces = gameState[0]; 1,203 ( 0.00%) u64 blackPieces = gameState[7]; . 3,368 ( 
+    0.00%) if (squareOccupied(whitePieces, 1) || squareOccupied(blackPieces, 1)) return false; 7,577 ( 0.00%) => 
+    /home/main/portfolio/chess/Utilities.c:squareOccupied (441x)
+        . 320 ( 0.00%) if (squareOccupied(whitePieces, 2) || squareOccupied(blackPieces, 2)) return false; 680 ( 
+      0.00%) => /home/main/portfolio/chess/Utilities.c:squareOccupied (40x)
+        . .  if (squareOccupied(whitePieces, 3) || squareOccupied(blackPieces, 3)) return false; . .  return true; 
+      802 ( 0.00%) }
+        . 26,766 ( 0.01%) bool shortBlackCastlingSquaresEmpty() { 80,298 ( 0.03%) u64 *gameState = 
+   GAME_STATE_STACK[GAME_STATE_STACK_POINTER];
+        . 26,766 ( 0.01%) u64 whitePieces = gameState[0]; 26,766 ( 0.01%) u64 blackPieces = gameState[7]; . 124,908 
+  ( 0.05%) if (squareOccupied(whitePieces, 61) || squareOccupied(blackPieces, 61)) return false; 312,270 ( 0.12%) => 
+  /home/main/portfolio/chess/Utilities.c:squareOccupied (17,844x)
+        . .  if (squareOccupied(whitePieces, 62) || squareOccupied(blackPieces, 62)) return false; . .  return true; 
+   17,844 ( 0.01%) }
+        . 26,766 ( 0.01%) bool longBlackCastlingSquaresEmpty() { 80,298 ( 0.03%) u64 *gameState = 
+   GAME_STATE_STACK[GAME_STATE_STACK_POINTER];
+        . 26,766 ( 0.01%) u64 whitePieces = gameState[0]; 26,766 ( 0.01%) u64 blackPieces = gameState[7]; . 123,128 
+  ( 0.05%) if (squareOccupied(whitePieces, 57) || squareOccupied(blackPieces, 57)) return false; 313,160 ( 0.12%) => 
+  /home/main/portfolio/chess/Utilities.c:squareOccupied (17,844x)
+        . 12,460 ( 0.00%) if (squareOccupied(whitePieces, 58) || squareOccupied(blackPieces, 58)) return false; 
+   31,150 ( 0.01%) => /home/main/portfolio/chess/Utilities.c:squareOccupied (1,780x)
+        . .  if (squareOccupied(whitePieces, 59) || squareOccupied(blackPieces, 59)) return false; . .  return true; 
+   17,844 ( 0.01%) }
+        . . .  // board coordinates are from 0 to 63 and start from bottom left from .  // whites point of view, 
+        they go left to right, bottom to top . .  // a single move: 32-bit unsigned int, 8 bits: original location, 
+        .  // 8 bits destination location, .  // 3 bits promotion (queen, rook, bishop, knight or none)
+-- line 297 ---------------------------------------- -- line 306 ---------------------------------------- . .  // 
+        the game state contains pawns, knights, bishops, rooks, queens and king .  // in that order first for white 
+        then for black .  // the last number (13:th) is used to store other useful data about the game .  // such as 
+        castling rights (2 bits for both sides), en passant (8 bits) and information concerning .  // the 3-fold 
+        repetition (4 bits) and the 50-move rule (9 bits) . .  // side: 0 == white, 1 == black
+   55,938 ( 0.02%) int generateMoves(Move *movesArr, int side) { .  int i; .  // next free index in moves array 
+    9,323 ( 0.00%) int patternIndex = 0; 9,323 ( 0.00%) int moveIndex = 0;
+   83,907 ( 0.03%) u64 *gameState = GAME_STATE_STACK[GAME_STATE_STACK_POINTER]; 27,969 ( 0.01%) u64 whitePieces = 
+   gameState[0]; 27,969 ( 0.01%) u64 whitePawns = gameState[1]; 27,969 ( 0.01%) u64 whiteKnights = gameState[2]; 
+   27,969 ( 0.01%) u64 whiteBishops = gameState[3]; 27,969 ( 0.01%) u64 whiteRooks = gameState[4]; 27,969 ( 0.01%) 
+   u64 whiteQueens = gameState[5]; 27,969 ( 0.01%) u64 whiteKings = gameState[6];
+        . 27,969 ( 0.01%) u64 blackPieces = gameState[7]; 27,969 ( 0.01%) u64 blackPawns = gameState[8]; 27,969 ( 
+   0.01%) u64 blackKnights = gameState[9]; 27,969 ( 0.01%) u64 blackBishops = gameState[10]; 27,969 ( 0.01%) u64 
+   blackRooks = gameState[11]; 27,969 ( 0.01%) u64 blackQueens = gameState[12]; 27,969 ( 0.01%) u64 blackKings = 
+   gameState[13];
+        . 27,969 ( 0.01%) u64 otherGameInfo = gameState[14]; 27,969 ( 0.01%) u64 whiteDiagonals = whiteQueens | 
+   whiteBishops; 27,969 ( 0.01%) u64 blackDiagonals = blackQueens | blackBishops; 27,969 ( 0.01%) u64 whiteLinears = 
+   whiteQueens | whiteRooks; 27,969 ( 0.01%) u64 blackLinears = blackQueens | blackRooks;
+        . 37,292 ( 0.01%) bool isEnPassant = isEnPassantAllowed(otherGameInfo); 83,907 ( 0.03%) => 
+   /home/main/portfolio/chess/Utilities.c:isEnPassantAllowed (9,323x)
+        . 18,646 ( 0.01%) if (side == 1) { 7,619 ( 0.00%) while(whitePawns != 0) { 12,832 ( 0.00%) int index = 
+   bitScanForward(whitePawns); 57,744 ( 0.02%) => /home/main/portfolio/chess/Utilities.c:bitScanForward (3,208x)
+    9,624 ( 0.00%) whitePawns &= (whitePawns - 1); // reset the least significant bit 19,248 ( 0.01%) 
+   addWhitePawnPatterns(gameState, index, patternIndex);
+  422,448 ( 0.16%) => MoveGeneration.c:addWhitePawnPatterns (3,208x) 3,208 ( 0.00%) patternIndex++; .  } . 2,807 ( 
+    0.00%) while(whiteKnights != 0) { 3,208 ( 0.00%) int index = bitScanForward(whiteKnights);
+   14,436 ( 0.01%) => /home/main/portfolio/chess/Utilities.c:bitScanForward (802x) 2,406 ( 0.00%) whiteKnights &= 
+    (whiteKnights - 1); // reset the least significant bit 4,812 ( 0.00%) addWhiteKnightPatterns(gameState, index, 
+    patternIndex);
+   77,794 ( 0.03%) => MoveGeneration.c:addWhiteKnightPatterns (802x) 802 ( 0.00%) patternIndex++; .  } . 3,609 ( 
+    0.00%) while(whiteDiagonals != 0) { 4,812 ( 0.00%) int index = bitScanForward(whiteDiagonals);
+   21,654 ( 0.01%) => /home/main/portfolio/chess/Utilities.c:bitScanForward (1,203x) 3,609 ( 0.00%) whiteDiagonals 
+    &= (whiteDiagonals - 1); // reset the least significant bit 7,218 ( 0.00%) addWhiteDiagonalPatterns(gameState, 
+    index, patternIndex);
+  243,896 ( 0.09%) => MoveGeneration.c:addWhiteDiagonalPatterns (1,203x) 1,203 ( 0.00%) patternIndex++; .  } . 3,609 
+    ( 0.00%) while(whiteLinears != 0) { 4,812 ( 0.00%) int index = bitScanForward(whiteLinears);
+   21,654 ( 0.01%) => /home/main/portfolio/chess/Utilities.c:bitScanForward (1,203x) 3,609 ( 0.00%) whiteLinears &= 
+    (whiteLinears - 1); // reset the least significant bit 7,218 ( 0.00%) addWhiteLinearPatterns(gameState, index, 
+    patternIndex);
+  274,284 ( 0.10%) => MoveGeneration.c:addWhiteLinearPatterns (1,203x) 1,203 ( 0.00%) patternIndex++; .  } . 2,406 ( 
+    0.00%) while(whiteKings != 0) { 1,604 ( 0.00%) int index = bitScanForward(whiteKings); 7,218 ( 0.00%) => 
+    /home/main/portfolio/chess/Utilities.c:bitScanForward (401x) 1,203 ( 0.00%) whiteKings &= (whiteKings - 1); // 
+    reset the least significant bit 2,406 ( 0.00%) addWhiteKingPatterns(gameState, index, patternIndex);
+   39,699 ( 0.02%) => MoveGeneration.c:addWhiteKingPatterns (401x) 401 ( 0.00%) patternIndex++; .  } .  } .  else { 
+  160,536 ( 0.06%) while(blackPawns != 0) { 285,384 ( 0.11%) int index = bitScanForward(blackPawns);
+1,284,228 ( 0.49%) => /home/main/portfolio/chess/Utilities.c:bitScanForward (71,346x) 214,038 ( 0.08%) blackPawns &= 
+  (blackPawns - 1); // reset the least significant bit 428,076 ( 0.16%) addBlackPawnPatterns(gameState, index, 
+  patternIndex);
+9,410,934 ( 3.60%) => MoveGeneration.c:addBlackPawnPatterns (71,346x) 71,346 ( 0.03%) patternIndex++; .  } . 62,446 
+   ( 0.02%) while(blackKnights != 0) { 71,360 ( 0.03%) int index = bitScanForward(blackKnights);
+  321,120 ( 0.12%) => /home/main/portfolio/chess/Utilities.c:bitScanForward (17,840x) 53,520 ( 0.02%) blackKnights 
+   &= (blackKnights - 1); // reset the least significant bit
+  107,040 ( 0.04%) addBlackKnightPatterns(gameState, index, patternIndex); 1,730,480 ( 0.66%) => 
+MoveGeneration.c:addBlackKnightPatterns (17,840x)
+   17,840 ( 0.01%) patternIndex++; .  } . 80,298 ( 0.03%) while(blackDiagonals != 0) { 107,064 ( 0.04%) int index = 
+  bitScanForward(blackDiagonals); 481,788 ( 0.18%) => /home/main/portfolio/chess/Utilities.c:bitScanForward 
+  (26,766x)
+   80,298 ( 0.03%) blackDiagonals &= (blackDiagonals - 1); // reset the least significant bit 160,596 ( 0.06%) 
+  addBlackDiagonalPatterns(gameState, index, patternIndex);
+6,211,936 ( 2.37%) => MoveGeneration.c:addBlackDiagonalPatterns (26,766x) 26,766 ( 0.01%) patternIndex++; .  } . 
+   80,298 ( 0.03%) while(blackLinears != 0) {
+  107,064 ( 0.04%) int index = bitScanForward(blackLinears); 481,788 ( 0.18%) => 
+  /home/main/portfolio/chess/Utilities.c:bitScanForward (26,766x)
+   80,298 ( 0.03%) blackLinears &= (blackLinears - 1); // reset the least significant bit 160,596 ( 0.06%) 
+  addBlackLinearPatterns(gameState, index, patternIndex);
+6,530,904 ( 2.50%) => MoveGeneration.c:addBlackLinearPatterns (26,766x) 26,766 ( 0.01%) patternIndex++; .  } . 
+   44,610 ( 0.02%) while(blackKings != 0) { 35,688 ( 0.01%) int index = bitScanForward(blackKings);
+  160,596 ( 0.06%) => /home/main/portfolio/chess/Utilities.c:bitScanForward (8,922x) 26,766 ( 0.01%) blackKings &= 
+   (blackKings - 1); // reset the least significant bit 53,532 ( 0.02%) addBlackKingPatterns(gameState, index, 
+   patternIndex);
+  883,278 ( 0.34%) => MoveGeneration.c:addBlackKingPatterns (8,922x) 8,922 ( 0.00%) patternIndex++; .  } .  } . .  
+        // first create capturing moves
+  680,443 ( 0.26%) for (i = 0; i < patternIndex; i++) { .  CaptureTable captureTable; .  int from; .  int to; .  u64 
+        pattern; .  int type; .
+2,218,398 ( 0.85%) captureTable = captureTables[i]; 633,828 ( 0.24%) from = captureTable.from; 316,914 ( 0.12%) 
+  pattern = captureTable.captureBitMap; 633,828 ( 0.24%) type = captureTable.pieceType;
+        . .  // pawn move 316,914 ( 0.12%) if (type == 1) { .  int row; .  // if row is 6 or 1, there is a 
+        possibility of promotion
+  447,324 ( 0.17%) row = from / 8; 299,652 ( 0.11%) while (pattern != 0) { 2,872 ( 0.00%) to = 
+    bitScanForward(pattern);
+   12,924 ( 0.00%) => /home/main/portfolio/chess/Utilities.c:bitScanForward (718x) 2,154 ( 0.00%) pattern &= 
+    (pattern - 1);
+        . .  // promotion 3,016 ( 0.00%) if ((row == 6 && side == 1) || (row == 1 && side == -1)) { .  
+        movesArr[moveIndex] = createMove(from, to, 1, 0, 0); .  moveIndex++; .  movesArr[moveIndex] = 
+        createMove(from, to, 2, 0, 0); .  moveIndex++; .  movesArr[moveIndex] = createMove(from, to, 3, 0, 0); .  
+        moveIndex++; .  movesArr[moveIndex] = createMove(from, to, 4, 0, 0); .  moveIndex++; .  } .  // no promotion 
+        .  else {
+    9,334 ( 0.00%) movesArr[moveIndex] = createMove(from, to, 0, 0, 0); 39,490 ( 0.02%) => 
+   /home/main/portfolio/chess/Utilities.c:createMove (718x)
+      718 ( 0.00%) moveIndex++; .  } .  } .  } .  else { 169,596 ( 0.06%) while (pattern != 0) { 3,580 ( 0.00%) to = 
+    bitScanForward(pattern);
+   16,110 ( 0.01%) => /home/main/portfolio/chess/Utilities.c:bitScanForward (895x) 2,685 ( 0.00%) pattern &= 
+    (pattern - 1);
+        . 11,635 ( 0.00%) movesArr[moveIndex] = createMove(from, to, 0, 0, 0); 49,225 ( 0.02%) => 
+   /home/main/portfolio/chess/Utilities.c:createMove (895x)
+      895 ( 0.00%) moveIndex++; .  } .  } .  } . .  // then create non-capturing moves 680,443 ( 0.26%) for (i = 0; 
+  i < patternIndex; i++) {
+        .  MoveTable moveTable; .  int from; .  int to; .  u64 pattern; .  int type; . 2,218,398 ( 0.85%) moveTable 
+= moveTables[i];
+  633,828 ( 0.24%) from = moveTable.from; 316,914 ( 0.12%) pattern = moveTable.moveBitMap; 633,828 ( 0.24%) type = 
+  moveTable.pieceType;
+        . .  // pawn move 316,914 ( 0.12%) if (type == 1) { .  // if row is 6 or 1, there is a possibility of 
+        promotion
+  447,324 ( 0.17%) int row = from / 8; 572,472 ( 0.22%) while (pattern != 0) { 548,512 ( 0.21%) to = 
+  bitScanForward(pattern);
+2,468,304 ( 0.94%) => /home/main/portfolio/chess/Utilities.c:bitScanForward (137,128x) 411,384 ( 0.16%) pattern &= 
+  (pattern - 1);
+        . .  // promotion 808,676 ( 0.31%) if ((row == 6 && side == 1) || (row == 1 && side == -1)) { .  
+        movesArr[moveIndex] = createMove(from, to, 1, 0, 0); .  moveIndex++; .  movesArr[moveIndex] = 
+        createMove(from, to, 2, 0, 0); .  moveIndex++; .  movesArr[moveIndex] = createMove(from, to, 3, 0, 0); .  
+        moveIndex++; .  movesArr[moveIndex] = createMove(from, to, 4, 0, 0); .  moveIndex++; .  } .  // no promotion 
+        .  else {
+1,782,664 ( 0.68%) movesArr[moveIndex] = createMove(from, to, 0, 0, 0); 7,542,040 ( 2.88%) => 
+/home/main/portfolio/chess/Utilities.c:createMove (137,128x)
+  137,128 ( 0.05%) moveIndex++; .  } .  } .  } .  else { 304,452 ( 0.12%) while (pattern != 0) { 273,292 ( 0.10%) to 
+  = bitScanForward(pattern);
+1,229,814 ( 0.47%) => /home/main/portfolio/chess/Utilities.c:bitScanForward (68,323x) 204,969 ( 0.08%) pattern &= 
+  (pattern - 1);
+        . 888,199 ( 0.34%) movesArr[moveIndex] = createMove(from, to, 0, 0, 0); 3,757,765 ( 1.44%) => 
+/home/main/portfolio/chess/Utilities.c:createMove (68,323x)
+   68,323 ( 0.03%) moveIndex++; .  } .  } .  } . .  // handle enPassant 18,646 ( 0.01%) if (isEnPassant) { 11,872 ( 
+   0.00%) int enPassantSquare = getEnPassantSquare(otherGameInfo); 23,744 ( 0.01%) => 
+   /home/main/portfolio/chess/Utilities.c:getEnPassantSquare (2,968x) 20,776 ( 0.01%) int enPassantColumn = 
+   enPassantSquare % 8;
+        . 5,936 ( 0.00%) if (side == 1) { 480 ( 0.00%) whitePawns = gameState[1]; . 1,440 ( 0.00%) if 
+    (enPassantColumn != 0 && squareOccupied(whitePawns, enPassantSquare - 1)) { 2,520 ( 0.00%) => 
+    /home/main/portfolio/chess/Utilities.c:squareOccupied (140x)
+        .  movesArr[moveIndex] = createMove(enPassantSquare - 1, enPassantSquare + 8, 0, 0, 1); .  moveIndex++; .  } 
+        .
+    1,440 ( 0.00%) if (enPassantColumn != 7 && squareOccupied(whitePawns, enPassantSquare + 1)) { 2,520 ( 0.00%) => 
+    /home/main/portfolio/chess/Utilities.c:squareOccupied (140x)
+        .  movesArr[moveIndex] = createMove(enPassantSquare + 1, enPassantSquare + 8, 0, 0, 1); .  moveIndex++; .  } 
+        .  } .  else {
+    8,424 ( 0.00%) blackPawns = gameState[8]; . 25,352 ( 0.01%) if (enPassantColumn != 0 && 
+   squareOccupied(blackPawns, enPassantSquare - 1)) { 44,406 ( 0.02%) => 
+   /home/main/portfolio/chess/Utilities.c:squareOccupied (2,467x)
+        .  movesArr[moveIndex] = createMove(enPassantSquare - 1, enPassantSquare - 8, 0, 0, 1); .  moveIndex++; .  } 
+        .
+   25,352 ( 0.01%) if (enPassantColumn != 7 && squareOccupied(blackPawns, enPassantSquare + 1)) { 44,406 ( 0.02%) => 
+   /home/main/portfolio/chess/Utilities.c:squareOccupied (2,467x)
+        .  movesArr[moveIndex] = createMove(enPassantSquare + 1, enPassantSquare - 8, 0, 0, 1); .  moveIndex++; .  } 
+        .  } .  } . .  // castling move generation
+   18,646 ( 0.01%) if (side == 1) { 2,005 ( 0.00%) if (canWhiteCastleShort(otherGameInfo)) { 3,609 ( 0.00%) => 
+    /home/main/portfolio/chess/Utilities.c:canWhiteCastleShort (401x) 1,604 ( 0.00%) if 
+    (shortWhiteCastlingSquaresEmpty()) {
+   18,045 ( 0.01%) => MoveGeneration.c:shortWhiteCastlingSquaresEmpty (401x) .  // king cant be or move through any 
+        threatened squares .  if (!isSquareThreatened(4, side) && !isSquareThreatened(5, side) && 
+        !isSquareThreatened(5, side)) {
+        .  movesArr[moveIndex] = createMove(4, 6, 0, 1, 0); .  moveIndex++; .  } .  } .  } . 2,005 ( 0.00%) if 
+    (canWhiteCastleLong(otherGameInfo)) { 3,609 ( 0.00%) => 
+    /home/main/portfolio/chess/Utilities.c:canWhiteCastleLong (401x) 1,604 ( 0.00%) if 
+    (longWhiteCastlingSquaresEmpty()) {
+   19,965 ( 0.01%) => MoveGeneration.c:longWhiteCastlingSquaresEmpty (401x) .  // king cant be or move through any 
+        threatened squares .  if (!isSquareThreatened(2, side) && !isSquareThreatened(3, side) && 
+        !isSquareThreatened(4, side)) {
+        .  movesArr[moveIndex] = createMove(4, 2, 0, 2, 0); .  moveIndex++; .  } .  } .  } .  } .  else { 44,610 ( 
+   0.02%) if (canBlackCastleShort(otherGameInfo)) { 80,298 ( 0.03%) => 
+   /home/main/portfolio/chess/Utilities.c:canBlackCastleShort (8,922x) 35,688 ( 0.01%) if 
+   (shortBlackCastlingSquaresEmpty()) {
+  615,618 ( 0.24%) => MoveGeneration.c:shortBlackCastlingSquaresEmpty (8,922x) .  // king cant be or move through 
+        any threatened squares .  if (!isSquareThreatened(60, side) && !isSquareThreatened(61, side) && 
+        !isSquareThreatened(62, side)) {
+        .  movesArr[moveIndex] = createMove(60, 62, 0, 3, 0); .  moveIndex++; .  } .  } .  } . 44,610 ( 0.02%) if 
+   (canBlackCastleLong(otherGameInfo)) { 80,298 ( 0.03%) => 
+   /home/main/portfolio/chess/Utilities.c:canBlackCastleLong (8,922x) 35,688 ( 0.01%) if 
+   (longBlackCastlingSquaresEmpty()) {
+  658,338 ( 0.25%) => MoveGeneration.c:longBlackCastlingSquaresEmpty (8,922x) .  // king cant be or move through any 
+        threatened squares .  if (!isSquareThreatened(58, side) && !isSquareThreatened(59, side) && 
+        !isSquareThreatened(60, side)) {
+        .  movesArr[moveIndex] = createMove(60, 58, 0, 4, 0); .  moveIndex++; .  } .  } .  } .  } . 9,323 ( 0.00%) 
+    return moveIndex;
+   27,969 ( 0.01%) } -------------------------------------------------------------------------------- -- 
+Auto-annotated source: Utilities.c -------------------------------------------------------------------------------- 
+Ir -- line 2 ----------------------------------------
+        .  #include <stdio.h> .  #include <ctype.h> .  #include <string.h> .  #include <assert.h> . .  #include 
+        "Constants.h" .  #include "Move.h" .
+1,656,512 ( 0.63%) Move createMove(int from, int to, int promotion, int castle, bool enPassant) { 9,110,816 ( 3.48%) 
+Move move = {from, to, promotion, castle, enPassant};
+        . 207,064 ( 0.08%) return move; 414,128 ( 0.16%) } . 3,166,124 ( 1.21%) bool squareOccupied(u64 board, int 
+index) { 4,749,186 ( 1.81%) u64 bitIndex = SINGLE_BIT_LOOKUP[index];
+        . 3,166,124 ( 1.21%) if ((board & bitIndex) == 0LLU) { 1,126,196 ( 0.43%) return false; .  } 228,433 ( 
+  0.09%) else return true;
+1,583,062 ( 0.60%) } . 12,904 ( 0.00%) u64 emptySquare(u64 board, int index) { 22,582 ( 0.01%) return board & 
+   ~SINGLE_BIT_LOOKUP[index];
+    6,452 ( 0.00%) } . 10,592 ( 0.00%) u64 fillSquare(u64 board, int index) { 15,888 ( 0.01%) return board | 
+   SINGLE_BIT_LOOKUP[index];
+    5,296 ( 0.00%) } . 1,863 ( 0.00%) bool canWhiteCastleShort(u64 meta) { 2,484 ( 0.00%) return (meta & 1LLU) > 0; 
+    1,242 ( 0.00%) }
+        . 1,863 ( 0.00%) bool canWhiteCastleLong(u64 meta) { 2,484 ( 0.00%) return (meta & SINGLE_BIT_LOOKUP[1]) > 
+    0; 1,242 ( 0.00%) }
+        . 41,475 ( 0.02%) bool canBlackCastleShort(u64 meta) { 55,300 ( 0.02%) return (meta & SINGLE_BIT_LOOKUP[2]) 
+   > 0;
+   27,650 ( 0.01%) } . 41,469 ( 0.02%) bool canBlackCastleLong(u64 meta) { 55,292 ( 0.02%) return (meta & 
+   SINGLE_BIT_LOOKUP[3]) > 0; 27,646 ( 0.01%) }
+        . 660 ( 0.00%) u64 removeWhiteCastleShort(u64 meta) { 440 ( 0.00%) return meta & ~(1LLU); 440 ( 0.00%) } . 
+      660 ( 0.00%) u64 removeWhiteCastleLong(u64 meta) { 660 ( 0.00%) return meta & ~SINGLE_BIT_LOOKUP[1]; 440 ( 
+      0.00%) }
+        . 14,709 ( 0.01%) u64 removeBlackCastleShort(u64 meta) { 14,709 ( 0.01%) return meta & 
+   ~SINGLE_BIT_LOOKUP[2];
+    9,806 ( 0.00%) } . 14,703 ( 0.01%) u64 removeBlackCastleLong(u64 meta) { 19,604 ( 0.01%) return meta 
+   &=~SINGLE_BIT_LOOKUP[3];
+    9,802 ( 0.00%) } . 3 ( 0.00%) u64 setWhiteCastleShort(u64 meta) { 2 ( 0.00%) return meta |= (1LLU); 2 ( 0.00%) } 
+        . 3 ( 0.00%) u64 setWhiteCastleLong(u64 meta) { 3 ( 0.00%) return meta |= SINGLE_BIT_LOOKUP[1]; 2 ( 0.00%) } 
+        . 3 ( 0.00%) u64 setBlackCastleShort(u64 meta) { 3 ( 0.00%) return meta |= SINGLE_BIT_LOOKUP[2]; 2 ( 0.00%) 
+        }
+        . 3 ( 0.00%) u64 setBlackCastleLong(u64 meta) { 3 ( 0.00%) return meta |= SINGLE_BIT_LOOKUP[3]; 2 ( 0.00%) } 
+        .
+   27,969 ( 0.01%) bool isEnPassantAllowed(u64 meta) { 37,292 ( 0.01%) return (meta & SINGLE_BIT_LOOKUP[4]) > 0; 
+   18,646 ( 0.01%) }
+        . 1,359,640 ( 0.52%) u64 setEnPassantAllowed(u64 meta, bool enPassantAllowed) { 543,856 ( 0.21%) if 
+  (enPassantAllowed) { 194,592 ( 0.07%) meta |= SINGLE_BIT_LOOKUP[4];
+        .  } .  else { 621,192 ( 0.24%) meta &= ~SINGLE_BIT_LOOKUP[4]; .  } . 271,928 ( 0.10%) return meta; 543,856 
+  ( 0.21%) }
+        . 259,456 ( 0.10%) u64 setEnPassantSquare(u64 meta, u64 square) { 64,864 ( 0.02%) meta &= ~(0b111111LLU << 
+   5);
+  194,592 ( 0.07%) meta |= (square << 5); . 64,864 ( 0.02%) return meta; 129,728 ( 0.05%) } . 8,904 ( 0.00%) u64 
+    getEnPassantSquare(u64 meta) { 8,904 ( 0.00%) return (meta & (0b111111LLU << 5)) >> 5; 5,936 ( 0.00%) }
+        . .  // 1 == white plays, -1 == black plays 621,195 ( 0.24%) int getSideToPlay(u64 meta) { 828,260 ( 0.32%) 
+  if ((meta & SINGLE_BIT_LOOKUP[11]) > 0) {
+   17,846 ( 0.01%) return 1; .  } .  else { 198,142 ( 0.08%) return -1; .  } 414,130 ( 0.16%) } . .  // 1 == white 
+        plays, -1 == black plays
+  828,260 ( 0.32%) u64 setSideToPlay(u64 meta, int side) { 414,130 ( 0.16%) if (side == 1) { .  // set 12th bit to 1 
+  594,429 ( 0.23%) meta |= SINGLE_BIT_LOOKUP[11];
+        .  } .  else { .  // set 12th bit to 0 26,766 ( 0.01%) meta &= ~SINGLE_BIT_LOOKUP[11]; .  } . 207,065 ( 
+  0.08%) return meta; 414,130 ( 0.16%) }
+        . .  // parses a fen string into a gamestate 5 ( 0.00%) u64 *parseFen(u64 *gameState, char *fenStr) { .  int 
+        i; .  // fen starts from top left of the board (index 56 in our board representation) 1 ( 0.00%) int index = 
+        56; 1 ( 0.00%) u64 whitePieces = 0LLU; 1 ( 0.00%) u64 whitePawns = 0LLU; 1 ( 0.00%) u64 whiteKnights = 0LLU; 
+        1 ( 0.00%) u64 whiteBishops = 0LLU; 1 ( 0.00%) u64 whiteRooks = 0LLU; 1 ( 0.00%) u64 whiteQueens = 0LLU; 1 ( 
+        0.00%) u64 whiteKings = 0LLU; . 1 ( 0.00%) u64 blackPieces = 0LLU; 1 ( 0.00%) u64 blackPawns = 0LLU; 1 ( 
+        0.00%) u64 blackKnights = 0LLU; 1 ( 0.00%) u64 blackBishops = 0LLU; 1 ( 0.00%) u64 blackRooks = 0LLU; 1 ( 
+        0.00%) u64 blackQueens = 0LLU; 1 ( 0.00%) u64 blackKings = 0LLU; . 1 ( 0.00%) u64 otherGameInfo = 0; . 9 ( 
+        0.00%) int fenStrLength = strlen(fenStr);
+      702 ( 0.00%) => ???:_dl_runtime_resolve_xsave (1x) . .  // is the board part in fen finished 1 ( 0.00%) bool 
+        isBoardFinished = false; . .  // is the side part in fen finished 1 ( 0.00%) bool isSideFinished = false; . 
+        .  // is the castling part in fen finished 1 ( 0.00%) bool isCastlingFinished = false; . .  // is the en 
+        passant part in fen finished 1 ( 0.00%) bool isEnPassantFinished = false; . .  // is the halfmove part 
+        (50-move rule) in fen finished (TODO) 1 ( 0.00%) bool isHalfMoveFinished = false; . .  // is the fullmove 
+        part in fen finished (TODO) 1 ( 0.00%) bool isFullMoveFinished = false; .
+      233 ( 0.00%) for (i = 0; i < fenStrLength; i++) { 342 ( 0.00%) char fenChar = fenStr[i]; . 228 ( 0.00%) if 
+      (!isBoardFinished) {
+       88 ( 0.00%) if (fenChar == 'p') { 48 ( 0.00%) blackPawns = fillSquare(blackPawns, index); 96 ( 0.00%) => 
+       Utilities.c:fillSquare (8x) 56 ( 0.00%) blackPieces = fillSquare(blackPieces, index); 96 ( 0.00%) => 
+       Utilities.c:fillSquare (8x)
+        .  } 72 ( 0.00%) else if (fenChar == 'n') { 12 ( 0.00%) blackKnights = fillSquare(blackKnights, index); 24 ( 
+       0.00%) => Utilities.c:fillSquare (2x) 14 ( 0.00%) blackPieces = fillSquare(blackPieces, index); 24 ( 0.00%) 
+       => Utilities.c:fillSquare (2x)
+        .  } 68 ( 0.00%) else if (fenChar == 'b') { 12 ( 0.00%) blackBishops = fillSquare(blackBishops, index); 24 ( 
+       0.00%) => Utilities.c:fillSquare (2x) 14 ( 0.00%) blackPieces = fillSquare(blackPieces, index); 24 ( 0.00%) 
+       => Utilities.c:fillSquare (2x)
+        .  } 64 ( 0.00%) else if (fenChar == 'r') { 12 ( 0.00%) blackRooks = fillSquare(blackRooks, index); 24 ( 
+       0.00%) => Utilities.c:fillSquare (2x) 14 ( 0.00%) blackPieces = fillSquare(blackPieces, index); 24 ( 0.00%) 
+       => Utilities.c:fillSquare (2x)
+        .  } 60 ( 0.00%) else if (fenChar == 'q') { 6 ( 0.00%) blackQueens = fillSquare(blackQueens, index); 12 ( 
+       0.00%) => Utilities.c:fillSquare (1x)
+        7 ( 0.00%) blackPieces = fillSquare(blackPieces, index); 12 ( 0.00%) => Utilities.c:fillSquare (1x) .  } 58 
+       ( 0.00%) else if (fenChar == 'k') {
+        6 ( 0.00%) blackKings = fillSquare(blackKings, index); 12 ( 0.00%) => Utilities.c:fillSquare (1x) 7 ( 0.00%) 
+        blackPieces = fillSquare(blackPieces, index);
+       12 ( 0.00%) => Utilities.c:fillSquare (1x) .  } . 56 ( 0.00%) else if (fenChar == 'P') { 48 ( 0.00%) 
+       whitePawns = fillSquare(whitePawns, index); 96 ( 0.00%) => Utilities.c:fillSquare (8x) 56 ( 0.00%) 
+       whitePieces = fillSquare(whitePieces, index); 96 ( 0.00%) => Utilities.c:fillSquare (8x)
+        .  } 40 ( 0.00%) else if (fenChar == 'N') { 12 ( 0.00%) whiteKnights = fillSquare(whiteKnights, index); 24 ( 
+       0.00%) => Utilities.c:fillSquare (2x) 14 ( 0.00%) whitePieces = fillSquare(whitePieces, index); 24 ( 0.00%) 
+       => Utilities.c:fillSquare (2x)
+        .  } 36 ( 0.00%) else if (fenChar == 'B') { 12 ( 0.00%) whiteBishops = fillSquare(whiteBishops, index); 24 ( 
+       0.00%) => Utilities.c:fillSquare (2x) 14 ( 0.00%) whitePieces = fillSquare(whitePieces, index); 24 ( 0.00%) 
+       => Utilities.c:fillSquare (2x)
+        .  } 32 ( 0.00%) else if (fenChar == 'R') { 12 ( 0.00%) whiteRooks = fillSquare(whiteRooks, index); 24 ( 
+       0.00%) => Utilities.c:fillSquare (2x) 14 ( 0.00%) whitePieces = fillSquare(whitePieces, index); 24 ( 0.00%) 
+       => Utilities.c:fillSquare (2x)
+        .  } 28 ( 0.00%) else if (fenChar == 'Q') { 6 ( 0.00%) whiteQueens = fillSquare(whiteQueens, index); 12 ( 
+       0.00%) => Utilities.c:fillSquare (1x)
+        7 ( 0.00%) whitePieces = fillSquare(whitePieces, index); 12 ( 0.00%) => Utilities.c:fillSquare (1x) .  } 26 
+       ( 0.00%) else if (fenChar == 'K') {
+        6 ( 0.00%) whiteKings = fillSquare(whiteKings, index); 12 ( 0.00%) => Utilities.c:fillSquare (1x) 6 ( 0.00%) 
+        whitePieces = fillSquare(whitePieces, index);
+       12 ( 0.00%) => Utilities.c:fillSquare (1x) .  } . 88 ( 0.00%) if (fenChar == '/') { 14 ( 0.00%) index -= 16; 
+        .  } . .  // means there are that many spaces in the chess board
+      411 ( 0.00%) else if (isdigit(fenChar)) { 713 ( 0.00%) => ???:_dl_runtime_resolve_xsave (1x) 144 ( 0.00%) => 
+      ???:__ctype_b_loc (36x)
+        .  // adds the character after it is converted to an integer 16 ( 0.00%) index += fenChar - '0'; .  } .  // 
+        stop putting pieces after the first space
+       66 ( 0.00%) else if (fenChar == ' ') { 2 ( 0.00%) isBoardFinished = true; .  } .  // is a chess piece .  else 
+        {
+       64 ( 0.00%) index++; .  } .  } 52 ( 0.00%) else if (!isSideFinished) { .  // white to move 4 ( 0.00%) if 
+        (fenChar == 'w') { 6 ( 0.00%) otherGameInfo = setSideToPlay(otherGameInfo, 1);
+       12 ( 0.00%) => Utilities.c:setSideToPlay (1x) .  } .  // black to move 2 ( 0.00%) else if (fenChar == 'b') { 
+        .  otherGameInfo = setSideToPlay(otherGameInfo, -1); .  } . 4 ( 0.00%) if (fenChar == ' ') { 2 ( 0.00%) 
+        isSideFinished = true; .  } .  }
+       44 ( 0.00%) else if (!isCastlingFinished) { .  // white castles kingside (short) 10 ( 0.00%) if (fenChar == 
+       'K') {
+        5 ( 0.00%) otherGameInfo = setWhiteCastleShort(otherGameInfo); 7 ( 0.00%) => Utilities.c:setWhiteCastleShort 
+        (1x) .  } .  // white castles queenside (long) 8 ( 0.00%) else if (fenChar == 'Q') { 5 ( 0.00%) 
+        otherGameInfo = setWhiteCastleLong(otherGameInfo); 8 ( 0.00%) => Utilities.c:setWhiteCastleLong (1x) .  } .  
+        // black castles kingside (short)
+        6 ( 0.00%) else if (fenChar == 'k') { 5 ( 0.00%) otherGameInfo = setBlackCastleShort(otherGameInfo); 8 ( 
+        0.00%) => Utilities.c:setBlackCastleShort (1x) .  } .  // black castles queenside (long) 4 ( 0.00%) else if 
+        (fenChar == 'q') { 4 ( 0.00%) otherGameInfo = setBlackCastleLong(otherGameInfo); 8 ( 0.00%) => 
+        Utilities.c:setBlackCastleLong (1x) .  } .
+       10 ( 0.00%) if (fenChar == ' ') { 2 ( 0.00%) isCastlingFinished = true; .  } .  } 24 ( 0.00%) else if 
+       (!isEnPassantFinished) {
+        .  // no en passant 4 ( 0.00%) if (fenChar == '-') { 2 ( 0.00%) continue; .  } .  // second character in a 
+        move
+       11 ( 0.00%) else if (isdigit(fenChar) != 0) { 4 ( 0.00%) => ???:__ctype_b_loc (1x) .  continue; .  } 2 ( 
+        0.00%) else if (fenChar == ' ') { 2 ( 0.00%) isEnPassantFinished = true; .  } .  // first character in a 
+        move (eg. e3) .  else { .  // convert character to column index: example: d -> 3 .  int column = fenChar - 
+        'a'; .  // column number is the next character, minus one to get zero-based index .  int row = fenStr[i + 1] 
+        - '0' - 1; .  // index used by fen is the square that is behind the moved pawn
+-- line 300 ---------------------------------------- -- line 314 ---------------------------------------- .  } . .  
+        otherGameInfo = setEnPassantAllowed(otherGameInfo, true); .  otherGameInfo = 
+        setEnPassantSquare(otherGameInfo, enPassantPieceIndex); .  } .  } .  } . 3 ( 0.00%) gameState[0] = 
+        whitePieces; 4 ( 0.00%) gameState[1] = whitePawns; 4 ( 0.00%) gameState[2] = whiteKnights; 4 ( 0.00%) 
+        gameState[3] = whiteBishops; 4 ( 0.00%) gameState[4] = whiteRooks; 4 ( 0.00%) gameState[5] = whiteQueens; 4 
+        ( 0.00%) gameState[6] = whiteKings; . 4 ( 0.00%) gameState[7] = blackPieces; 4 ( 0.00%) gameState[8] = 
+        blackPawns; 4 ( 0.00%) gameState[9] = blackKnights; 4 ( 0.00%) gameState[10] = blackBishops; 4 ( 0.00%) 
+        gameState[11] = blackRooks; 4 ( 0.00%) gameState[12] = blackQueens; 4 ( 0.00%) gameState[13] = blackKings; . 
+        4 ( 0.00%) gameState[14] = otherGameInfo; . 1 ( 0.00%) return gameState; 2 ( 0.00%) } . .  const int 
+        index64Forward[64] = { .  0, 1, 48, 2, 57, 49, 28, 3, .  61, 58, 50, 42, 38, 29, 17, 4, .  62, 55, 59, 36, 
+        53, 51, 43, 22, .  45, 39, 33, 30, 24, 18, 12, 5, .  63, 47, 56, 27, 60, 41, 37, 16, .  54, 35, 52, 21, 44, 
+        32, 23, 11, .  46, 26, 40, 15, 34, 20, 31, 10, .  25, 14, 19, 9, 13, 8, 7, 6 .  }; . .  // gets the least 
+        significant bit using de brujn bitscan algorithm
+3,323,960 ( 1.27%) int bitScanForward(u64 board) { 1,661,980 ( 0.64%) const u64 debruijn64 = 0x03f79d71b4cb0a89; 
+1,661,980 ( 0.64%) assert (board != 0); 6,647,920 ( 2.54%) return index64Forward[((board & -board) * debruijn64) >> 
+58]; 1,661,980 ( 0.64%) }
+        . .  const int index64Reverse[64] = { .  0, 47, 1, 56, 48, 27, 2, 60, .  57, 49, 41, 37, 28, 16, 3, 61, .  
+        54, 58, 35, 52, 50, 42, 21, 44, .  38, 32, 29, 23, 17, 11, 4, 62, .  46, 55, 26, 59, 40, 36, 15, 53, .  34, 
+        51, 20, 43, 31, 22, 10, 45, .  25, 39, 14, 33, 19, 30, 9, 24, .  13, 18, 8, 12, 7, 6, 5, 63 .  }; . .  // 
+        gets the most significant bit using de brujn bitscan algorithm
+3,342,796 ( 1.28%) int bitScanReverse(u64 board) { 1,671,398 ( 0.64%) const u64 debruijn64 = 0x03f79d71b4cb0a89; 
+1,671,398 ( 0.64%) assert (board != 0); 2,507,097 ( 0.96%) board |= board >> 1; 2,507,097 ( 0.96%) board |= board >> 
+2; 2,507,097 ( 0.96%) board |= board >> 4; 2,507,097 ( 0.96%) board |= board >> 8; 2,507,097 ( 0.96%) board |= board 
+>> 16;
+2,507,097 ( 0.96%) board |= board >> 32; 5,014,194 ( 1.92%) return index64Reverse[(board * debruijn64) >> 58]; 
+1,671,398 ( 0.64%) } -------------------------------------------------------------------------------- Ir 
+-------------------------------------------------------------------------------- 261,416,544 (99.88%) events 
+annotated

@@ -48,12 +48,6 @@ u64 getThreatMap(int originSquare, int side) {
         pawnPattern = getWhitePawnAttackMaps(gameState, originSquare);
         threatMap |= (pawnPattern & blackPawns);
 
-        if (originSquare == 57) {
-            if (threatMap != 0) {
-                printf("threat from: %d\n", bitScanForward(threatMap));
-            }
-        }
-
         knightPattern = getKnightMaps(gameState, originSquare);
         threatMap |= (knightPattern & blackKnights);
 

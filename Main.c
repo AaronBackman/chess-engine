@@ -11,6 +11,7 @@
 #include "Utilities.h"
 #include "Perft.h"
 #include "Init.h"
+#include "Search.h"
 
 void printBoard() {
     u64 *gameState = GAME_STATE_STACK[GAME_STATE_STACK_POINTER];
@@ -128,45 +129,44 @@ void gameLoop() {
             return;
         }
 
-        printf("from:");
-        scanf("%d", &inputFrom);
-        printf("to:");
-        scanf("%d", &inputTo);
+        if (side == 1) {
+            printf("from:");
+            scanf("%d", &inputFrom);
+            printf("to:");
+            scanf("%d", &inputTo);
 
-        // translate inputs to coordinates
-        from = inputFrom / 10 - 1 + (inputFrom % 10 - 1) * 8;
-        to = inputTo / 10 - 1 + (inputTo % 10 - 1) * 8;
+            // translate inputs to coordinates
+            from = inputFrom / 10 - 1 + (inputFrom % 10 - 1) * 8;
+            to = inputTo / 10 - 1 + (inputTo % 10 - 1) * 8;
 
-        moveIsLegal = false;
-        for (i = 0; i < legalMoveCount; i++) {
-            legalMove = legalMoves[i];
+            moveIsLegal = false;
+            for (i = 0; i < legalMoveCount; i++) {
+                legalMove = legalMoves[i];
 
-            printf("some move: from: %d, to: %d\n", legalMoves[i].from, legalMoves[i].to);
+                if (legalMove.promotion != 0 && legalMove.promotion != 4) continue;
 
-            if (legalMove.promotion != 0 && legalMove.promotion != 4) continue;
+                if (legalMove.from != from) {
+                    continue;
+                }
 
-            if (legalMove.from != from) {
-                continue;
+                if (legalMove.to != to) {
+                    continue;
+                }
+
+                moveIsLegal = true;
+                selectedMove = legalMove;
+                break;
             }
 
-            if (legalMove.to != to) {
+            if (!moveIsLegal) {
+                printf("move is not legal\n");
                 continue;
             }
-
-            moveIsLegal = true;
-            selectedMove = legalMove;
-            break;
+        }
+        else {
+            selectedMove = negaMaxRoot(ALPHA_BETA_MIN, ALPHA_BETA_MAX, DEPTH, side);
         }
 
-        if (!moveIsLegal) {
-            printf("move is not legal\n");
-            continue;
-        }
-
-        if (legalMoveCount == 0) {
-            printf("draw\n");
-            return;
-        }
 
         makeMove(selectedMove);
         if (isKingThreatened(side)) {
@@ -189,19 +189,17 @@ void main(void) {
     int leastBit;
     GAME_STATE_STACK_POINTER++;
     u64 *gameState = GAME_STATE_STACK[GAME_STATE_STACK_POINTER];
-    char fenStr[] = "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - ";
+    char fenStr[] = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ";
 
     // some important initializations
     setLookUpTables();
 
     gameState = parseFen(gameState, fenStr);
 
-    leastBit = bitScanForward(KNIGHT_LOOKUP_PATTERN[1]);
-
     //printf("least bit: %d\n", leastBit);
 
-    //gameLoop();
-    perftDivide(7);
+    gameLoop();
+    //perftDivide(4);
 }
 
 // compile with gcc -o Program *.c

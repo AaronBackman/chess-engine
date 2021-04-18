@@ -1,7 +1,7 @@
 # callgrind format
 version: 1
 creator: callgrind-3.16.1
-pid: 5349
+pid: 8426
 cmd:  ./Program
 part: 1
 
@@ -10,217 +10,21 @@ desc: I1 cache:
 desc: D1 cache: 
 desc: LL cache: 
 
-desc: Timerange: Basic block 0 - 32698979
+desc: Timerange: Basic block 0 - 24664920
 desc: Trigger: Program termination
 
 positions: line
 events: Ir
-summary: 307724216
+summary: 261723838
 
 
 ob=(3) /usr/lib/libc-2.33.so
 fl=(3) ???
-fn=(192) strcasecmp
-0 7
-
-fn=(194) strcat
-0 7
-
-ob=(1) /usr/lib/ld-2.33.so
-fl=(1) ???
-fn=(4) __rtld_malloc_init_stubs
-0 10
-
-fn=(90) handle_preload_list
-0 24
-
-ob=(3)
-fl=(3)
-fn=(194)
-0 4
-
-fn=(526) alloc_perturb
-0 12
-
-fn=(572) new_do_write
-0 399
-
-ob=(1)
-fl=(1)
-fn=(90)
-0 4
-cfn=(94) do_preload
-calls=1 0 
-0 2743
-0 6
-cfn=(92) strcspn
-calls=1 0 
-0 220
-0 8
-cfn=(46) memcpy
-calls=1 0 
-0 19
-0 11
-
-fn=(156) _dl_sort_maps
-0 58
-cfn=(82) memset
-calls=2 0 
-0 32
-0 244
-cfn=(82)
-calls=4 0 
-0 68
-0 55
-
-fn=(56) strcmp
-0 1359
-
-ob=(3)
-fl=(3)
-fn=(572)
-0 126
-cfn=(574) _IO_file_write@@GLIBC_2.2.5
-calls=21 0 
-0 966
-0 651
-
-fn=(590) __run_exit_handlers
-0 68
-cob=(1)
-cfi=(1)
-cfn=(594) _dl_fini
-calls=1 0 
-0 709
-0 23
-cfn=(632) _IO_cleanup
-calls=1 0 
-0 344
-0 5
-cfn=(642) _Exit
-calls=1 0 
-0 5
-0 1
-cfn=(592) __call_tls_dtors
-calls=1 0 
-0 12
-0 1
-
-fn=(604) __unregister_atfork
-0 34
-
-fn=(638) _IO_default_setbuf
-0 19
-cfn=(640) _IO_file_sync@@GLIBC_2.2.5
-calls=1 0 
-0 18
-0 32
-
-fn=(186) __x86_cacheinfo
-0 34
-
-fn=(212) memset
-0 18
-
-fn=(244) wcslen
-0 12
-
-fn=(252) wmemcmp
-0 14
-
-fn=(256) strncasecmp_l
-0 7
-
-fn=(302) _init_first
-0 11
-
-ob=(1)
-fl=(1)
-fn=(56)
-0 6099
-
-fn=(88) _dl_debug_state
-0 4
-
-fn=(132) mmap
-0 226
-
-fn=(164) _dl_check_map_versions
-0 162
-cfn=(110) _dl_name_match_p
-calls=7 0 
-0 613
-0 619
-cfn=(56)
-calls=7 0 
-0 394
-0 391
-cfn=(42) rtld_calloc
-calls=3 0 
-0 102
-0 920
-
-fn=(48) _dl_add_to_namespace_list
-0 27
-cfn=(50) rtld_lock_default_lock_recursive
-calls=3 0 
-0 9
-0 68
-cfn=(52) rtld_lock_default_unlock_recursive
-calls=2 0 
-0 6
-0 12
-cfn=(52)
-calls=1 0 
-0 3
-0 2
-
-fn=(60) uname
-0 6
-
-fn=(66) _dl_hwcaps_subdirs_active
-0 28
-
-ob=(3)
-fl=(3)
-fn=(302)
-0 8
-cfn=(304) __init_misc
-calls=1 0 
-0 61
-
-fn=(224) memcpy@@GLIBC_2.14
+fn=(204) mempcpy
 0 16
 
-fn=(544) _IO_file_overflow@@GLIBC_2.2.5
-0 683
-cfn=(560) _IO_do_write@@GLIBC_2.2.5
-calls=22 0 
-0 2399
-0 2
-cfn=(546) _IO_doallocbuf
-calls=1 0 
-0 330
-0 6
-
-fn=(592)
-0 12
-
-fn=(214) wcschr
-0 24
-
-fn=(276) __libc_early_init
-0 4
-cfn=(278) __ctype_init
-calls=1 0 
-0 17
-0 5
-
-fn=(226) wcsnlen
-0 11
-
-fn=(396) __ctype_b_loc
-0 152
+fn=(228) wmemset
+0 32
 
 fn=(518) sysmalloc
 0 85
@@ -241,7 +45,7 @@ cfn=(564) 0x000000000487a5c0
 calls=82 0 
 0 1618
 0 2112
-cfn=(544)
+cfn=(544) _IO_file_overflow@@GLIBC_2.2.5
 calls=22 0 
 0 3284
 0 356
@@ -250,33 +54,40 @@ calls=1 0
 0 246
 0 1573
 
-fn=(574)
-0 294
-cfn=(576) write
-calls=21 0 
-0 189
-0 483
-
-fn=(218) strcspn
-0 7
-
-fn=(304)
-0 13
-cob=(2)
-cfi=(2)
-cfn=(306) 0x000000000487a600
+fn=(636) _IO_file_setbuf@@GLIBC_2.2.5
+0 4
+cfn=(638) _IO_default_setbuf
 calls=1 0 
-0 36
+0 69
 0 12
 
-fn=(188) memmove
-0 32
-
-fn=(216) strnlen
-0 24
-
-fn=(232) strpbrk
+fn=(230) wcscpy
 0 7
+
+fn=(248) stpncpy
+0 11
+
+fn=(308) __strrchr_avx2
+0 34
+
+fn=(310) check_stdfiles_vtables
+0 12
+
+fn=(318) __cxa_atexit
+0 3
+cfn=(320) __internal_atexit
+calls=1 0 
+0 72
+
+fn=(320)
+0 20
+cfn=(322) __new_exitfn
+calls=1 0 
+0 32
+0 20
+
+fn=(206) bcmp
+0 14
 
 fn=(548) _IO_file_doallocate
 0 23
@@ -298,20 +109,31 @@ calls=1 0
 fn=(558)
 0 28
 
-fn=(584) _int_free
-0 1220
-
-fn=(636) _IO_file_setbuf@@GLIBC_2.2.5
-0 4
-cfn=(638)
+fn=(588) exit
+0 6
+cfn=(590) __run_exit_handlers
 calls=1 0 
-0 69
+0 1168
+
+fn=(634) _IO_flush_all_lockp
+0 111
+
+fn=(208) strncmp
+0 11
+
+fn=(234) index
+0 11
+
+fn=(242) memchr
 0 12
 
-fn=(278)
-0 17
+fn=(254) strchrnul
+0 12
 
-fn=(190) strncpy
+fn=(192) strcasecmp
+0 7
+
+fn=(194) strcat
 0 11
 
 fn=(506) malloc
@@ -410,294 +232,24 @@ calls=1 0
 0 23
 0 11
 
-fn=(546)
+fn=(546) _IO_doallocbuf
 0 20
 cfn=(548)
 calls=1 0 
 0 304
 0 6
 
-fn=(588) exit
-0 6
-cfn=(590)
-calls=1 0 
-0 1168
+fn=(576) write
+0 189
 
-fn=(634) _IO_flush_all_lockp
-0 111
-
-fn=(198) rawmemchr
-0 12
-
-fn=(210) strcmp
-0 11
-
-fn=(236) strlen
-0 24
-
-fn=(316) (below main)
-0 18
-cfn=(318) __cxa_atexit
-calls=1 0 
-0 75
-0 11
-cob=(5) /home/main/portfolio/chess/Program
-cfi=(5) ???
-cfn=(324) __libc_csu_init
-calls=1 0 
-0 53
-0 8
-cfn=(336) _setjmp
-calls=1 0 
-0 34
-0 15
-cob=(5)
-cfi=(6) /home/main/portfolio/chess/Main.c
-cfn=(342) main
-calls=1 188 
-0 307593659
-
-ob=(1)
-fl=(1)
-fn=(66)
-0 19
-
-fn=(80) mempcpy
-0 152
-
-fn=(136) access
-0 9
-
-fn=(142) _dl_load_cache_lookup
-0 19
-cfn=(146) search_cache
-calls=1 0 
-0 1205
-0 7
-cfn=(32) strlen
-calls=1 0 
-0 35
-0 8
-cfn=(46)
-calls=1 0 
-0 11
-0 2
-cfn=(116) strdup
-calls=1 0 
-0 89
-0 8
-cfn=(144) _dl_sysdep_read_whole_file
-calls=1 0 
+fn=(582) free
+0 480
+cfn=(584) _int_free
+calls=20 0 
+0 1220
 0 100
-0 32
 
-fn=(170) _dl_determine_tlsoffset
-0 74
-
-fn=(386) _dl_runtime_resolve_xsave
-0 130
-cfn=(388) _dl_fixup
-calls=5 0 
-0 3178
-0 75
-
-fn=(34) sbrk
-0 15
-
-fn=(124) rtld_free
-0 10
-
-fn=(266) __rtld_malloc_init_real
-0 92
-cfn=(268) lookup_malloc_symbol
-calls=1 0 
-0 582
-0 5
-cfn=(268)
-calls=1 0 
-0 567
-0 5
-cfn=(268)
-calls=1 0 
-0 583
-0 5
-cfn=(268)
-calls=1 0 
-0 626
-0 11
-
-fn=(8) _dl_sysdep_start
-0 396
-cfn=(10) __GI___tunables_init
-calls=1 0 
-0 14520
-0 2
-cfn=(12) brk
-calls=1 0 
-0 8
-0 1
-cfn=(14) _dl_x86_init_cpu_features
-calls=1 0 
-0 6683
-0 4
-cfn=(32)
-calls=1 0 
-0 17
-0 3
-cfn=(34)
-calls=1 0 
-0 15
-0 11
-cfn=(36) dl_main
-calls=1 0 
-0 106433
-0 9
-
-fn=(12)
-0 8
-
-fn=(58) _dl_discover_osversion
-0 10
-cfn=(60)
-calls=1 0 
-0 6
-0 85
-
-fn=(102) _dl_catch_exception
-0 57
-cfn=(104) __sigsetjmp
-calls=3 0 
-0 72
-0 21
-cfn=(140) openaux
-calls=2 0 
-0 5045
-cfn=(106) map_doit
-calls=1 0 
-0 2628
-0 30
-
-fn=(140)
-0 30
-cfn=(108) _dl_map_object
-calls=2 0 
-0 5009
-0 6
-
-fn=(94)
-0 17
-cob=(2)
-cfi=(2)
-cfn=(96) 0x0000000004001080
-calls=1 0 
-0 2715
-0 11
-
-fn=(138) _dl_map_object_deps
-0 136
-cfn=(44) rtld_malloc
-calls=2 0 
-0 50
-0 18
-cfn=(46)
-calls=2 0 
-0 22
-0 10
-cfn=(46)
-calls=2 0 
-0 22
-0 81
-cob=(2)
-cfi=(2)
-cfn=(100) 0x0000000004001050
-calls=2 0 
-0 5169
-0 355
-cfn=(114) _dl_dst_count
-calls=2 0 
-0 108
-0 172
-cfn=(44)
-calls=1 0 
-0 25
-0 89
-cfn=(156)
-calls=1 0 
-0 218
-0 78
-cfn=(154) __libc_scratch_buffer_set_array_size
-calls=2 0 
-0 36
-0 12
-cfn=(46)
-calls=1 0 
-0 11
-0 7
-
-fn=(146)
-0 19
-cfn=(56)
-calls=1 0 
-0 25
-0 9
-cfn=(28) __tunable_get_val
-calls=1 0 
-0 21
-0 120
-cfn=(148) _dl_cache_libcmp
-calls=9 0 
-0 657
-0 77
-cfn=(148)
-calls=2 0 
-0 216
-0 61
-
-fn=(262) _dl_add_to_slotinfo
-0 28
-
-fn=(274) _dl_lookup_direct
-0 16
-
-ob=(3)
-fl=(3)
-fn=(316)
-0 2
-cfn=(588)
-calls=1 0 
-0 1174
-
-fn=(340) __sigjmp_save
-0 9
-
-fn=(196) rindex
-0 12
-
-fn=(220) strncasecmp
-0 7
-
-fn=(222) strcpy
-0 11
-
-fn=(390) __strlen_avx2
-0 349
-
-fn=(524) brk
-0 18
-
-fn=(538) __strchrnul_avx2
-0 1422
-
-fn=(552) fstat
-0 5
-cfn=(554) fstatat
-calls=1 0 
-0 8
-
-fn=(566) __mempcpy_avx_unaligned_erms
-0 1454
-
-fn=(632)
+fn=(632) _IO_cleanup
 0 13
 cfn=(634)
 calls=1 0 
@@ -708,29 +260,67 @@ calls=1 0
 0 85
 0 58
 
-fn=(202) wcscmp
+fn=(186) __x86_cacheinfo
+0 34
+
+fn=(212) memset
+0 18
+
+fn=(244) wcslen
 0 12
 
-fn=(240) strcasecmp_l
+fn=(252) wmemcmp
+0 14
+
+fn=(256) strncasecmp_l
 0 7
 
-fn=(246) strspn
-0 7
-
-fn=(322) __new_exitfn
-0 32
-
-fn=(338) __sigsetjmp
-0 22
-cfn=(340)
+fn=(302) _init_first
+0 19
+cfn=(304) __init_misc
 calls=1 0 
-0 9
+0 61
 
-fn=(200) wmemchr
+fn=(224) memcpy@@GLIBC_2.14
+0 16
+
+fn=(524) brk
+0 18
+
+fn=(538) __strchrnul_avx2
+0 1338
+
+fn=(552) fstat
+0 5
+cfn=(554) fstatat
+calls=1 0 
+0 8
+
+fn=(566) __mempcpy_avx_unaligned_erms
+0 1454
+
+fn=(572) new_do_write
+0 525
+cfn=(574) _IO_file_write@@GLIBC_2.2.5
+calls=21 0 
+0 966
+0 651
+
+fn=(214) wcschr
 0 24
 
-fn=(238) memrchr
-0 12
+fn=(276) __libc_early_init
+0 4
+cfn=(278) __ctype_init
+calls=1 0 
+0 17
+0 5
+
+fn=(226) wcsnlen
+0 11
+
+fn=(396) __ctype_b_loc
+0 152
 
 fn=(514)
 0 13
@@ -761,7 +351,7 @@ fn=(532) printf
 0 525
 cfn=(534) __vfprintf_internal
 calls=21 0 
-0 24960
+0 24876
 0 105
 
 fn=(534)
@@ -770,7 +360,7 @@ cob=(2)
 cfi=(2)
 cfn=(536) 0x000000000487a3b0
 calls=21 0 
-0 525
+0 521
 0 420
 cfn=(540)
 calls=21 0 
@@ -780,7 +370,7 @@ cob=(2)
 cfi=(2)
 cfn=(536)
 calls=41 0 
-0 1021
+0 941
 0 533
 cfn=(540)
 calls=41 0 
@@ -805,20 +395,29 @@ calls=20 0
 0 360
 0 82
 
-fn=(250) stpcpy
-0 11
+fn=(642) _Exit
+0 5
 
-fn=(336)
-0 3
-cfn=(338)
+fn=(218) strcspn
+0 7
+
+fn=(304)
+0 13
+cob=(2)
+cfi=(2)
+cfn=(306) 0x000000000487a600
 calls=1 0 
-0 31
+0 36
+0 12
 
-fn=(204) mempcpy
-0 16
-
-fn=(228) wmemset
+fn=(188) memmove
 0 32
+
+fn=(216) strnlen
+0 24
+
+fn=(232) strpbrk
+0 7
 
 fn=(508)
 0 9
@@ -832,7 +431,7 @@ calls=1 0
 
 fn=(516)
 0 400
-cfn=(526)
+cfn=(526) alloc_perturb
 calls=2 0 
 0 8
 0 3
@@ -851,43 +450,35 @@ cfn=(552)
 calls=1 0 
 0 13
 
-fn=(560)
+fn=(560) _IO_do_write@@GLIBC_2.2.5
 0 131
 cfn=(572)
 calls=21 0 
 0 2142
 0 126
 
-fn=(642)
-0 5
+fn=(574)
+0 294
+cfn=(576)
+calls=21 0 
+0 189
+0 483
 
-fn=(230) wcscpy
-0 7
-
-fn=(248) stpncpy
-0 11
-
-fn=(308) __strrchr_avx2
+fn=(602) __cxa_finalize
+0 94
+cfn=(604) __unregister_atfork
+calls=2 0 
 0 34
+0 24
 
-fn=(310) check_stdfiles_vtables
-0 12
+fn=(640) _IO_file_sync@@GLIBC_2.2.5
+0 18
 
-fn=(318)
-0 3
-cfn=(320) __internal_atexit
-calls=1 0 
-0 72
+fn=(278)
+0 17
 
-fn=(320)
-0 20
-cfn=(322)
-calls=1 0 
-0 32
-0 20
-
-fn=(206) bcmp
-0 14
+fn=(190) strncpy
+0 11
 
 fn=(554)
 0 8
@@ -902,42 +493,171 @@ calls=4 0
 fn=(570)
 0 1512
 
-fn=(576)
-0 189
-
-fn=(582) free
-0 480
-cfn=(584)
-calls=20 0 
+fn=(584)
 0 1220
-0 100
 
-fn=(602) __cxa_finalize
-0 94
-cfn=(604)
-calls=2 0 
+fn=(590)
+0 68
+cob=(1) /usr/lib/ld-2.33.so
+cfi=(1) ???
+cfn=(594) _dl_fini
+calls=1 0 
+0 709
+0 23
+cfn=(632)
+calls=1 0 
+0 344
+0 5
+cfn=(642)
+calls=1 0 
+0 5
+0 1
+cfn=(592) __call_tls_dtors
+calls=1 0 
+0 12
+0 1
+
+fn=(604)
 0 34
+
+fn=(638)
+0 19
+cfn=(640)
+calls=1 0 
+0 18
+0 32
+
+fn=(198) rawmemchr
+0 12
+
+fn=(210) strcmp
+0 11
+
+fn=(236) strlen
 0 24
 
-fn=(640)
+fn=(316) (below main)
 0 18
-
-fn=(208) strncmp
+cfn=(318)
+calls=1 0 
+0 75
 0 11
+cob=(5) /home/main/portfolio/chess/Program
+cfi=(5) ???
+cfn=(324) __libc_csu_init
+calls=1 0 
+0 53
+0 8
+cfn=(336) _setjmp
+calls=1 0 
+0 34
+0 15
+cob=(5)
+cfi=(6) /home/main/portfolio/chess/Main.c
+cfn=(342) main
+calls=1 188 
+0 261593281
+0 2
+cfn=(588)
+calls=1 0 
+0 1174
 
-fn=(234) index
-0 11
+fn=(340) __sigjmp_save
+0 9
 
-fn=(242) memchr
+fn=(196) rindex
 0 12
 
-fn=(254) strchrnul
+fn=(220) strncasecmp
+0 7
+
+fn=(222) strcpy
+0 11
+
+fn=(390) __strlen_avx2
+0 349
+
+fn=(526)
 0 12
+
+fn=(592)
+0 12
+
+fn=(202) wcscmp
+0 12
+
+fn=(240) strcasecmp_l
+0 7
+
+fn=(246) strspn
+0 7
+
+fn=(322)
+0 32
+
+fn=(338) __sigsetjmp
+0 22
+cfn=(340)
+calls=1 0 
+0 9
+
+fn=(200) wmemchr
+0 24
+
+fn=(238) memrchr
+0 12
+
+fn=(544)
+0 683
+cfn=(560)
+calls=22 0 
+0 2399
+0 2
+cfn=(546)
+calls=1 0 
+0 330
+0 6
+
+fn=(250) stpcpy
+0 11
+
+fn=(336)
+0 3
+cfn=(338)
+calls=1 0 
+0 31
 
 ob=(2)
 fl=(2)
-fn=(326) 0x0000000000109000
+fn=(542)
+0 40
+cob=(3)
+cfi=(3)
+cfn=(390)
+calls=20 0 
+0 320
+
+fn=(512)
+0 24
+cob=(1)
+cfi=(1)
+cfn=(28) __tunable_get_val
+calls=12 0 
+0 249
+
+fn=(630) 0x0000000004834288
+0 4
+
+fn=(292) 0x0000000004834000
 0 7
+
+fn=(100) 0x0000000004001050
+0 6
+cob=(1)
+cfi=(1)
+cfn=(102) _dl_catch_exception
+calls=3 0 
+0 7853
 
 fn=(564)
 0 164
@@ -947,44 +667,6 @@ cfn=(566)
 calls=82 0 
 0 1454
 
-fn=(556)
-0 2
-cob=(3)
-cfi=(3)
-cfn=(506)
-calls=1 0 
-0 195
-
-fn=(292) 0x0000000004834000
-0 7
-
-fn=(536)
-0 124
-cob=(3)
-cfi=(3)
-cfn=(538)
-calls=62 0 
-0 1422
-
-fn=(614) 0x000000000010f188
-0 4
-
-fn=(100)
-0 6
-cob=(1)
-cfi=(1)
-cfn=(102)
-calls=3 0 
-0 7853
-
-fn=(542)
-0 40
-cob=(3)
-cfi=(3)
-cfn=(390)
-calls=20 0 
-0 320
-
 fn=(306)
 0 2
 cob=(3)
@@ -993,18 +675,18 @@ cfn=(308)
 calls=1 0 
 0 34
 
-fn=(512)
-0 24
-cob=(1)
-cfi=(1)
-cfn=(28)
-calls=12 0 
-0 249
+fn=(556)
+0 2
+cob=(3)
+cfi=(3)
+cfn=(506)
+calls=1 0 
+0 195
 
-fn=(630) 0x0000000004834288
+fn=(614) 0x000000000010ecc8
 0 4
 
-fn=(96)
+fn=(96) 0x0000000004001080
 0 2
 cob=(1)
 cfi=(1)
@@ -1012,15 +694,19 @@ cfn=(98) _dl_catch_error
 calls=1 0 
 0 2713
 
+fn=(536)
+0 124
+cob=(3)
+cfi=(3)
+cfn=(538)
+calls=62 0 
+0 1338
+
+fn=(326) 0x0000000000109000
+0 7
+
 ob=(1)
 fl=(1)
-fn=(274)
-0 32
-cfn=(184) check_match
-calls=1 0 
-0 145
-0 16
-
 fn=(22) handle_intel.constprop.0
 0 341
 cfn=(24) intel_check_word.constprop.0
@@ -1053,7 +739,7 @@ cfn=(122) __read_nocancel
 calls=2 0 
 0 12
 0 38
-cfn=(124)
+cfn=(124) rtld_free
 calls=2 0 
 0 10
 0 308
@@ -1066,44 +752,7 @@ calls=1 0
 0 7
 0 20
 
-fn=(594)
-0 24
-cfn=(50)
-calls=1 0 
-0 3
-0 79
-cfn=(156)
-calls=1 0 
-0 239
-0 2
-cfn=(52)
-calls=1 0 
-0 3
-0 72
-cob=(4) /usr/lib/valgrind/vgpreload_core-amd64-linux.so
-cfi=(4) ???
-cfn=(616) 0x00000000000010c0
-calls=1 0 
-0 94
-cob=(5)
-cfi=(5)
-cfn=(596) 0x0000000000001170
-calls=1 0 
-0 94
-0 20
-cob=(2)
-cfi=(2)
-cfn=(630)
-calls=1 0 
-0 4
-cob=(2)
-cfi=(2)
-cfn=(614)
-calls=1 0 
-0 4
-0 71
-
-fn=(14)
+fn=(14) _dl_x86_init_cpu_features
 0 5
 cfn=(16) init_cpu_features.constprop.0
 calls=1 0 
@@ -1220,7 +869,7 @@ calls=1 0
 0 175
 0 34
 
-fn=(36)
+fn=(36) dl_main
 0 55
 cfn=(38) _dl_next_ld_env_entry
 calls=1 0 
@@ -1234,7 +883,7 @@ cfn=(40) _dl_new_object
 calls=1 0 
 0 290
 0 13
-cfn=(48)
+cfn=(48) _dl_add_to_namespace_list
 calls=1 0 
 0 35
 0 200
@@ -1242,7 +891,7 @@ cfn=(54) _dl_process_pt_gnu_property
 calls=1 0 
 0 21
 0 258
-cfn=(56)
+cfn=(56) strcmp
 calls=1 0 
 0 25
 0 290
@@ -1250,7 +899,7 @@ cfn=(6) _dl_setup_hash
 calls=1 0 
 0 24
 0 6
-cfn=(58)
+cfn=(58) _dl_discover_osversion
 calls=1 0 
 0 101
 0 13
@@ -1266,15 +915,15 @@ cfn=(86) _dl_count_modids
 calls=1 0 
 0 6
 0 13
-cfn=(88)
+cfn=(88) _dl_debug_state
 calls=1 0 
 0 2
 0 15
-cfn=(136)
+cfn=(136) access
 calls=1 0 
 0 9
 0 18
-cfn=(138)
+cfn=(138) _dl_map_object_deps
 calls=1 0 
 0 6619
 0 103
@@ -1314,11 +963,11 @@ cfn=(178) _dl_relocate_object
 calls=3 0 
 0 81538
 0 13
-cfn=(262)
+cfn=(262) _dl_add_to_slotinfo
 calls=1 0 
 0 28
 0 48
-cfn=(266)
+cfn=(266) __rtld_malloc_init_real
 calls=1 0 
 0 2476
 0 10
@@ -1330,7 +979,7 @@ cfn=(166) init_tls
 calls=1 0 
 0 724
 0 28
-cfn=(90)
+cfn=(90) handle_preload_list
 calls=1 0 
 0 3035
 0 17
@@ -1338,7 +987,7 @@ calls=1 0
 fn=(134) __GI___close_nocancel
 0 18
 
-fn=(144)
+fn=(144) _dl_sysdep_read_whole_file
 0 12
 cfn=(120)
 calls=1 0 
@@ -1352,12 +1001,12 @@ cfn=(134)
 calls=1 0 
 0 6
 0 7
-cfn=(132)
+cfn=(132) mmap
 calls=1 0 
 0 20
 0 2
 
-fn=(148)
+fn=(148) _dl_cache_libcmp
 0 873
 
 fn=(150)
@@ -1402,14 +1051,14 @@ cob=(5)
 cfi=(5)
 cfn=(314) _start
 calls=1 0 
-0 307595061
+0 261594683
 
 fn=(38)
 0 224
 
-fn=(42)
+fn=(42) rtld_calloc
 0 72
-cfn=(44)
+cfn=(44) rtld_malloc
 calls=8 0 
 0 285
 
@@ -1432,7 +1081,7 @@ fn=(18)
 fn=(30)
 0 220
 
-fn=(32)
+fn=(32) strlen
 0 329
 
 fn=(40)
@@ -1449,7 +1098,7 @@ cfn=(42)
 calls=1 0 
 0 41
 0 45
-cfn=(46)
+cfn=(46) memcpy
 calls=3 0 
 0 44
 0 275
@@ -1457,7 +1106,7 @@ cfn=(32)
 calls=2 0 
 0 70
 0 22
-cfn=(80)
+cfn=(80) mempcpy
 calls=2 0 
 0 34
 0 228
@@ -1469,13 +1118,13 @@ calls=2 0
 fn=(46)
 0 159
 
-fn=(50)
+fn=(50) rtld_lock_default_lock_recursive
 0 12
 
 fn=(84)
 0 45
 
-fn=(110)
+fn=(110) _dl_name_match_p
 0 112
 cfn=(56)
 calls=14 0 
@@ -1486,7 +1135,7 @@ calls=18 0
 0 530
 0 106
 
-fn=(114)
+fn=(114) _dl_dst_count
 0 27
 cfn=(72) index
 calls=3 0 
@@ -1504,7 +1153,7 @@ calls=3 0
 
 fn=(162) _dl_check_all_versions
 0 37
-cfn=(164)
+cfn=(164) _dl_check_map_versions
 calls=4 0 
 0 3201
 0 35
@@ -1522,7 +1171,7 @@ cfn=(80)
 calls=1 0 
 0 13
 0 5
-cfn=(82)
+cfn=(82) memset
 calls=1 0 
 0 34
 0 20
@@ -1533,7 +1182,7 @@ fn=(284) munmap
 fn=(6)
 0 96
 
-fn=(104)
+fn=(104) __sigsetjmp
 0 72
 
 fn=(112) expand_dynamic_string_token
@@ -1542,7 +1191,7 @@ cfn=(114)
 calls=1 0 
 0 66
 0 9
-cfn=(116)
+cfn=(116) strdup
 calls=1 0 
 0 97
 
@@ -1775,7 +1424,7 @@ calls=3 0
 
 fn=(272)
 0 13
-cfn=(274)
+cfn=(274) _dl_lookup_direct
 calls=1 0 
 0 209
 0 11
@@ -1811,8 +1460,8 @@ cfi=(3)
 cfn=(302)
 calls=1 0 
 0 80
-cob=(4)
-cfi=(4)
+cob=(4) /usr/lib/valgrind/vgpreload_core-amd64-linux.so
+cfi=(4) ???
 cfn=(296) 0x0000000000001110
 calls=1 0 
 0 12
@@ -1820,7 +1469,7 @@ calls=1 0
 
 fn=(2)
 0 280
-cfn=(4)
+cfn=(4) __rtld_malloc_init_stubs
 calls=1 0 
 0 10
 0 6
@@ -1828,7 +1477,7 @@ cfn=(6)
 calls=1 0 
 0 24
 0 12
-cfn=(8)
+cfn=(8) _dl_sysdep_start
 calls=1 0 
 0 128102
 0 330
@@ -1873,7 +1522,7 @@ calls=2 0
 fn=(86)
 0 6
 
-fn=(108)
+fn=(108) _dl_map_object
 0 160
 cfn=(110)
 calls=7 0 
@@ -1907,7 +1556,7 @@ cfn=(32)
 calls=1 0 
 0 17
 0 66
-cfn=(142)
+cfn=(142) _dl_load_cache_lookup
 calls=1 0 
 0 1516
 0 15
@@ -1919,7 +1568,7 @@ calls=1 0
 fn=(130)
 0 24
 
-fn=(154)
+fn=(154) __libc_scratch_buffer_set_array_size
 0 36
 
 fn=(166)
@@ -1932,7 +1581,7 @@ cfn=(168)
 calls=1 0 
 0 78
 0 1
-cfn=(170)
+cfn=(170) _dl_determine_tlsoffset
 calls=1 0 
 0 74
 0 1
@@ -1941,7 +1590,7 @@ calls=1 0
 0 451
 0 27
 
-fn=(388)
+fn=(388) _dl_fixup
 0 265
 cfn=(180)
 calls=5 0 
@@ -1963,7 +1612,7 @@ cfn=(28)
 calls=1 0 
 0 21
 0 10
-cfn=(66)
+cfn=(66) _dl_hwcaps_subdirs_active
 calls=1 0 
 0 47
 0 9
@@ -2043,7 +1692,7 @@ calls=6 0
 0 30
 0 24
 
-fn=(92)
+fn=(92) strcspn
 0 220
 
 fn=(174)
@@ -2070,12 +1719,49 @@ calls=1 0
 
 fn=(182)
 0 24540
-cfn=(184)
+cfn=(184) check_match
 calls=99 0 
 0 11484
 0 2013
 
-fn=(10)
+fn=(594)
+0 24
+cfn=(50)
+calls=1 0 
+0 3
+0 79
+cfn=(156) _dl_sort_maps
+calls=1 0 
+0 239
+0 2
+cfn=(52) rtld_lock_default_unlock_recursive
+calls=1 0 
+0 3
+0 72
+cob=(4)
+cfi=(4)
+cfn=(616) 0x00000000000010c0
+calls=1 0 
+0 94
+cob=(5)
+cfi=(5)
+cfn=(596) 0x0000000000001170
+calls=1 0 
+0 94
+0 20
+cob=(2)
+cfi=(2)
+cfn=(630)
+calls=1 0 
+0 4
+cob=(2)
+cfi=(2)
+cfn=(614)
+calls=1 0 
+0 4
+0 71
+
+fn=(10) __GI___tunables_init
 0 14520
 
 fn=(20)
@@ -2087,7 +1773,7 @@ fn=(52)
 fn=(82)
 0 514
 
-fn=(106)
+fn=(106) map_doit
 0 12
 cfn=(108)
 calls=1 0 
@@ -2100,7 +1786,7 @@ fn=(152) _dl_next_tls_modid
 fn=(260) mprotect
 0 24
 
-fn=(268)
+fn=(268) lookup_malloc_symbol
 0 72
 cfn=(180)
 calls=4 0 
@@ -2222,8 +1908,279 @@ calls=4 0
 fn=(280)
 0 2
 
+fn=(4)
+0 10
+
+fn=(90)
+0 28
+cfn=(94) do_preload
+calls=1 0 
+0 2743
+0 6
+cfn=(92)
+calls=1 0 
+0 220
+0 8
+cfn=(46)
+calls=1 0 
+0 19
+0 11
+
+fn=(156)
+0 58
+cfn=(82)
+calls=2 0 
+0 32
+0 244
+cfn=(82)
+calls=4 0 
+0 68
+0 55
+
+fn=(56)
+0 7458
+
+fn=(88)
+0 4
+
+fn=(132)
+0 226
+
+fn=(164)
+0 162
+cfn=(110)
+calls=7 0 
+0 613
+0 619
+cfn=(56)
+calls=7 0 
+0 394
+0 391
+cfn=(42)
+calls=3 0 
+0 102
+0 920
+
+fn=(48)
+0 27
+cfn=(50)
+calls=3 0 
+0 9
+0 68
+cfn=(52)
+calls=2 0 
+0 6
+0 12
+cfn=(52)
+calls=1 0 
+0 3
+0 2
+
+fn=(60) uname
+0 6
+
+fn=(66)
+0 47
+
+fn=(80)
+0 152
+
+fn=(136)
+0 9
+
+fn=(142)
+0 19
+cfn=(146) search_cache
+calls=1 0 
+0 1205
+0 7
+cfn=(32)
+calls=1 0 
+0 35
+0 8
+cfn=(46)
+calls=1 0 
+0 11
+0 2
+cfn=(116)
+calls=1 0 
+0 89
+0 8
+cfn=(144)
+calls=1 0 
+0 100
+0 32
+
+fn=(170)
+0 74
+
+fn=(386) _dl_runtime_resolve_xsave
+0 130
+cfn=(388)
+calls=5 0 
+0 3178
+0 75
+
+fn=(34) sbrk
+0 15
+
+fn=(124)
+0 10
+
+fn=(266)
+0 92
+cfn=(268)
+calls=1 0 
+0 582
+0 5
+cfn=(268)
+calls=1 0 
+0 567
+0 5
+cfn=(268)
+calls=1 0 
+0 583
+0 5
+cfn=(268)
+calls=1 0 
+0 626
+0 11
+
+fn=(8)
+0 396
+cfn=(10)
+calls=1 0 
+0 14520
+0 2
+cfn=(12) brk
+calls=1 0 
+0 8
+0 1
+cfn=(14)
+calls=1 0 
+0 6683
+0 4
+cfn=(32)
+calls=1 0 
+0 17
+0 3
+cfn=(34)
+calls=1 0 
+0 15
+0 11
+cfn=(36)
+calls=1 0 
+0 106433
+0 9
+
+fn=(12)
+0 8
+
+fn=(58)
+0 10
+cfn=(60)
+calls=1 0 
+0 6
+0 85
+
+fn=(102)
+0 57
+cfn=(104)
+calls=3 0 
+0 72
+0 21
+cfn=(140) openaux
+calls=2 0 
+0 5045
+cfn=(106)
+calls=1 0 
+0 2628
+0 30
+
+fn=(140)
+0 30
+cfn=(108)
+calls=2 0 
+0 5009
+0 6
+
+fn=(94)
+0 17
+cob=(2)
+cfi=(2)
+cfn=(96)
+calls=1 0 
+0 2715
+0 11
+
+fn=(138)
+0 136
+cfn=(44)
+calls=2 0 
+0 50
+0 18
+cfn=(46)
+calls=2 0 
+0 22
+0 10
+cfn=(46)
+calls=2 0 
+0 22
+0 81
+cob=(2)
+cfi=(2)
+cfn=(100)
+calls=2 0 
+0 5169
+0 355
+cfn=(114)
+calls=2 0 
+0 108
+0 172
+cfn=(44)
+calls=1 0 
+0 25
+0 89
+cfn=(156)
+calls=1 0 
+0 218
+0 78
+cfn=(154)
+calls=2 0 
+0 36
+0 12
+cfn=(46)
+calls=1 0 
+0 11
+0 7
+
+fn=(146)
+0 19
+cfn=(56)
+calls=1 0 
+0 25
+0 9
+cfn=(28)
+calls=1 0 
+0 21
+0 120
+cfn=(148)
+calls=9 0 
+0 657
+0 77
+cfn=(148)
+calls=2 0 
+0 216
+0 61
+
+fn=(262)
+0 14
+
 ob=(4)
 fl=(4)
+fn=(296)
+0 12
+
 fn=(616)
 0 9
 cob=(3)
@@ -2238,220 +2195,27 @@ calls=1 0
 0 3
 
 fn=(624)
-0 5
+0 4
 
-fn=(296)
-0 12
+ob=(1)
+fl=(1)
+fn=(262)
+0 14
+
+fn=(274)
+0 48
+cfn=(184)
+calls=1 0 
+0 145
+0 16
+
+ob=(4)
+fl=(4)
+fn=(624)
+0 1
 
 ob=(5)
-fl=(6)
-fn=(342)
-188 6
-+2 3
-+1 9
-+1 15
-+3 2
-cfi=(7) /home/main/portfolio/chess/Init.c
-cfn=(344) setLookUpTables
-calls=1 354 
-* 174377
-+2 5
-cfi=(8) /home/main/portfolio/chess/Utilities.c
-cfn=(378) parseFen
-calls=1 -65 
-* 5197
-* 1
-+2 3
-cfi=(8)
-cfn=(408) bitScanForward
-calls=1 355 
-* 18
-* 1
-+5 2
-cfi=(9) /home/main/portfolio/chess/Perft.c
-cfn=(410) perftDivide
-calls=1 36 
-* 307414014
-+1 6
-
-fl=(11) /home/main/portfolio/chess/AttackMaps.c
-fn=(440) getKingMaps
-163 865548
-+1 1081935
-+1 432774
-
-fn=(420) getWhitePawnMoveMaps
-94 16040
-+4 9624
-+1 9624
-+1 9624
-+1 19248
-+2 9624
-+2 12656
-+3 528
-cfi=(8)
-cfn=(448) squareOccupied
-calls=88 -92 
-* 1496
-* 352
-+6 6416
-
-fn=(426) getKnightMaps
-159 902824
-+1 1128530
-+1 451412
-
-fn=(470) getBlackPawnMoveMaps
-117 356730
-+4 214038
-+1 214038
-+1 214038
-+1 428076
-+2 214038
-+2 280272
-+3 15336
-cfi=(8)
-cfn=(448)
-calls=2556 16 
-* 43806
-* 9516
-+3 708
-+2 354
-+1 142692
-
-fn=(430) getDiagonalMaps
-8 1175165
-+5 705099
-+1 705099
-+1 705099
-+1 1410198
-+1 1410198
-+1 1410198
-+1 1410198
-+2 705099
-+1 470066
-+1 31260
-cfi=(8)
-cfn=(408)
-calls=10420 355 
-* 187560
-* 10420
-+1 62520
-+3 31260
-+1 20840
--1 673839
-+1 449226
-+1 31101
-cfi=(8)
-cfn=(408)
-calls=10367 355 
-* 186606
-* 10367
-+1 62202
-+3 31101
-+1 20734
--1 673998
-+1 449332
-+1 577071
-cfi=(8)
-cfn=(436) bitScanReverse
-calls=192357 373 
-* 6540138
-* 192357
-+1 1154142
-+3 577071
-+1 384714
--1 128028
-+1 85352
-+1 577932
-cfi=(8)
-cfn=(436)
-calls=192644 373 
-* 6549896
-* 192644
-+1 1155864
-+3 963220
-+2 192644
-+1 385288
--3 211945
-+2 42389
-+1 84778
-
-fn=(422) getWhitePawnAttackMaps
-140 48520
-+1 36390
-+1 72780
-+2 24260
-+2 12130
-+1 24260
-
-fn=(434) getLinearMaps
-51 1175165
-+5 705099
-+1 705099
-+1 705099
-+1 1410198
-+1 1410198
-+1 1410198
-+1 1410198
-+2 705099
-+1 470066
-+1 35721
-cfi=(8)
-cfn=(408)
-calls=11907 355 
-* 214326
-* 11907
-+1 71442
-+3 35721
-+1 23814
--1 669378
-+1 446252
-+1 677130
-cfi=(8)
-cfn=(408)
-calls=225710 355 
-* 4062780
-* 225710
-+1 1354260
-+3 677130
-+1 451420
--1 27969
-+1 18646
-+1 677130
-cfi=(8)
-cfn=(436)
-calls=225710 373 
-* 7674140
-* 225710
-+1 1354260
-+3 677130
-+1 451420
--1 27969
-+1 18646
-+1 674964
-cfi=(8)
-cfn=(436)
-calls=224988 373 
-* 7649592
-* 224988
-+1 1349928
-+3 1124940
-+2 224988
-+1 449976
--3 50225
-+2 10045
-+1 20090
-
-fn=(472) getBlackPawnAttackMaps
-150 1077952
-+1 808464
-+1 1616928
-+2 538976
-+2 269488
-+1 538976
-
-fl=(8)
+fl=(8) /home/main/portfolio/chess/Utilities.c
 fn=(416) isEnPassantAllowed
 81 27969
 +1 37292
@@ -2462,15 +2226,15 @@ fn=(444) canWhiteCastleShort
 +1 2484
 +1 1242
 
-fn=(486) canBlackCastleLong
-45 41469
-+1 55292
-+1 27646
+fn=(496) emptySquare
+25 12904
++1 22582
++1 6452
 
 fn=(350) fillSquare
-29 1667104
-+1 2500656
-+1 833552
+29 10592
++1 15888
++1 5296
 
 fn=(442) createMove
 10 1656512
@@ -2488,6 +2252,11 @@ fn=(450) canWhiteCastleLong
 +1 2484
 +1 1242
 
+fn=(484) canBlackCastleLong
+45 41469
++1 55292
++1 27646
+
 fn=(398) setSideToPlay
 118 828260
 +1 414130
@@ -2503,17 +2272,12 @@ fn=(400) setWhiteCastleShort
 +1 2
 +1 2
 
-fn=(456) setEnPassantAllowed
-85 1359640
-+1 543856
-+1 194592
-+3 621192
-+3 207064
-+1 414128
--1 64864
-+1 129728
+fn=(500) removeBlackCastleShort
+57 14709
++1 14709
++1 9806
 
-fn=(378)
+fn=(378) parseFen
 132 5
 +3 1
 +1 1
@@ -2775,32 +2539,32 @@ fn=(412) getSideToPlay
 +3 198142
 +2 414130
 
-fn=(482) canBlackCastleShort
-41 41475
-+1 55300
-+1 27650
-
-fn=(492) getEnPassantSquare
-103 8904
-+1 8904
-+1 5936
+fn=(456) setEnPassantAllowed
+85 1359640
++1 543856
++1 194592
++3 621192
++3 207064
++1 414128
+-1 64864
++1 129728
 
 fn=(402)
 69 3
 +1 3
 +1 2
 
-fn=(496) removeBlackCastleLong
+fn=(490) getEnPassantSquare
+103 8904
++1 8904
++1 5936
+
+fn=(494) removeBlackCastleLong
 61 14703
 +1 19604
 +1 9802
 
-fn=(498) removeWhiteCastleLong
-53 660
-+1 660
-+1 440
-
-fn=(436)
+fn=(436) bitScanReverse
 373 3342796
 +1 1671398
 +1 1671398
@@ -2813,128 +2577,50 @@ fn=(436)
 +1 5014194
 +1 1671398
 
-fn=(458) emptySquare
-25 2491220
-+1 4359635
-+1 1245610
-
-fn=(490) setEnPassantSquare
-96 259456
-+1 64864
-+1 194592
-+2 64864
-+1 129728
-
-fn=(408)
-355 3323960
-+1 1661980
-+1 1661980
-+1 6647920
-+1 1661980
-
-fn=(500) removeBlackCastleShort
-57 14709
-+1 14709
-+1 9806
+fn=(480) canBlackCastleShort
+41 41475
++1 55300
++1 27650
 
 fn=(586) removeWhiteCastleShort
 49 660
 +1 440
 +1 440
 
+fn=(408) bitScanForward
+355 3323960
++1 1661980
++1 1661980
++1 6647920
++1 1661980
+
+fn=(488) setEnPassantSquare
+96 259456
++1 64864
++1 194592
++2 64864
++1 129728
+
 fn=(406)
 77 3
 +1 3
 +1 2
 
-fn=(448)
-16 8114436
-+1 12171654
-+2 8114436
-+1 3576990
-+2 240114
-+1 4057218
+fn=(448) squareOccupied
+16 3166124
++1 4749186
++2 3166124
++1 1126196
++2 228433
++1 1583062
 
-fl=(9)
-fn=(466) perft
-14 160
-+4 20
-+2 40
-+3 100
-cfi=(10) /home/main/portfolio/chess/MoveGeneration.c
-cfn=(414) generateMoves
-calls=20 314 
-* 138548
-* 20
-+2 40
-+1 2000
-cfi=(12) /home/main/portfolio/chess/MakeMove.c
-cfn=(454) makeMove
-calls=400 -18 
-* 222080
-+1 1600
-cfi=(13) /home/main/portfolio/chess/LegalityChecks.c
-cfn=(460) isKingThreatened
-calls=400 +72 
-* 221768
-* 1200
-+1 3200
-cfn=(467) perft'2
-calls=400 -14 
-* 306755154
-* 400
-+2 800
-cfi=(12)
-cfn=(494) unMakeMove
-calls=400 409 
-* 3200
--5 1660
-+7 20
-+1 100
+fn=(498) removeWhiteCastleLong
+53 660
++1 660
++1 440
 
-fn=(467)
-14 1652664
-+4 206583
-+2 413166
-+1 394562
-+2 46510
-cfi=(10)
-cfn=(414)
-calls=9302 314 
-* 66087030
-* 9302
-+2 18604
-+1 1033220
-cfi=(12)
-cfn=(454)
-calls=206644 -18 
-* 116240967
-+1 826576
-cfi=(13)
-cfn=(460)
-calls=206644 +72 
-* 113387252
-* 619932
-+1 1649464
-cfn=(467)
-calls=206183 -14 
-* 297644372
-* 206183
-+2 412366
-cfi=(12)
-cfn=(494)
-calls=206183 409 
-* 1649464
-* 922
-cfi=(12)
-cfn=(494)
-calls=461 409 
-* 3688
--5 854482
-+7 9302
-+1 1032915
-
-fn=(410)
+fl=(9) /home/main/portfolio/chess/Perft.c
+fn=(410) perftDivide
 36 7
 +4 1
 +1 11
@@ -2945,8 +2631,8 @@ calls=1 +67
 * 1
 +2 2
 +3 5
-cfi=(10)
-cfn=(414)
+cfi=(10) /home/main/portfolio/chess/MoveGeneration.c
+cfn=(414) generateMoves
 calls=1 314 
 * 6708
 * 1
@@ -2954,20 +2640,20 @@ calls=1 314
 +1 20
 +1 80
 +2 60
-cfi=(12)
-cfn=(454)
+cfi=(12) /home/main/portfolio/chess/MakeMove.c
+cfn=(454) makeMove
 calls=20 -43 
-* 11104
+* 6664
 +1 80
-cfi=(13)
-cfn=(460)
+cfi=(13) /home/main/portfolio/chess/LegalityChecks.c
+cfn=(458) isKingThreatened
 calls=20 +47 
 * 10268
 * 60
 +5 160
-cfn=(466)
+cfn=(464) perft
 calls=20 -43 
-* 307352110
+* 261356256
 * 20
 +1 40
 +3 40
@@ -2993,12 +2679,12 @@ cob=(3)
 cfi=(3)
 cfn=(532)
 calls=19 -69 
-* 22781
+* 22705
 cob=(1)
 cfi=(1)
 cfn=(386)
 calls=1 -69 
-* 2504
+* 2500
 * 24
 +2 60
 cob=(3)
@@ -3014,8 +2700,8 @@ calls=1 -71
 * 24
 +2 40
 cfi=(12)
-cfn=(494)
-calls=20 409 
+cfn=(492) unMakeMove
+calls=20 373 
 * 160
 -26 83
 +29 5
@@ -3023,282 +2709,90 @@ cob=(3)
 cfi=(3)
 cfn=(532)
 calls=1 -76 
-* 1006
+* 1002
 * 1
 * 1
 +1 5
 
-fl=(13)
-fn=(460)
-99 828256
-+3 1863576
-+1 621192
-+1 621192
-+2 414128
-+2 26766
-cfi=(8)
-cfn=(408)
-calls=8922 355 
-* 160596
-* 8922
-+1 44610
-cfn=(462) isSquareThreatened
-calls=8922 -19 
-* 4107628
-* 8922
-+4 594426
-cfi=(8)
-cfn=(408)
-calls=198142 355 
-* 3566556
-* 198142
-+1 990710
-cfn=(462)
-calls=198142 -24 
-* 99149538
-+2 414128
-
-fn=(462)
-90 1035320
-+3 1035320
-cfn=(464) getThreatMap
-calls=207064 -82 
-* 100151206
-* 207064
-+3 414128
-+1 414128
-
 fn=(464)
-11 1035320
-+4 1863576
-+2 621192
-+1 621192
-+1 621192
-+1 621192
-+1 621192
-+1 621192
-+1 621192
-+2 621192
-+1 621192
-+1 621192
-+1 621192
-+1 621192
-+1 621192
-+1 621192
-+2 621192
-+1 621192
-+1 621192
-+1 621192
-+1 621192
-+2 207064
-+7 414128
-+2 44610
-cfi=(11)
-cfn=(422)
-calls=8922 +92 
-* 160596
-* 8922
-+1 26766
-+2 17844
-+6 44610
-cfi=(11)
-cfn=(426)
-calls=8922 159 
-* 98142
-* 8922
-+1 26766
-+2 44610
-cfi=(11)
-cfn=(430)
-calls=8922 -52 
-* 1017096
-* 8922
-+1 26766
-+2 44610
-cfi=(11)
-cfn=(434)
-calls=8922 -12 
-* 1484572
-* 8922
-+1 26766
-+2 44610
-cfi=(11)
-cfn=(440)
-calls=8922 +97 
-* 98142
-* 8922
-+1 35688
-+4 990710
-cfi=(11)
-cfn=(472)
-calls=198142 +79 
-* 3566556
-* 198142
-+1 594426
-+2 990710
-cfi=(11)
-cfn=(426)
-calls=198142 +85 
-* 2179562
-* 198142
-+1 594426
-+2 990710
-cfi=(11)
-cfn=(430)
-calls=198142 -69 
-* 27966664
-* 198142
-+1 594426
-+2 990710
-cfi=(11)
-cfn=(434)
-calls=198142 -29 
-* 36111740
-* 198142
-+1 594426
-+2 990710
-cfi=(11)
-cfn=(440)
-calls=198142 +80 
-* 2179562
-* 198142
-+1 594426
-+3 198142
-+1 396284
--1 8922
-+1 17844
+14 160
++4 20
++2 40
++3 100
+cfi=(10)
+cfn=(414)
+calls=20 314 
+* 138548
+* 20
++2 40
++1 2000
+cfi=(12)
+cfn=(454)
+calls=400 -18 
+* 132880
++1 1600
+cfi=(13)
+cfn=(458)
+calls=400 +72 
+* 221768
+* 1200
++1 3200
+cfn=(465) perft'2
+calls=400 -14 
+* 260848500
+* 400
++2 800
+cfi=(12)
+cfn=(492)
+calls=400 373 
+* 3200
+-5 1660
++7 20
++1 100
 
-fl=(7)
-fn=(356) setSouthWestLookUp
-101 3
-+3 2
-+4 64
-+2 64
-+2 128
-+1 560
-+2 700
-cfi=(8)
-cfn=(350)
-calls=140 -86 
-* 1680
-* 140
-+2 140
--5 2931
-+8 384
--16 194
-+18 4
+fn=(465)
+14 1652664
++4 206583
++2 413166
++1 394562
++2 46510
+cfi=(10)
+cfn=(414)
+calls=9302 314 
+* 66087030
+* 9302
++2 18604
++1 1033220
+cfi=(12)
+cfn=(454)
+calls=206644 -18 
+* 70334313
++1 826576
+cfi=(13)
+cfn=(458)
+calls=206644 +72 
+* 113387252
+* 619932
++1 1649464
+cfn=(465)
+calls=206183 -14 
+* 253711130
+* 206183
++2 412366
+cfi=(12)
+cfn=(492)
+calls=206183 373 
+* 1649464
+* 922
+cfi=(12)
+cfn=(492)
+calls=461 373 
+* 3688
+-5 854482
++7 9302
++1 1032915
 
-fn=(364) setEastLookUp
-179 3
-+3 2
-+3 64
-+3 128
-+1 896
-+1 1120
-cfi=(8)
-cfn=(350)
-calls=224 29 
-* 2688
-* 224
--2 3392
-+5 384
--11 194
-+13 4
-
-fn=(366) setKingLookUp
-197 3
-+3 2
-+4 64
-+2 128
-+1 384
-+1 12408
-+1 6204
-+2 3388
-+1 2420
-cfi=(8)
-cfn=(350)
-calls=484 29 
-* 5808
-* 968
--4 96
-+1 44
--2 2112
--1 704
-+9 384
--15 194
-+17 4
-
-fn=(374) setBlackPawnAttackLookUp
-300 3
-+3 2
-+5 64
-+2 384
-+1 448
-+2 128
-+1 112
-+1 294
-cfi=(8)
-cfn=(350)
-calls=49 29 
-* 588
-* 49
-+2 112
-+1 294
-cfi=(8)
-cfn=(350)
-calls=49 29 
-* 588
-* 49
-+4 294
--19 147
-+19 90
--19 47
-+21 4
-
-fn=(376) setBlackPawnMoveLookUp
-326 3
-+3 2
-+5 64
-+2 384
-+1 448
-+2 128
-+2 112
-+1 48
-cfi=(8)
-cfn=(350)
-calls=8 29 
-* 96
-* 8
-+3 224
-+1 288
-cfi=(8)
-cfn=(350)
-calls=48 29 
-* 576
-* 48
-+4 288
--21 144
-+21 96
--21 50
-+23 4
-
-fn=(362) setSouthLookUp
-161 3
-+3 2
-+3 64
-+3 128
-+1 1120
-+1 1120
-cfi=(8)
-cfn=(350)
-calls=224 29 
-* 2688
-* 224
--2 1952
-+5 384
--11 194
-+13 4
-
+fl=(7) /home/main/portfolio/chess/Init.c
 fn=(360) setWestLookUp
 143 3
 +3 2
@@ -3335,7 +2829,7 @@ calls=140 -63
 -16 194
 +18 4
 
-fn=(344)
+fn=(344) setLookUpTables
 354 2
 +1 2
 cfn=(346) setSingleBitLookUp
@@ -3354,7 +2848,7 @@ cfn=(354)
 calls=1 78 
 * 7159
 +1 2
-cfn=(356)
+cfn=(356) setSouthWestLookUp
 calls=1 101 
 * 6994
 +3 2
@@ -3366,15 +2860,15 @@ cfn=(360)
 calls=1 143 
 * 8299
 +1 2
-cfn=(362)
+cfn=(362) setSouthLookUp
 calls=1 161 
 * 7883
 +1 2
-cfn=(364)
+cfn=(364) setEastLookUp
 calls=1 179 
 * 9099
 +2 2
-cfn=(366)
+cfn=(366) setKingLookUp
 calls=1 197 
 * 35315
 +1 2
@@ -3390,11 +2884,11 @@ cfn=(372) setWhitePawnMoveLookUp
 calls=1 272 
 * 2995
 +1 2
-cfn=(374)
+cfn=(374) setBlackPawnAttackLookUp
 calls=1 -73 
 * 3697
 +1 2
-cfn=(376)
+cfn=(376) setBlackPawnMoveLookUp
 calls=1 -48 
 * 3011
 +1 3
@@ -3539,30 +3033,157 @@ calls=140 -40
 -16 194
 +18 4
 
+fn=(356)
+101 3
++3 2
++4 64
++2 64
++2 128
++1 560
++2 700
+cfi=(8)
+cfn=(350)
+calls=140 -86 
+* 1680
+* 140
++2 140
+-5 2931
++8 384
+-16 194
++18 4
+
+fn=(364)
+179 3
++3 2
++3 64
++3 128
++1 896
++1 1120
+cfi=(8)
+cfn=(350)
+calls=224 29 
+* 2688
+* 224
+-2 3392
++5 384
+-11 194
++13 4
+
+fn=(366)
+197 3
++3 2
++4 64
++2 128
++1 384
++1 12408
++1 6204
++2 3388
++1 2420
+cfi=(8)
+cfn=(350)
+calls=484 29 
+* 5808
+* 968
+-4 96
++1 44
+-2 2112
+-1 704
++9 384
+-15 194
++17 4
+
+fn=(374)
+300 3
++3 2
++5 64
++2 384
++1 448
++2 128
++1 112
++1 294
+cfi=(8)
+cfn=(350)
+calls=49 29 
+* 588
+* 49
++2 112
++1 294
+cfi=(8)
+cfn=(350)
+calls=49 29 
+* 588
+* 49
++4 294
+-19 147
++19 90
+-19 47
++21 4
+
+fn=(376)
+326 3
++3 2
++5 64
++2 384
++1 448
++2 128
++2 112
++1 48
+cfi=(8)
+cfn=(350)
+calls=8 29 
+* 96
+* 8
++3 224
++1 288
+cfi=(8)
+cfn=(350)
+calls=48 29 
+* 576
+* 48
++4 288
+-21 144
++21 96
+-21 50
++23 4
+
+fn=(362)
+161 3
++3 2
++3 64
++3 128
++1 1120
++1 1120
+cfi=(8)
+cfn=(350)
+calls=224 29 
+* 2688
+* 224
+-2 1952
++5 384
+-11 194
++13 4
+
 fl=(10)
-fn=(468) addBlackPawnPatterns
-66 428076
-+1 927498
-+1 927498
-+1 214038
-+1 356730
-cfi=(11)
-cfn=(470)
-calls=71346 +47 
-* 2133642
-* 71346
-+1 356730
-cfi=(11)
-cfn=(472)
-calls=71346 +79 
-* 1284228
-* 71346
-+2 142692
-+2 142692
-+1 142692
-+1 998844
-+1 998844
-+1 214038
+fn=(472) addBlackKnightPatterns
+100 107040
++1 214080
++1 214080
++1 53520
++1 53520
++3 89200
+cfi=(11) /home/main/portfolio/chess/AttackMaps.c
+cfn=(426) getKnightMaps
+calls=17840 +52 
+* 196240
+* 17840
++2 53520
++1 53520
++1 53520
++2 35680
++1 35680
++1 249760
++1 249760
++1 53520
 
 fn=(428) addWhiteDiagonalPatterns
 157 7218
@@ -3572,7 +3193,7 @@ fn=(428) addWhiteDiagonalPatterns
 +1 3609
 +3 6015
 cfi=(11)
-cfn=(430)
+cfn=(430) getDiagonalMaps
 calls=1203 8 
 * 140438
 * 1203
@@ -3598,76 +3219,29 @@ calls=401 16
 * 1604
 +5 802
 
-fn=(476) addBlackDiagonalPatterns
-176 160596
-+1 321192
-+1 321192
-+1 80298
-+1 80298
-+3 133830
+fn=(466) addBlackPawnPatterns
+66 428076
++1 927498
++1 927498
++1 214038
++1 356730
 cfi=(11)
-cfn=(430)
-calls=26766 8 
-* 3910060
-* 26766
-+2 80298
-+1 80298
-+1 80298
-+2 53532
-+1 53532
-+1 374724
-+1 374724
-+1 80298
-
-fn=(488) longBlackCastlingSquaresEmpty
-276 26766
-+1 80298
-+2 26766
-+1 26766
-+2 35688
-cfi=(8)
-cfn=(448)
-calls=8922 16 
-* 160596
-* 53532
-cfi=(8)
-cfn=(448)
-calls=8922 16 
-* 152564
-* 33908
-+2 3560
-cfi=(8)
-cfn=(448)
-calls=890 16 
-* 16020
-* 5340
-cfi=(8)
-cfn=(448)
-calls=890 16 
-* 15130
-* 3560
-+5 17844
-
-fn=(478) addBlackLinearPatterns
-214 160596
-+1 321192
-+1 321192
-+1 80298
-+1 80298
-+3 133830
+cfn=(468) getBlackPawnMoveMaps
+calls=71346 +47 
+* 2133642
+* 71346
++1 356730
 cfi=(11)
-cfn=(434)
-calls=26766 51 
-* 4229028
-* 26766
-+2 80298
-+1 80298
-+1 80298
-+2 53532
-+1 53532
-+1 374724
-+1 374724
-+1 80298
+cfn=(470) getBlackPawnAttackMaps
+calls=71346 +79 
+* 1284228
+* 71346
++2 142692
++2 142692
++1 142692
++1 998844
++1 998844
++1 214038
 
 fn=(414)
 314 55938
@@ -3778,7 +3352,7 @@ calls=71346 -27
 * 71346
 +1 214038
 +1 428076
-cfn=(468)
+cfn=(466)
 calls=71346 66 
 * 9410934
 +1 71346
@@ -3792,7 +3366,7 @@ calls=17840 -34
 * 17840
 +1 53520
 +1 107040
-cfn=(474) addBlackKnightPatterns
+cfn=(472)
 calls=17840 100 
 * 1730480
 +1 17840
@@ -3806,7 +3380,7 @@ calls=26766 -41
 * 26766
 +1 80298
 +1 160596
-cfn=(476)
+cfn=(474) addBlackDiagonalPatterns
 calls=26766 176 
 * 6211936
 +1 26766
@@ -3820,7 +3394,7 @@ calls=26766 -48
 * 26766
 +1 80298
 +1 160596
-cfn=(478)
+cfn=(476) addBlackLinearPatterns
 calls=26766 214 
 * 6530904
 +1 26766
@@ -3834,7 +3408,7 @@ calls=8922 -55
 * 8922
 +1 26766
 +1 53532
-cfn=(480) addBlackKingPatterns
+cfn=(478) addBlackKingPatterns
 calls=8922 138 
 * 883278
 +1 8922
@@ -3922,7 +3496,7 @@ calls=68323 10
 +50 18646
 +1 8904
 cfi=(8)
-cfn=(492)
+cfn=(490)
 calls=2968 103 
 * 23744
 * 2968
@@ -3979,23 +3553,23 @@ calls=401 248
 * 802
 +10 26766
 cfi=(8)
-cfn=(482)
+cfn=(480)
 calls=8922 41 
 * 80298
 * 17844
 +1 17844
-cfn=(484) shortBlackCastlingSquaresEmpty
+cfn=(482) shortBlackCastlingSquaresEmpty
 calls=8922 263 
 * 615618
 * 17844
 +9 26766
 cfi=(8)
-cfn=(486)
+cfn=(484)
 calls=8922 45 
 * 80298
 * 17844
 +1 17844
-cfn=(488)
+cfn=(486) longBlackCastlingSquaresEmpty
 calls=8922 276 
 * 658338
 * 17844
@@ -4009,13 +3583,13 @@ fn=(418)
 +1 9624
 +1 16040
 cfi=(11)
-cfn=(420)
+cfn=(420) getWhitePawnMoveMaps
 calls=3208 +39 
 * 95232
 * 3208
 +1 16040
 cfi=(11)
-cfn=(422)
+cfn=(422) getWhitePawnAttackMaps
 calls=3208 +84 
 * 57744
 * 3208
@@ -4050,6 +3624,56 @@ calls=40 16
 * 160
 +5 802
 
+fn=(474)
+176 160596
++1 321192
++1 321192
++1 80298
++1 80298
++3 133830
+cfi=(11)
+cfn=(430)
+calls=26766 8 
+* 3910060
+* 26766
++2 80298
++1 80298
++1 80298
++2 53532
++1 53532
++1 374724
++1 374724
++1 80298
+
+fn=(486)
+276 26766
++1 80298
++2 26766
++1 26766
++2 35688
+cfi=(8)
+cfn=(448)
+calls=8922 16 
+* 160596
+* 53532
+cfi=(8)
+cfn=(448)
+calls=8922 16 
+* 152564
+* 33908
++2 3560
+cfi=(8)
+cfn=(448)
+calls=890 16 
+* 16020
+* 5340
+cfi=(8)
+cfn=(448)
+calls=890 16 
+* 15130
+* 3560
++5 17844
+
 fn=(438)
 119 2406
 +1 5213
@@ -4058,7 +3682,7 @@ fn=(438)
 +1 1203
 +3 2005
 cfi=(11)
-cfn=(440)
+cfn=(440) getKingMaps
 calls=401 +37 
 * 4411
 * 401
@@ -4071,26 +3695,26 @@ calls=401 +37
 +1 5614
 +1 1203
 
-fn=(480)
-138 53532
-+1 115986
-+1 115986
-+1 26766
-+1 26766
-+3 44610
+fn=(476)
+214 160596
++1 321192
++1 321192
++1 80298
++1 80298
++3 133830
 cfi=(11)
-cfn=(440)
-calls=8922 +18 
-* 98142
-* 8922
-+2 26766
-+1 26766
-+1 26766
-+2 17844
-+1 17844
-+1 124908
-+1 124908
-+1 26766
+cfn=(434) getLinearMaps
+calls=26766 51 
+* 4229028
+* 26766
++2 80298
++1 80298
++1 80298
++2 53532
++1 53532
++1 374724
++1 374724
++1 80298
 
 fn=(432)
 195 7218
@@ -4113,24 +3737,6 @@ calls=1203 51
 +1 16842
 +1 3609
 
-fn=(484)
-263 26766
-+1 80298
-+2 26766
-+1 26766
-+2 35688
-cfi=(8)
-cfn=(448)
-calls=8922 16 
-* 160596
-* 53532
-cfi=(8)
-cfn=(448)
-calls=8922 16 
-* 151674
-* 35688
-+5 17844
-
 fn=(424)
 81 4812
 +1 9624
@@ -4152,26 +3758,44 @@ calls=802 +71
 +1 11228
 +1 2406
 
-fn=(474)
-100 107040
-+1 214080
-+1 214080
-+1 53520
-+1 53520
-+3 89200
+fn=(478)
+138 53532
++1 115986
++1 115986
++1 26766
++1 26766
++3 44610
 cfi=(11)
-cfn=(426)
-calls=17840 +52 
-* 196240
-* 17840
-+2 53520
-+1 53520
-+1 53520
-+2 35680
-+1 35680
-+1 249760
-+1 249760
-+1 53520
+cfn=(440)
+calls=8922 +18 
+* 98142
+* 8922
++2 26766
++1 26766
++1 26766
++2 17844
++1 17844
++1 124908
++1 124908
++1 26766
+
+fn=(482)
+263 26766
++1 80298
++2 26766
++1 26766
++2 35688
+cfi=(8)
+cfn=(448)
+calls=8922 16 
+* 160596
+* 53532
+cfi=(8)
+cfn=(448)
+calls=8922 16 
+* 151674
+* 35688
++5 17844
 
 fl=(12)
 fn=(454)
@@ -4198,27 +3822,29 @@ fn=(454)
 +1 621192
 +1 621192
 +2 621192
++1 2484768
++2 621192
+cfi=(8)
+cfn=(412)
+calls=207064 +71 
+* 2079562
+* 207064
 +2 621192
 +3 828256
 cfi=(8)
 cfn=(456)
-calls=207064 +46 
+calls=207064 +43 
 * 2691832
 * 207064
-+2 621192
-cfi=(8)
-cfn=(412)
-calls=207064 +67 
-* 2079562
-* 1242384
++2 1449448
 cfi=(8)
 cfn=(398)
-calls=207064 +77 
+calls=207064 +74 
 * 2484768
 * 207064
 +3 414128
-+69 414128
-+29 1035320
++61 414128
++20 1035320
 cfi=(8)
 cfn=(448)
 calls=207064 16 
@@ -4226,7 +3852,7 @@ calls=207064 16
 * 414128
 +1 7895
 cfi=(8)
-cfn=(458)
+cfn=(496)
 calls=1579 25 
 * 20527
 * 1579
@@ -4238,7 +3864,7 @@ calls=1579 16
 * 3158
 +1 6090
 cfi=(8)
-cfn=(458)
+cfn=(496)
 calls=1218 25 
 * 15834
 * 2436
@@ -4250,7 +3876,7 @@ calls=361 16
 * 722
 +1 805
 cfi=(8)
-cfn=(458)
+cfn=(496)
 calls=161 25 
 * 2093
 * 322
@@ -4262,7 +3888,7 @@ calls=200 16
 * 400
 +1 880
 cfi=(8)
-cfn=(458)
+cfn=(496)
 calls=176 25 
 * 2288
 * 352
@@ -4274,7 +3900,7 @@ calls=24 16
 * 48
 +1 20
 cfi=(8)
-cfn=(458)
+cfn=(496)
 calls=4 25 
 * 52
 * 4
@@ -4288,100 +3914,55 @@ calls=20 16
 * 40
 +1 100
 cfi=(8)
-cfn=(458)
+cfn=(496)
 calls=20 25 
 * 260
 * 40
-+10 1027425
-cfi=(8)
-cfn=(458)
-calls=205485 25 
-* 2671305
-* 205485
-+2 1027425
++9 1027425
 cfi=(8)
 cfn=(448)
 calls=205485 16 
-* 3698700
+* 3698696
 * 410970
++1 170
+cfi=(8)
+cfn=(496)
+calls=34 25 
+* 442
+* 34
++2 170
+cfi=(8)
+cfn=(448)
+calls=34 16 
+* 582
+* 68
 +1 150
 cfi=(8)
-cfn=(458)
+cfn=(496)
 calls=30 25 
 * 390
 * 60
-+3 1027275
++3 20
 cfi=(8)
 cfn=(448)
-calls=205455 16 
-* 3698186
-* 410910
+calls=4 16 
+* 68
+* 8
 +1 20
 cfi=(8)
-cfn=(458)
+cfn=(496)
 calls=4 25 
 * 52
 * 8
-+3 1027255
-cfi=(8)
-cfn=(448)
-calls=205451 16 
-* 3698118
-* 410902
-+4 1027255
-cfi=(8)
-cfn=(448)
-calls=205451 16 
-* 3698118
-* 410902
-+13 1027255
-cfi=(8)
-cfn=(448)
-calls=205451 16 
-* 3698118
-* 410902
-+4 1027255
-cfi=(8)
-cfn=(448)
-calls=205451 16 
-* 3698118
-* 410902
-+5 1035320
-cfi=(8)
-cfn=(448)
-calls=207064 16 
-* 3718230
-* 414128
-+1 44610
-cfi=(8)
-cfn=(458)
-calls=8922 25 
-* 115986
-* 8922
-+1 44610
-cfi=(8)
-cfn=(350)
-calls=8922 29 
-* 107064
-* 8922
++29 414128
++1 17844
 +2 44610
 cfi=(8)
 cfn=(448)
 calls=8922 16 
 * 154654
 * 17844
-+1 29710
-cfi=(8)
-cfn=(458)
-calls=5942 25 
-* 77246
-* 5942
-+1 29710
-cfi=(8)
-cfn=(350)
-calls=5942 29 
-* 71304
-* 5942
++1 11884
 +3 23768
 +1 11232
 cfi=(8)
@@ -4391,7 +3972,7 @@ calls=2808 85
 * 2808
 +1 16848
 cfi=(8)
-cfn=(490)
+cfn=(488)
 calls=2808 96 
 * 30888
 * 5616
@@ -4401,54 +3982,21 @@ cfn=(448)
 calls=2980 16 
 * 51876
 * 5960
-+1 8820
-cfi=(8)
-cfn=(458)
-calls=1764 25 
-* 22932
-* 1764
-+1 8820
-cfi=(8)
-cfn=(350)
-calls=1764 29 
-* 21168
-* 3528
++1 5292
 +3 6080
 cfi=(8)
 cfn=(448)
 calls=1216 16 
 * 21332
 * 2432
-+1 2780
-cfi=(8)
-cfn=(458)
-calls=556 25 
-* 7228
-* 556
-+1 2780
-cfi=(8)
-cfn=(350)
-calls=556 29 
-* 6672
-* 1112
++1 1668
 +3 3300
 cfi=(8)
 cfn=(448)
 calls=660 16 
 * 11680
 * 1320
-+1 1000
-cfi=(8)
-cfn=(458)
-calls=200 25 
-* 2600
-* 200
-+1 1000
-cfi=(8)
-cfn=(350)
-calls=200 29 
-* 2400
-* 200
++1 400
 +3 700
 cfi=(8)
 cfn=(450)
@@ -4479,36 +4027,8 @@ cfn=(448)
 calls=460 16 
 * 7940
 * 920
-+1 1700
-cfi=(8)
-cfn=(458)
-calls=340 25 
-* 4420
-* 340
-+1 1700
-cfi=(8)
-cfn=(350)
-calls=340 29 
-* 4080
-* 680
-+3 600
-cfi=(8)
-cfn=(448)
-calls=120 16 
-* 2040
-* 240
-+1 600
-cfi=(8)
-cfn=(458)
-calls=120 25 
-* 1560
-* 120
-+1 600
-cfi=(8)
-cfn=(350)
-calls=120 29 
-* 1440
-* 120
++1 1020
++4 240
 +3 600
 cfi=(8)
 cfn=(450)
@@ -4533,36 +4053,14 @@ cfn=(586)
 calls=120 49 
 * 840
 * 240
-+7 990710
-cfi=(8)
-cfn=(458)
-calls=198142 25 
-* 2575846
-* 198142
-+1 990710
-cfi=(8)
-cfn=(350)
-calls=198142 29 
-* 2377704
-* 198142
++7 396284
 +2 990710
 cfi=(8)
 cfn=(448)
 calls=198142 16 
 * 3434652
 * 396284
-+1 659520
-cfi=(8)
-cfn=(458)
-calls=131904 25 
-* 1714752
-* 131904
-+1 659520
-cfi=(8)
-cfn=(350)
-calls=131904 29 
-* 1582848
-* 131904
++1 263808
 +3 527616
 +1 248224
 cfi=(8)
@@ -4572,7 +4070,7 @@ calls=62056 85
 * 62056
 +1 372336
 cfi=(8)
-cfn=(490)
+cfn=(488)
 calls=62056 96 
 * 682616
 * 124112
@@ -4582,69 +4080,36 @@ cfn=(448)
 calls=66238 16 
 * 1153042
 * 132476
-+1 196210
-cfi=(8)
-cfn=(458)
-calls=39242 25 
-* 510146
-* 39242
-+1 196210
-cfi=(8)
-cfn=(350)
-calls=39242 29 
-* 470904
-* 78484
++1 117726
 +3 134980
 cfi=(8)
 cfn=(448)
 calls=26996 16 
 * 473630
 * 53992
-+1 61490
-cfi=(8)
-cfn=(458)
-calls=12298 25 
-* 159874
-* 12298
-+1 61490
-cfi=(8)
-cfn=(350)
-calls=12298 29 
-* 147576
-* 24596
++1 36894
 +3 73490
 cfi=(8)
 cfn=(448)
 calls=14698 16 
 * 260106
 * 29396
-+1 22290
-cfi=(8)
-cfn=(458)
-calls=4458 25 
-* 57954
-* 4458
-+1 22290
-cfi=(8)
-cfn=(350)
-calls=4458 29 
-* 53496
-* 4458
++1 8916
 +3 15600
 cfi=(8)
-cfn=(486)
+cfn=(484)
 calls=2228 45 
 * 20052
 * 4456
 +1 6684
 cfi=(8)
-cfn=(496)
+cfn=(494)
 calls=2228 61 
 * 20052
 * 2228
 +3 15606
 cfi=(8)
-cfn=(482)
+cfn=(480)
 calls=2230 41 
 * 20070
 * 4460
@@ -4660,51 +4125,23 @@ cfn=(448)
 calls=10240 16 
 * 176753
 * 20480
-+1 37835
-cfi=(8)
-cfn=(458)
-calls=7567 25 
-* 98371
-* 7567
-+1 37835
-cfi=(8)
-cfn=(350)
-calls=7567 29 
-* 90804
-* 15134
++1 22701
++4 5346
 +3 13365
 cfi=(8)
-cfn=(448)
-calls=2673 16 
-* 45441
-* 5346
-+1 13365
-cfi=(8)
-cfn=(458)
-calls=2673 25 
-* 34749
-* 2673
-+1 13365
-cfi=(8)
-cfn=(350)
-calls=2673 29 
-* 32076
-* 2673
-+3 13365
-cfi=(8)
-cfn=(486)
+cfn=(484)
 calls=2673 45 
 * 24057
 * 5346
 +1 8019
 cfi=(8)
-cfn=(496)
+cfn=(494)
 calls=2673 61 
 * 24057
 * 2673
 +3 13365
 cfi=(8)
-cfn=(482)
+cfn=(480)
 calls=2673 41 
 * 24057
 * 5346
@@ -4715,7 +4152,7 @@ calls=2673 57
 * 21384
 * 2673
 +7 414128
-+52 621192
++44 621192
 +1 828256
 +1 828256
 +1 828256
@@ -4732,17 +4169,35 @@ calls=2673 57
 +2 828256
 +1 621192
 
-fn=(494)
-409 414128
+fn=(492)
+373 414128
 +1 621192
 +1 621192
 
 fl=(5)
-fn=(330) 0x00000000000011c0
-0 12
-
 fn=(608) 0x0000000000001100
 0 5
+
+fn=(314)
+0 12
+cob=(3)
+cfi=(3)
+cfn=(316)
+calls=1 0 
+0 261594671
+
+fn=(324)
+0 15
+cob=(2)
+cfi=(2)
+cfn=(326)
+calls=1 0 
+0 7
+0 8
+cfn=(330) 0x00000000000011c0
+calls=1 0 
+0 12
+0 11
 
 fn=(596)
 0 9
@@ -4757,25 +4212,354 @@ calls=1 0
 0 5
 0 3
 
-fn=(314)
+fn=(330)
 0 12
-cob=(3)
-cfi=(3)
-cfn=(316)
-calls=1 0 
-0 307595049
 
-fn=(324)
-0 15
-cob=(2)
-cfi=(2)
-cfn=(326)
-calls=1 0 
-0 7
-0 8
-cfn=(330)
-calls=1 0 
-0 12
-0 11
+fl=(13)
+fn=(458)
+99 828256
++3 1863576
++1 621192
++1 621192
++2 414128
++2 26766
+cfi=(8)
+cfn=(408)
+calls=8922 355 
+* 160596
+* 8922
++1 44610
+cfn=(460) isSquareThreatened
+calls=8922 -19 
+* 4107628
+* 8922
++4 594426
+cfi=(8)
+cfn=(408)
+calls=198142 355 
+* 3566556
+* 198142
++1 990710
+cfn=(460)
+calls=198142 -24 
+* 99149538
++2 414128
 
-totals: 307724216
+fn=(460)
+90 1035320
++3 1035320
+cfn=(462) getThreatMap
+calls=207064 -82 
+* 100151206
+* 207064
++3 414128
++1 414128
+
+fn=(462)
+11 1035320
++4 1863576
++2 621192
++1 621192
++1 621192
++1 621192
++1 621192
++1 621192
++1 621192
++2 621192
++1 621192
++1 621192
++1 621192
++1 621192
++1 621192
++1 621192
++2 621192
++1 621192
++1 621192
++1 621192
++1 621192
++2 207064
++7 414128
++2 44610
+cfi=(11)
+cfn=(422)
+calls=8922 +92 
+* 160596
+* 8922
++1 26766
++2 17844
++6 44610
+cfi=(11)
+cfn=(426)
+calls=8922 159 
+* 98142
+* 8922
++1 26766
++2 44610
+cfi=(11)
+cfn=(430)
+calls=8922 -52 
+* 1017096
+* 8922
++1 26766
++2 44610
+cfi=(11)
+cfn=(434)
+calls=8922 -12 
+* 1484572
+* 8922
++1 26766
++2 44610
+cfi=(11)
+cfn=(440)
+calls=8922 +97 
+* 98142
+* 8922
++1 35688
++4 990710
+cfi=(11)
+cfn=(470)
+calls=198142 +79 
+* 3566556
+* 198142
++1 594426
++2 990710
+cfi=(11)
+cfn=(426)
+calls=198142 +85 
+* 2179562
+* 198142
++1 594426
++2 990710
+cfi=(11)
+cfn=(430)
+calls=198142 -69 
+* 27966664
+* 198142
++1 594426
++2 990710
+cfi=(11)
+cfn=(434)
+calls=198142 -29 
+* 36111740
+* 198142
++1 594426
++2 990710
+cfi=(11)
+cfn=(440)
+calls=198142 +80 
+* 2179562
+* 198142
++1 594426
++3 198142
++1 396284
+-1 8922
++1 17844
+
+fl=(6)
+fn=(342)
+188 6
++2 3
++1 9
++1 15
++3 2
+cfi=(7)
+cfn=(344)
+calls=1 354 
+* 174377
++2 5
+cfi=(8)
+cfn=(378)
+calls=1 -65 
+* 5197
+* 1
++2 3
+cfi=(8)
+cfn=(408)
+calls=1 355 
+* 18
+* 1
++5 2
+cfi=(9)
+cfn=(410)
+calls=1 36 
+* 261413636
++1 6
+
+fl=(11)
+fn=(440)
+163 865548
++1 1081935
++1 432774
+
+fn=(470)
+150 1077952
++1 808464
++1 1616928
++2 538976
++2 269488
++1 538976
+
+fn=(420)
+94 16040
++4 9624
++1 9624
++1 9624
++1 19248
++2 9624
++2 12656
++3 528
+cfi=(8)
+cfn=(448)
+calls=88 -92 
+* 1496
+* 352
++6 6416
+
+fn=(426)
+159 902824
++1 1128530
++1 451412
+
+fn=(430)
+8 1175165
++5 705099
++1 705099
++1 705099
++1 1410198
++1 1410198
++1 1410198
++1 1410198
++2 705099
++1 470066
++1 31260
+cfi=(8)
+cfn=(408)
+calls=10420 355 
+* 187560
+* 10420
++1 62520
++3 31260
++1 20840
+-1 673839
++1 449226
++1 31101
+cfi=(8)
+cfn=(408)
+calls=10367 355 
+* 186606
+* 10367
++1 62202
++3 31101
++1 20734
+-1 673998
++1 449332
++1 577071
+cfi=(8)
+cfn=(436)
+calls=192357 373 
+* 6540138
+* 192357
++1 1154142
++3 577071
++1 384714
+-1 128028
++1 85352
++1 577932
+cfi=(8)
+cfn=(436)
+calls=192644 373 
+* 6549896
+* 192644
++1 1155864
++3 963220
++2 192644
++1 385288
+-3 211945
++2 42389
++1 84778
+
+fn=(468)
+117 356730
++4 214038
++1 214038
++1 214038
++1 428076
++2 214038
++2 280272
++3 15336
+cfi=(8)
+cfn=(448)
+calls=2556 16 
+* 43806
+* 9516
++3 708
++2 354
++1 142692
+
+fn=(422)
+140 48520
++1 36390
++1 72780
++2 24260
++2 12130
++1 24260
+
+fn=(434)
+51 1175165
++5 705099
++1 705099
++1 705099
++1 1410198
++1 1410198
++1 1410198
++1 1410198
++2 705099
++1 470066
++1 35721
+cfi=(8)
+cfn=(408)
+calls=11907 355 
+* 214326
+* 11907
++1 71442
++3 35721
++1 23814
+-1 669378
++1 446252
++1 677130
+cfi=(8)
+cfn=(408)
+calls=225710 355 
+* 4062780
+* 225710
++1 1354260
++3 677130
++1 451420
+-1 27969
++1 18646
++1 677130
+cfi=(8)
+cfn=(436)
+calls=225710 373 
+* 7674140
+* 225710
++1 1354260
++3 677130
++1 451420
+-1 27969
++1 18646
++1 674964
+cfi=(8)
+cfn=(436)
+calls=224988 373 
+* 7649592
+* 224988
++1 1349928
++3 1124940
++2 224988
++1 449976
+-3 50225
++2 10045
++1 20090
+
+totals: 261723838

@@ -11,6 +11,15 @@ typedef unsigned char BYTE;
 #define MAX_TURNS 1024
 #define MAX_MOVES 500
 #define MAX_DEPTH 30
+#define DEPTH 8
+
+#define PAWN_SCORE 100
+#define KNIGHT_SCORE 300
+#define BISHOP_SCORE 350
+#define ROOK_SCORE 500
+#define QUEEN_SCORE 900
+#define ALPHA_BETA_MIN -1000000000
+#define ALPHA_BETA_MAX 1000000000
 
 extern u64 GAME_STATE_STACK[MAX_DEPTH + MAX_TURNS][15];
 extern int GAME_STATE_STACK_POINTER;
