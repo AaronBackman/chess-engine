@@ -2,7 +2,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include <stdio.h>
 
 #include "Utilities.h"
 #include "MakeMove.h"
@@ -243,7 +242,7 @@ void parseUciPosition(u64 *gameState, char *fenStr) {
         }
     }
 
-    printf("gamestate outside: %d\n", GAME_STATE_STACK_POINTER);
+    //printf("gamestate outside: %d\n", GAME_STATE_STACK_POINTER);
 
     gameState[0] = whitePieces;
     gameState[1] = whitePawns;
@@ -300,8 +299,8 @@ void parseUciPosition(u64 *gameState, char *fenStr) {
 
             side = getSideToPlay(otherGameInfo);
 
-            printf("gamestate: %d\n", GAME_STATE_STACK_POINTER);
-            printf("index: %d\n", i);
+            //printf("gamestate: %d\n", GAME_STATE_STACK_POINTER);
+            //printf("index: %d\n", i);
 
             // handle promotions
             if (fenStr[i + 4] == 'n') {
@@ -351,8 +350,8 @@ void parseUciPosition(u64 *gameState, char *fenStr) {
                 i += 4;
             }
 
-            printf("%d, %d, %d, %d, %d\n", nextMove.from, nextMove.to, nextMove.promotion, nextMove.castling, nextMove.enPassant);
-            printf ("enpassant allowed: %d, enpassant square: %d\n", enPassantAllowed, enPassantSquare);
+            //printf("%d, %d, %d, %d, %d\n", nextMove.from, nextMove.to, nextMove.promotion, nextMove.castling, nextMove.enPassant);
+            //printf ("enpassant allowed: %d, enpassant square: %d\n", enPassantAllowed, enPassantSquare);
             
             makeMove(nextMove);
 

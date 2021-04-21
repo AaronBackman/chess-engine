@@ -44,6 +44,12 @@ extern int WHITE_KING_PIECE_SQUARE_TABLE_OPENING[64];
 extern int BLACK_KING_PIECE_SQUARE_TABLE_ENDGAME[64];
 extern int WHITE_KING_PIECE_SQUARE_TABLE_ENDGAME[64];
 
+// the center manhattan distance
+extern unsigned char CMD[64];
+
+// the center manhattan distance
+extern unsigned char MD[64][64];
+
 void setLookUpTables();
 
 #endif

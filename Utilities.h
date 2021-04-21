@@ -35,6 +35,8 @@ void parseUciPosition(u64 *gameState, char *fenStr);
 int bitScanForward(u64 board);
 int bitScanReverse(u64 board);
 
+int getManhattanDistance(int sq1, int sq2);
+
 void printBoard();
 
 #endif

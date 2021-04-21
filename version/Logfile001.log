@@ -9,3 +9,56 @@ No:  B/W 1/2     W:B       1:2           Time        Value Moves Dep 1:2       1
    1 = =    0.5:0.5        0.5:0.5       12:54:53    -0.00    59 0:0 0-0-1
    1 * *     0.0:0.0        0.0:0.0       16:57:32    -0.00     1 0:0 0-0-0
    1 = =    0.5:0.5        0.5:0.5       17:00:13    -0.00    55 0:0 0-0-1
+   1 * *     0.0:0.0        0.0:0.0       17:21:21    -0.00    31 0:0 0-0-0
+   1 = =    0.5:0.5        0.5:0.5       17:35:18    -0.00    33 0:0 0-0-1
+   1 * *     0.5:0.5        0.5:20.5      18:47:45    -0.00     2 0:0 0-20-1
+
+--------------------------------------------------------------
+
+Engine-Match 21 April 2021 18:50:18
+ Blitz 0:10/0 
+
+Pairing 1/1 :    RockFish 3  -  RockFish 3
+
+PGN-File: /home/main/Tournaments/Arena.pgn
+
+No:  B/W 1/2     W:B       1:2           Time        Value Moves Dep 1:2       1-2-Draws
+   1 W 1    1.5:0.5        1.5:20.5      18:50:18    -0.00     1 0:0 1-20-1
+   1 = =    0.5:0.5        0.5:0.5       18:51:38    -0.00    72 0:0 0-0-1
+
+--------------------------------------------------------------
+
+Engine-Match 21 April 2021 19:31:51
+ Blitz 0:10/0 
+
+Pairing 1/1 :    RockFish 3  -  RockFish 2
+
+PGN-File: /home/main/Tournaments/Arena.pgn
+
+No:  B/W 1/2     W:B       1:2           Time        Value Moves Dep 1:2       1-2-Draws
+   1 B 2    1.0:0.0        0.0:1.0       19:31:52    -0.00     0 0:0 0-1-0
+   1 B 2    1.0:0.0        0.0:1.0       19:37:51    -0.00     0 0:0 0-1-0
+   1 B 2    1.0:0.0        0.0:21.0      19:38:37    -0.00    10 0:0 0-21-0
+
+--------------------------------------------------------------
+
+Engine-Match 21 April 2021 19:42:00
+ Blitz 0:10/0 
+
+Pairing 1/1 :    RockFish 3  -  RockFish 3
+
+PGN-File: /home/main/Tournaments/Arena.pgn
+
+No:  B/W 1/2     W:B       1:2           Time        Value Moves Dep 1:2       1-2-Draws
+
+--------------------------------------------------------------
+
+Engine-Match 21 April 2021 20:42:00
+ Blitz 0:10/0 
+
+Pairing 1/1 :    RockFish 3  -  RockFish 2
+
+PGN-File: /home/main/Tournaments/Arena.pgn
+
+No:  B/W 1/2     W:B       1:2           Time        Value Moves Dep 1:2       1-2-Draws
+   1 W 1    1.0:0.0        1.0:0.0       20:42:27    -0.00    41 0:0 1-0-0

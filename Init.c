@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include <stdlib.h>
 
 #include "Constants.h"
 #include "Utilities.h"
@@ -188,6 +189,45 @@ int WHITE_KING_PIECE_SQUARE_TABLE_ENDGAME[64] =
   -30,-20,-10,  0,  0,-10,-20,-30,
   -50,-40,-30,-20,-20,-30,-40,-50
 };
+
+unsigned char CMD[64] = {
+    6, 5, 4, 3, 3, 4, 5, 6,
+    5, 4, 3, 2, 2, 3, 4, 5,
+    4, 3, 2, 1, 1, 2, 3, 4,
+    3, 2, 1, 0, 0, 1, 2, 3,
+    3, 2, 1, 0, 0, 1, 2, 3,
+    4, 3, 2, 1, 1, 2, 3, 4,
+    5, 4, 3, 2, 2, 3, 4, 5,
+    6, 5, 4, 3, 3, 4, 5, 6
+};
+
+unsigned char MD[64][64];
+
+// manhattan distance between 2 squares
+int calcManhattanDistance(int sq1, int sq2) {
+   int file1, file2, rank1, rank2;
+   int rankDistance, fileDistance;
+
+   file1 = sq1  & 7;
+   file2 = sq2  & 7;
+   rank1 = sq1 >> 3;
+   rank2 = sq2 >> 3;
+   rankDistance = abs(rank2 - rank1);
+   fileDistance = abs(file2 - file1);
+
+   return rankDistance + fileDistance;
+}
+
+void initManhattanDistanceArr() {
+    int i;
+    int j;
+
+    for (i = 0; i < 64; i++) {
+        for (j = 0; j < 64; j++) {
+            MD[i][j] = calcManhattanDistance(i, j);
+        }
+    }
+}
 
 void setSingleBitLookUp() {
   int i;
@@ -520,24 +560,25 @@ void setBlackPawnMoveLookUp() {
 }
 
 void setLookUpTables() {
-  setSingleBitLookUp();
+    initManhattanDistanceArr();
+    setSingleBitLookUp();
 
-  // set diagonal lookUptables
-  setNorthEastLookUp();
-  setNorthWestLookUp();
-  setSouthEastLookUp();
-  setSouthWestLookUp();
+    // set diagonal lookUptables
+    setNorthEastLookUp();
+    setNorthWestLookUp();
+    setSouthEastLookUp();
+    setSouthWestLookUp();
 
-  // set straight lookUptables
-  setNorthLookUp();
-  setWestLookUp();
-  setSouthLookUp();
-  setEastLookUp();
+    // set straight lookUptables
+    setNorthLookUp();
+    setWestLookUp();
+    setSouthLookUp();
+    setEastLookUp();
 
-  setKingLookUp();
-  setKnightLookUp();
-  setWhitePawnAttackLookUp();
-  setWhitePawnMoveLookUp();
-  setBlackPawnAttackLookUp();
-  setBlackPawnMoveLookUp();
+    setKingLookUp();
+    setKnightLookUp();
+    setWhitePawnAttackLookUp();
+    setWhitePawnMoveLookUp();
+    setBlackPawnAttackLookUp();
+    setBlackPawnMoveLookUp();
 }

@@ -20,6 +20,8 @@ int ORIGINAL_MOVE_STACK_POINTER;
 u64 nodeCount = 0;
 u64 quiescentNodeCount = 0;
 
+bool checkmate;
+
 // parameters are the count of each piece type and color on the board (eg. wp == number white pawns)
 // used to calculate the tapered eval
 int calcPhase(int wp, int bp, int wn, int bn, int wb, int bb, int wr, int br, int wq, int bq) {
@@ -49,6 +51,40 @@ int calcPhase(int wp, int bp, int wn, int bn, int wb, int bb, int wr, int br, in
   return phase;
 }
 
+// white tries to checkmate the black king
+int blackKingToCorners() {
+    // center manhattan distance of the black king
+    int cmd;
+    int whiteKingIndex;
+    int blackKingIndex;
+
+    u64 *gameState = GAME_STATE_STACK[GAME_STATE_STACK_POINTER];
+    u64 whiteKings = gameState[6];
+    u64 blackKings = gameState[13];
+
+    whiteKingIndex = bitScanForward(whiteKings);
+    blackKingIndex = bitScanForward(blackKings);
+
+    return 47 * CMD[blackKingIndex] + 18 * (14 - getManhattanDistance(whiteKingIndex, blackKingIndex));
+}
+
+// black tries to checkmate the white king
+int whiteKingToCorners() {
+    // center manhattan distance of the white king
+    int cmd;
+    int whiteKingIndex;
+    int blackKingIndex;
+
+    u64 *gameState = GAME_STATE_STACK[GAME_STATE_STACK_POINTER];
+    u64 whiteKings = gameState[6];
+    u64 blackKings = gameState[13];
+
+    whiteKingIndex = bitScanForward(whiteKings);
+    blackKingIndex = bitScanForward(blackKings);
+
+    return 47 * CMD[whiteKingIndex] + 18 * (14 - getManhattanDistance(whiteKingIndex, blackKingIndex));
+}
+
 int evaluate(int side) {
   u64 *gameState = GAME_STATE_STACK[GAME_STATE_STACK_POINTER];
   u64 whitePieces = gameState[0];
@@ -69,12 +105,16 @@ int evaluate(int side) {
   int score;
   int openingScore;
   int endgameScore;
+  int mopUpScore;
   int index;
   int whiteOpeningMaterial = 0;
   int blackOpeningMaterial = 0;
   int whiteEndgameMaterial = 0;
   int blackEndgameMaterial = 0;
   int phase;
+  // weighted sum of pieces (not pawns and kings)
+  int whitePieceSum;
+  int blackPieceSum;
 
   // number of each piece type and color
   int wp = 0;
@@ -161,6 +201,30 @@ int evaluate(int side) {
       bq++;
   }
 
+  whitePieceSum = wn * 3 + wb * 3 + wr * 5 + wq * 9;
+  blackPieceSum = bn * 3 + bb * 3 + br * 5 + bq * 9;
+  // check draw by insufficient material
+  if (wp + bp == 0) {
+      //printf("insufficient material");
+      if ((whitePieceSum - blackPieceSum) < 4 && (whitePieceSum - blackPieceSum) > -4) {
+          return 0;
+      }
+  }
+
+  // white can try to checkmate the opponent
+  if ((whitePieceSum - blackPieceSum) >= 4 && blackPieceSum <= 9) {
+      //printf("white mopup");
+      mopUpScore = blackKingToCorners() * side;
+  }
+  // black can try to checkmate the opponent
+  else if ((blackPieceSum - whitePieceSum) >= 4 && whitePieceSum <= 9) {
+      //printf("black mopup");
+      mopUpScore = -1 * whiteKingToCorners() * side;
+  }
+  else {
+      mopUpScore = 0;
+  }
+
   // endgame and opening evaluate similarly until now
   blackEndgameMaterial = blackOpeningMaterial;
 
@@ -175,6 +239,7 @@ int evaluate(int side) {
   openingScore = (whiteOpeningMaterial - blackOpeningMaterial) * side;
   endgameScore = (whiteEndgameMaterial - blackEndgameMaterial) * side;
   score = ((openingScore * (256 - phase)) + (endgameScore * phase)) / 256;
+  score += mopUpScore;
 
   return score;
 }
@@ -187,7 +252,10 @@ int qsearch(int alpha, int beta, int side) {
     Move *movesArr = MOVE_STACK[MOVE_STACK_POINTER];
     int stand_pat = evaluate(side);
 
+    quiescentNodeCount++;
+
     if (CANCEL_THREAD == 1) {
+        printf("exit\n");
         CANCEL_THREAD = 0;
         pthread_exit(NULL);
     }
@@ -278,6 +346,7 @@ int negaMax(int alpha, int beta, int depth, int side) {
             return 0;
         }
         else {
+            checkmate = true;
             // loses if king is lost => return a very bad score
             return -100000;
         }
@@ -325,8 +394,8 @@ Move negaMaxRoot(int alpha, int beta, int depth, int side) {
                 return bestMove;
             }
 
-            // printf("score: %d\n", score);
-            // printf("from: %d, to: %d\n", move.from, move.to);
+            //printf("score: %d\n", score);
+            //printf("from: %d, to: %d\n", move.from, move.to);
             if (score > alpha) {
                 bestMove = move;
                 alpha = score;
@@ -351,7 +420,7 @@ Move negaMaxRoot(int alpha, int beta, int depth, int side) {
 void cleanUpHandler(void *vargp) {
     GAME_STATE_STACK_POINTER = ORIGINAL_GAMES_STATE_STACK_POINTER;
     MOVE_STACK_POINTER = ORIGINAL_MOVE_STACK_POINTER;
-    //printf("cleanup\n");
+    printf("cleanup\n");
 }
 
 // a thread to calculate the best moves with iterative deepening
@@ -366,13 +435,26 @@ void *search(void *vargp) {
 
     pthread_cleanup_push(cleanUpHandler, vargp);
 
-    //printf("game: %d, move: %d\n", GAME_STATE_STACK_POINTER, MOVE_STACK_POINTER);
+    printf("game: %d, move: %d\n", GAME_STATE_STACK_POINTER, MOVE_STACK_POINTER);
+
+    checkmate = false;
+    CANCEL_THREAD = 0;
 
     while (SEARCHED_DEPTH < MAX_DEPTH) {
         nodeCount = 0;
         quiescentNodeCount = 0;
         SELECTED_MOVE = negaMaxRoot(ALPHA_BETA_MIN, ALPHA_BETA_MAX, SEARCHED_DEPTH + 1, side);
+
+        if (checkmate) {
+            printf("checkmate\n");
+            break;
+        }
+
+        printf("searched depth: %d\n", SEARCHED_DEPTH);
+        //printf("nodes: %d\n", nodeCount);
+        //printf("quiescent: %d\n", quiescentNodeCount);
         SEARCHED_DEPTH++;
     }
+
     pthread_cleanup_pop(1);
 }

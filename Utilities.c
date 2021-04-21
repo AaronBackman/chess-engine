@@ -6,6 +6,7 @@
 
 #include "Constants.h"
 #include "Move.h"
+#include "Init.h"
 
 Move createMove(int from, int to, int promotion, int castle, bool enPassant) {
     Move move = {from, to, promotion, castle, enPassant};
@@ -270,4 +271,8 @@ void printBoard() {
     }
 
     printf("\n\n\n");
+}
+
+int getManhattanDistance(int sq1, int sq2) {
+    return MD[sq1][sq2];
 }
