@@ -10,8 +10,7 @@ typedef unsigned char BYTE;
 #define BOARD_SIZE 64
 #define MAX_TURNS 1024
 #define MAX_MOVES 500
-#define MAX_DEPTH 30
-#define DEPTH 8
+#define MAX_DEPTH 100
 
 #define PAWN_SCORE 100
 #define KNIGHT_SCORE 320
