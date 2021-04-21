@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <limits.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #include "Constants.h"
 #include "Move.h"
@@ -340,6 +341,8 @@ int generateMoves(Move *movesArr, int side) {
     u64 blackLinears = blackQueens | blackRooks;
 
     bool isEnPassant = isEnPassantAllowed(otherGameInfo);
+
+    assert(MOVE_STACK_POINTER < MAX_DEPTH);
 
     if (side == 1) {
         while(whitePawns != 0) {

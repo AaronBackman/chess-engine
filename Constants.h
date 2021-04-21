@@ -23,6 +23,7 @@ typedef unsigned char BYTE;
 
 extern u64 GAME_STATE_STACK[MAX_DEPTH + MAX_TURNS][15];
 extern int GAME_STATE_STACK_POINTER;
+extern int CANCEL_THREAD;
 
 extern int MOVE_STACK_POINTER;
 extern Move MOVE_STACK[MAX_DEPTH][MAX_MOVES];

@@ -1,6 +1,11 @@
 #ifndef SEARCH_H
 #define SEARCH_H
 
-Move negaMaxRoot(int alpha, int beta, int depth, int side);
+#include "Move.h"
+
+extern Move SELECTED_MOVE;
+extern int SEARCHED_DEPTH;
+
+void *search(void *vargp);
 
 #endif

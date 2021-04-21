@@ -17,6 +17,11 @@ u64 removeWhiteCastleLong(u64 meta);
 u64 removeBlackCastleShort(u64 meta);
 u64 removeBlackCastleLong(u64 meta);
 
+u64 setWhiteCastleShort(u64 meta);
+u64 setWhiteCastleLong(u64 meta);
+u64 setBlackCastleShort(u64 meta);
+u64 setBlackCastleLong(u64 meta);
+
 bool isEnPassantAllowed(u64 meta);
 u64 setEnPassantAllowed(u64 meta, bool enPassantAllowed);
 u64 setEnPassantSquare(u64 meta, u64 square);
@@ -25,8 +30,11 @@ u64 getEnPassantSquare(u64 meta);
 int getSideToPlay(u64 meta);
 u64 setSideToPlay(u64 meta, int side);
 
-u64 *parseFen(u64 *gameState, char *fenStr);
+void moveToString(char *str, Move move);
+void parseUciPosition(u64 *gameState, char *fenStr);
 int bitScanForward(u64 board);
 int bitScanReverse(u64 board);
+
+void printBoard();
 
 #endif

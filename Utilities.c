@@ -128,216 +128,31 @@ u64 setSideToPlay(u64 meta, int side) {
     return meta;
 }
 
-// parses a fen string into a gamestate
-u64 *parseFen(u64 *gameState, char *fenStr) {
-    int i;
-    // fen starts from top left of the board (index 56 in our board representation)
-    int index = 56;
-    u64 whitePieces = 0LLU;
-    u64 whitePawns = 0LLU;
-    u64 whiteKnights = 0LLU;
-    u64 whiteBishops = 0LLU;
-    u64 whiteRooks = 0LLU;
-    u64 whiteQueens = 0LLU;
-    u64 whiteKings = 0LLU;
+void moveToString(char *str, Move move) {
+    str[0] = 'a' + move.from % 8;
+    str[1] = '1' + move.from / 8;
+    str[2] = 'a' + move.to % 8;
+    str[3] = '1' + move.to / 8;
 
-    u64 blackPieces = 0LLU;
-    u64 blackPawns = 0LLU;
-    u64 blackKnights = 0LLU;
-    u64 blackBishops = 0LLU;
-    u64 blackRooks = 0LLU;
-    u64 blackQueens = 0LLU;
-    u64 blackKings = 0LLU;
-
-    u64 otherGameInfo = 0;
-
-    int fenStrLength = strlen(fenStr);
-
-    // is the board part in fen finished
-    bool isBoardFinished = false;
-
-    // is the side part in fen finished
-    bool isSideFinished = false;
-
-    // is the castling part in fen finished
-    bool isCastlingFinished = false;
-
-    // is the en passant part in fen finished
-    bool isEnPassantFinished = false;
-
-    // is the halfmove part (50-move rule) in fen finished (TODO)
-    bool isHalfMoveFinished = false;
-
-    // is the fullmove part in fen finished (TODO)
-    bool isFullMoveFinished = false;
-
-    for (i = 0; i < fenStrLength; i++) {
-        char fenChar = fenStr[i];
-
-        if (!isBoardFinished) {
-            if (fenChar == 'p') {
-                blackPawns = fillSquare(blackPawns, index);
-                blackPieces = fillSquare(blackPieces, index);
-            }
-            else if (fenChar == 'n') {
-                blackKnights = fillSquare(blackKnights, index);
-                blackPieces = fillSquare(blackPieces, index);
-            }
-            else if (fenChar == 'b') {
-                blackBishops = fillSquare(blackBishops, index);
-                blackPieces = fillSquare(blackPieces, index);
-            }
-            else if (fenChar == 'r') {
-                blackRooks = fillSquare(blackRooks, index);
-                blackPieces = fillSquare(blackPieces, index);
-            }
-            else if (fenChar == 'q') {
-                blackQueens = fillSquare(blackQueens, index);
-                blackPieces = fillSquare(blackPieces, index);
-            }
-            else if (fenChar == 'k') {
-                blackKings = fillSquare(blackKings, index);
-                blackPieces = fillSquare(blackPieces, index);
-            }
-
-            else if (fenChar == 'P') {
-                whitePawns = fillSquare(whitePawns, index);
-                whitePieces = fillSquare(whitePieces, index);
-            }
-            else if (fenChar == 'N') {
-                whiteKnights = fillSquare(whiteKnights, index);
-                whitePieces = fillSquare(whitePieces, index);
-            }
-            else if (fenChar == 'B') {
-                whiteBishops = fillSquare(whiteBishops, index);
-                whitePieces = fillSquare(whitePieces, index);
-            }
-            else if (fenChar == 'R') {
-                whiteRooks = fillSquare(whiteRooks, index);
-                whitePieces = fillSquare(whitePieces, index);
-            }
-            else if (fenChar == 'Q') {
-                whiteQueens = fillSquare(whiteQueens, index);
-                whitePieces = fillSquare(whitePieces, index);
-            }
-            else if (fenChar == 'K') {
-                whiteKings = fillSquare(whiteKings, index);
-                whitePieces = fillSquare(whitePieces, index);
-            }
-
-            if (fenChar == '/') {
-                index -= 16;
-            }
-
-            // means there are that many spaces in the chess board
-            else if (isdigit(fenChar)) {
-                // adds the character after it is converted to an integer
-                index += fenChar - '0';
-            }
-            // stop putting pieces after the first space
-            else if (fenChar == ' ') {
-                isBoardFinished = true;
-            }
-            // is a chess piece
-            else {
-                index++;
-            }
-        }
-        else if (!isSideFinished) {
-            // white to move
-            if (fenChar == 'w') {
-                otherGameInfo = setSideToPlay(otherGameInfo, 1);
-            }
-            // black to move
-            else if (fenChar == 'b') {
-                otherGameInfo = setSideToPlay(otherGameInfo, -1);
-            }
-
-            if (fenChar == ' ') {
-                isSideFinished = true;
-            }
-        }
-        else if (!isCastlingFinished) {
-            // white castles kingside (short)
-            if (fenChar == 'K') {
-                otherGameInfo = setWhiteCastleShort(otherGameInfo);
-            }
-            // white castles queenside (long)
-            else if (fenChar == 'Q') {
-                otherGameInfo = setWhiteCastleLong(otherGameInfo);
-            }
-            // black castles kingside (short)
-            else if (fenChar == 'k') {
-                otherGameInfo = setBlackCastleShort(otherGameInfo);
-            }
-            // black castles queenside (long)
-            else if (fenChar == 'q') {
-                otherGameInfo = setBlackCastleLong(otherGameInfo);
-            }
-
-            if (fenChar == ' ') {
-                isCastlingFinished = true;
-            }
-        }
-        else if (!isEnPassantFinished) {
-            // no en passant
-            if (fenChar == '-') {
-                continue;
-            }
-            // second character in a move
-            else if (isdigit(fenChar) != 0) {
-                continue;
-            }
-            else if (fenChar == ' ') {
-                isEnPassantFinished = true;
-            }
-            // first character in a move (eg. e3)
-            else {
-                // convert character to column index: example: d -> 3
-                int column = fenChar - 'a';
-                // column number is the next character, minus one to get zero-based index
-                int row = fenStr[i + 1] - '0' - 1;
-                // index used by fen is the square that is behind the moved pawn
-                int enPassantIndex = row * 8 + column;
-                // index used by this program is the location of the moved pawn
-                int enPassantPieceIndex;
-
-                printf("char: %c, column: %d, row: %d\n", fenChar, column, row);
-
-                // white moved 2 squares with a pawn
-                if (row == 2) {
-                    enPassantPieceIndex = enPassantIndex + 8;
-                }
-                // black moved 2 squares with a pawn
-                else {
-                    enPassantPieceIndex = enPassantIndex - 8;
-                }
-
-                otherGameInfo = setEnPassantAllowed(otherGameInfo, true);
-                otherGameInfo = setEnPassantSquare(otherGameInfo, enPassantPieceIndex);
-            }
-        }
+    if (move.promotion == 1) {
+        str[4] = 'n';
+        str[5] = '\0';
     }
-
-    gameState[0] = whitePieces;
-    gameState[1] = whitePawns;
-    gameState[2] = whiteKnights;
-    gameState[3] = whiteBishops;
-    gameState[4] = whiteRooks;
-    gameState[5] = whiteQueens;
-    gameState[6] = whiteKings;
-
-    gameState[7] = blackPieces;
-    gameState[8] = blackPawns;
-    gameState[9] = blackKnights;
-    gameState[10] = blackBishops;
-    gameState[11] = blackRooks;
-    gameState[12] = blackQueens;
-    gameState[13] = blackKings;
-
-    gameState[14] = otherGameInfo;
-
-    return gameState;
+    else if (move.promotion == 2) {
+        str[4] = 'b';
+        str[5] = '\0';
+    }
+    else if (move.promotion == 3) {
+        str[4] = 'r';
+        str[5] = '\0';
+    }
+    else if (move.promotion == 4) {
+        str[4] = 'q';
+        str[5] = '\0';
+    }
+    else {
+        str[4] = '\0';
+    }
 }
 
 const int index64Forward[64] = {
@@ -380,4 +195,79 @@ int bitScanReverse(u64 board) {
    board |= board >> 16;
    board |= board >> 32;
    return index64Reverse[(board * debruijn64) >> 58];
+}
+
+void printBoard() {
+    u64 *gameState = GAME_STATE_STACK[GAME_STATE_STACK_POINTER];
+
+    //printf("stackpointer: %d", GAME_STATE_STACK_POINTER);
+
+    u64 whitePieces = gameState[0];
+    u64 whitePawns = gameState[1];
+    u64 whiteKnights = gameState[2];
+    u64 whiteBishops = gameState[3];
+    u64 whiteRooks = gameState[4];
+    u64 whiteQueens = gameState[5];
+    u64 whiteKings = gameState[6];
+
+    u64 blackPieces = gameState[7];
+    u64 blackPawns = gameState[8];
+    u64 blackKnights = gameState[9];
+    u64 blackBishops = gameState[10];
+    u64 blackRooks = gameState[11];
+    u64 blackQueens = gameState[12];
+    u64 blackKings = gameState[13];
+
+    u64 otherGameInfo = gameState[14];
+    
+    int i = 56;
+    
+
+    while (i >= 0 && i < 64) {
+        printf(" ");
+
+        if (!squareOccupied(whitePieces, i) && !squareOccupied(blackPieces, i)) {
+            printf("__");
+        }
+
+        if (squareOccupied(whitePieces, i)) printf("+");
+        if (squareOccupied(blackPieces, i)) printf("#");
+
+        if (squareOccupied(whitePawns, i)) printf("P");
+
+        if (squareOccupied(whiteBishops, i)) printf("B");
+
+        if (squareOccupied(whiteKnights, i)) printf("N");
+
+        if (squareOccupied(whiteRooks, i)) printf("R");
+
+        if (squareOccupied(whiteQueens, i)) printf("Q");
+
+        if (squareOccupied(whiteKings, i)) printf("K");
+
+        if (squareOccupied(blackPawns, i)) printf("p");
+
+        if (squareOccupied(blackBishops, i)) printf("b");
+
+        if (squareOccupied(blackKnights, i)) printf("n");
+
+        if (squareOccupied(blackRooks, i)) printf("r");
+
+        if (squareOccupied(blackQueens, i)) printf("q");
+
+        if (squareOccupied(blackKings, i)) printf("k");
+
+        printf(" ");
+
+        //printf("%d", i);
+
+        i++;
+
+        if (i % 8 == 0) {
+            i -= 16;
+            printf("\n");
+        }
+    }
+
+    printf("\n\n\n");
 }
