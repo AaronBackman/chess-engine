@@ -24,7 +24,7 @@ void uciListen() {
     input = (char*) malloc(maxInputLength * sizeof(char));
     fgets(input, maxInputLength, stdin);
 
-    printf("gamestack %d movestack %d\n", GAME_STATE_STACK_POINTER, MOVE_STACK_POINTER);
+    //printf("gamestack %d movestack %d\n", GAME_STATE_STACK_POINTER, MOVE_STACK_POINTER);
 
 
     if (strcmp(input, "uci\n") == 0) {

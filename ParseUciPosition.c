@@ -63,7 +63,7 @@ void parseUciPosition(u64 *gameState, char *fenStr) {
             }
             else if (fenChar == ' ' && fenStr[i + 1] == 'm' && fenStr[i + 2] == 'o' && fenStr[i + 3] == 'v' && fenStr[i + 4] == 'e' && fenStr[i + 5] == 's') {
                 movesAfterPosition = true;
-                moveStartIndex = 13 + 5 + 2;
+                moveStartIndex = i + 5 + 2;
                 break;
             }
 
@@ -243,6 +243,8 @@ void parseUciPosition(u64 *gameState, char *fenStr) {
         }
     }
 
+    //printf("gamestate outside: %d\n", GAME_STATE_STACK_POINTER);
+
     gameState[0] = whitePieces;
     gameState[1] = whitePawns;
     gameState[2] = whiteKnights;
@@ -294,6 +296,9 @@ void parseUciPosition(u64 *gameState, char *fenStr) {
 
             enPassantSquare = getEnPassantSquare(otherGameInfo);
             enPassantAllowed = isEnPassantAllowed(otherGameInfo);
+
+            //printf("gamestate: %d\n", GAME_STATE_STACK_POINTER);
+            //printf("index: %d\n", i);
 
             // handle promotions
             if (fenStr[i + 4] == 'n') {

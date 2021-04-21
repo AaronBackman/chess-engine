@@ -212,7 +212,7 @@ Move negaMaxRoot(int alpha, int beta, int depth, int side) {
 void cleanUpHandler(void *vargp) {
   GAME_STATE_STACK_POINTER = ORIGINAL_GAMES_STATE_STACK_POINTER;
   MOVE_STACK_POINTER = ORIGINAL_MOVE_STACK_POINTER;
-  printf("cleanup\n");
+  //printf("cleanup\n");
 }
 
 // a thread to calculate the best moves with iterative deepening
