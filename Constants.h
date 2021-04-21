@@ -14,10 +14,12 @@ typedef unsigned char BYTE;
 #define DEPTH 8
 
 #define PAWN_SCORE 100
-#define KNIGHT_SCORE 300
-#define BISHOP_SCORE 350
+#define KNIGHT_SCORE 320
+#define BISHOP_SCORE 330
 #define ROOK_SCORE 500
 #define QUEEN_SCORE 900
+#define KING_SCORE 20000
+
 #define ALPHA_BETA_MIN -1000000000
 #define ALPHA_BETA_MAX 1000000000
 

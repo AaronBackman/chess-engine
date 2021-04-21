@@ -9,6 +9,7 @@
 #include "MakeMove.h"
 #include "LegalityChecks.h"
 #include "Utilities.h"
+#include "Init.h"
 
 Move SELECTED_MOVE;
 int SEARCHED_DEPTH;
@@ -17,6 +18,35 @@ int ORIGINAL_GAMES_STATE_STACK_POINTER;
 int ORIGINAL_MOVE_STACK_POINTER;
 
 u64 nodeCount = 0;
+
+// parameters are the count of each piece type and color on the board (eg. wp == number white pawns)
+// used to calculate the tapered eval
+int calcPhase(int wp, int bp, int wn, int bn, int wb, int bb, int wr, int br, int wq, int bq) {
+  int phase;
+  int pawnPhase = 0;
+  int knightPhase = 1;
+  int bishopPhase = 1;
+  int rookPhase = 2;
+  int queenPhase = 4;
+  int totalPhase = pawnPhase * 16 + knightPhase * 4 + bishopPhase * 4 + rookPhase * 4 + queenPhase * 2;
+
+  phase = totalPhase;
+
+  phase -= wp * pawnPhase;
+  phase -= bp * pawnPhase;
+  phase -= wn * knightPhase;
+  phase -= bn * knightPhase;
+  phase -= wb * bishopPhase;
+  phase -= bb * bishopPhase;
+  phase -= wr * rookPhase;
+  phase -= br * rookPhase;
+  phase -= wq * queenPhase;
+  phase -= bq * queenPhase;
+
+  phase = (phase * 256 + (totalPhase / 2)) / totalPhase;
+
+  return phase;
+}
 
 int evaluate(int side) {
   u64 *gameState = GAME_STATE_STACK[GAME_STATE_STACK_POINTER];
@@ -36,59 +66,115 @@ int evaluate(int side) {
   u64 blackQueens = gameState[12];
   u64 blackKings = gameState[13];
   int score;
-  int whiteMaterial = 0;
-  int blackMaterial = 0;
+  int openingScore;
+  int endgameScore;
+  int index;
+  int whiteOpeningMaterial = 0;
+  int blackOpeningMaterial = 0;
+  int whiteEndgameMaterial = 0;
+  int blackEndgameMaterial = 0;
+  int phase;
+
+  // number of each piece type and color
+  int wp = 0;
+  int bp = 0;
+  int wn = 0;
+  int bn = 0;
+  int wb = 0;
+  int bb = 0;
+  int wr = 0;
+  int br = 0;
+  int wq = 0;
+  int bq = 0;
 
   nodeCount++;
 
+  // first calculate the opening score
   while (whitePawns != 0) {
+      index = bitScanForward(whitePawns);
       whitePawns &= (whitePawns - 1);
-      whiteMaterial += PAWN_SCORE;
+      whiteOpeningMaterial += PAWN_SCORE + WHITE_PAWN_PIECE_SQUARE_TABLE[index];
+      wp++;
   }
   while (whiteKnights!= 0) {
+      index = bitScanForward(whiteKnights);
       whiteKnights &= (whiteKnights - 1);
-      whiteMaterial += KNIGHT_SCORE;
+      whiteOpeningMaterial += KNIGHT_SCORE + WHITE_KNIGHT_PIECE_SQUARE_TABLE[index];
+      wn++;
   }
   while (whiteBishops != 0) {
+      index = bitScanForward(whiteBishops);
       whiteBishops &= (whiteBishops - 1);
-      whiteMaterial += BISHOP_SCORE;
+      whiteOpeningMaterial += BISHOP_SCORE + WHITE_BISHOP_PIECE_SQUARE_TABLE[index];
+      wb++;
   }
   while (whiteRooks != 0) {
+      index = bitScanForward(whiteRooks);
       whiteRooks &= (whiteRooks - 1);
-      whiteMaterial += ROOK_SCORE;
+      whiteOpeningMaterial += ROOK_SCORE + WHITE_ROOK_PIECE_SQUARE_TABLE[index];
+      wr++;
   }
   while (whiteQueens != 0) {
+      index = bitScanForward(whiteQueens);
       whiteQueens &= (whiteQueens - 1);
-      whiteMaterial += QUEEN_SCORE;
+      whiteOpeningMaterial += QUEEN_SCORE + WHITE_QUEEN_PIECE_SQUARE_TABLE[index];
+      wq++;
   }
+
+  // endgame and opening evaluate similarly until now
+  whiteEndgameMaterial = whiteOpeningMaterial;
+
+  // only 1 king can exist
+  index = bitScanForward(whiteKings);
+  whiteOpeningMaterial += KING_SCORE + WHITE_KING_PIECE_SQUARE_TABLE_OPENING[index];
+  whiteEndgameMaterial += KING_SCORE + WHITE_KING_PIECE_SQUARE_TABLE_ENDGAME[index];
 
 
   while (blackPawns != 0) {
+      index = bitScanForward(blackPawns);
       blackPawns &= (blackPawns - 1);
-      blackMaterial += PAWN_SCORE;
+      blackOpeningMaterial += PAWN_SCORE + BLACK_PAWN_PIECE_SQUARE_TABLE[index];
+      bp++;
   }
-
   while (blackKnights!= 0) {
+      index = bitScanForward(blackKnights);
       blackKnights &= (blackKnights - 1);
-      blackMaterial += KNIGHT_SCORE;
+      blackOpeningMaterial += KNIGHT_SCORE+ BLACK_KNIGHT_PIECE_SQUARE_TABLE[index];
+      bn++;
   }
-
   while (blackBishops != 0) {
+      index = bitScanForward(blackBishops);
       blackBishops &= (blackBishops - 1);
-      blackMaterial += BISHOP_SCORE;
+      blackOpeningMaterial += BISHOP_SCORE+ BLACK_BISHOP_PIECE_SQUARE_TABLE[index];
+      bb++;
   }
-
   while (blackRooks != 0) {
+      index = bitScanForward(blackRooks);
       blackRooks &= (blackRooks - 1);
-      blackMaterial += ROOK_SCORE;
+      blackOpeningMaterial += ROOK_SCORE+ BLACK_ROOK_PIECE_SQUARE_TABLE[index];
+      br++;
   }
-
   while (blackQueens != 0) {
+      index = bitScanForward(blackQueens);
       blackQueens &= (blackQueens - 1);
-      blackMaterial += QUEEN_SCORE;
+      blackOpeningMaterial += QUEEN_SCORE+ BLACK_QUEEN_PIECE_SQUARE_TABLE[index];
+      bq++;
   }
 
-  score = (whiteMaterial - blackMaterial) * side;
+  // endgame and opening evaluate similarly until now
+  blackEndgameMaterial = blackOpeningMaterial;
+
+  // only 1 king can exist
+  index = bitScanForward(blackKings);
+  blackOpeningMaterial += KING_SCORE + BLACK_KING_PIECE_SQUARE_TABLE_OPENING[index];;
+  blackEndgameMaterial += KING_SCORE + BLACK_KING_PIECE_SQUARE_TABLE_ENDGAME[index];
+
+
+  // tapered evaluation score
+  phase = calcPhase(wp, bp, wn, bn, wb, bb, wr, br, wq, bq);
+  openingScore = (whiteOpeningMaterial - blackOpeningMaterial) * side;
+  endgameScore = (whiteEndgameMaterial - blackEndgameMaterial) * side;
+  score = ((openingScore * (256 - phase)) + (endgameScore * phase)) / 256;
 
   return score;
 }
