@@ -243,7 +243,7 @@ void parseUciPosition(u64 *gameState, char *fenStr) {
         }
     }
 
-    //printf("gamestate outside: %d\n", GAME_STATE_STACK_POINTER);
+    printf("gamestate outside: %d\n", GAME_STATE_STACK_POINTER);
 
     gameState[0] = whitePieces;
     gameState[1] = whitePawns;
@@ -272,6 +272,7 @@ void parseUciPosition(u64 *gameState, char *fenStr) {
             int to = (fenStr[i + 2] - 'a') + 8 * (fenStr[i + 3] - '1');
             int enPassantSquare;
             bool enPassantAllowed;
+            int side;
 
             gameState = GAME_STATE_STACK[GAME_STATE_STACK_POINTER];
             u64 *newGameState = GAME_STATE_STACK[GAME_STATE_STACK_POINTER + 1];
@@ -297,8 +298,10 @@ void parseUciPosition(u64 *gameState, char *fenStr) {
             enPassantSquare = getEnPassantSquare(otherGameInfo);
             enPassantAllowed = isEnPassantAllowed(otherGameInfo);
 
-            //printf("gamestate: %d\n", GAME_STATE_STACK_POINTER);
-            //printf("index: %d\n", i);
+            side = getSideToPlay(otherGameInfo);
+
+            printf("gamestate: %d\n", GAME_STATE_STACK_POINTER);
+            printf("index: %d\n", i);
 
             // handle promotions
             if (fenStr[i + 4] == 'n') {
@@ -338,7 +341,7 @@ void parseUciPosition(u64 *gameState, char *fenStr) {
                 i += 4;
             }
             // handle en passant
-            else if (to == enPassantSquare && enPassantAllowed && squareOccupied(whitePawns | blackPawns, from)) {
+            else if ((side == 1 && (to == enPassantSquare + 8) && enPassantAllowed && squareOccupied(whitePawns, from)) || (side == -1 && (to == enPassantSquare - 8) && enPassantAllowed && squareOccupied(blackPawns, from))) {
                 nextMove = createMove(from, to, 0, 0, 1);
                 i += 4;
             }
@@ -348,7 +351,8 @@ void parseUciPosition(u64 *gameState, char *fenStr) {
                 i += 4;
             }
 
-            //printf("%d, %d, %d, %d, %d\n", nextMove.from, nextMove.to, nextMove.promotion, nextMove.castling, nextMove.enPassant);
+            printf("%d, %d, %d, %d, %d\n", nextMove.from, nextMove.to, nextMove.promotion, nextMove.castling, nextMove.enPassant);
+            printf ("enpassant allowed: %d, enpassant square: %d\n", enPassantAllowed, enPassantSquare);
             
             makeMove(nextMove);
 
