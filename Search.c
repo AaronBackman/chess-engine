@@ -21,6 +21,7 @@ u64 nodeCount = 0;
 u64 quiescentNodeCount = 0;
 
 bool checkmate;
+bool losingCheckMate;
 
 // parameters are the count of each piece type and color on the board (eg. wp == number white pawns)
 // used to calculate the tapered eval
@@ -346,9 +347,8 @@ int negaMax(int alpha, int beta, int depth, int side) {
             return 0;
         }
         else {
-            checkmate = true;
             // loses if king is lost => return a very bad score
-            return -100000;
+            return -1000000;
         }
     }
 
@@ -387,11 +387,9 @@ Move negaMaxRoot(int alpha, int beta, int depth, int side) {
         if (!isKingThreatened(side)) {
             score = -negaMax(-beta, -alpha, depth - 1, -side);
 
-            if (score >= beta) {
-                // printf("fail hard, score: %d\n", score);
-                unMakeMove();
-                MOVE_STACK_POINTER--;
-                return bestMove;
+            if (score > 100000) {
+                checkmate = true;
+                return move;
             }
 
             //printf("score: %d\n", score);
@@ -412,6 +410,10 @@ Move negaMaxRoot(int alpha, int beta, int depth, int side) {
     //printf("best move: from: %d, to: %d\n", bestMove.from, bestMove.to);
 
     //printf("nodes: %d\n", nodeCount);
+
+    if (alpha < -100000) {
+        losingCheckMate = true;
+    }
 
     return bestMove;
 }
@@ -438,22 +440,35 @@ void *search(void *vargp) {
     printf("game: %d, move: %d\n", GAME_STATE_STACK_POINTER, MOVE_STACK_POINTER);
 
     checkmate = false;
+    losingCheckMate = false;
     CANCEL_THREAD = 0;
 
     while (SEARCHED_DEPTH < MAX_DEPTH) {
+        Move previousMove = SELECTED_MOVE;
         nodeCount = 0;
         quiescentNodeCount = 0;
+
         SELECTED_MOVE = negaMaxRoot(ALPHA_BETA_MIN, ALPHA_BETA_MAX, SEARCHED_DEPTH + 1, side);
+
+        printf("searched depth: %d\n", SEARCHED_DEPTH);
+        printf("nodes: %d\n", nodeCount);
+        printf("quiescent: %d\n", quiescentNodeCount);
+        SEARCHED_DEPTH++;
 
         if (checkmate) {
             printf("checkmate\n");
             break;
         }
-
-        printf("searched depth: %d\n", SEARCHED_DEPTH);
-        //printf("nodes: %d\n", nodeCount);
-        //printf("quiescent: %d\n", quiescentNodeCount);
-        SEARCHED_DEPTH++;
+        else if (losingCheckMate) {
+            if (SEARCHED_DEPTH >= 2) {
+                // in iterative deepening this avoids the unavoidable checkmate the longest
+                // if depth == 1, move doestnt matter
+                SELECTED_MOVE = previousMove;
+            }
+            checkmate = true;
+            printf("losing checkmate\n");
+            break;
+        }
     }
 
     pthread_cleanup_pop(1);

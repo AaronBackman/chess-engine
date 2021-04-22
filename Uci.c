@@ -115,6 +115,7 @@ void uciListen() {
       // based on remaining time for the side and the increment
       int calcTime;
       int side = getSideToPlay(GAME_STATE_STACK[GAME_STATE_STACK_POINTER][14]);
+      int i;
       
       
       argsFilled = sscanf(input, "go wtime %d btime %d winc %d binc %d", &whiteTime, &blackTime, &whiteIncrement, &blackIncrement);
@@ -148,7 +149,20 @@ void uciListen() {
       pthread_create(&threadId, NULL, search, NULL);
       pthread_detach(threadId);
 
-      usleep(calcTime);
+      // more than 1 second
+      if (calcTime >= 1000000) {
+          for (i = 0; i < calcTime / 1000000; i++) {
+              usleep(1000000);
+
+              // checkmate was found, no need to search further
+              if (checkmate) {
+                  break;
+              }
+          }
+      }
+      else {
+          usleep(calcTime);
+      }
 
       pthread_cancel(threadId);
       CANCEL_THREAD = 1;
