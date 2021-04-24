@@ -28,33 +28,13 @@ typedef struct captureTable {
 MoveTable moveTables[18];
 CaptureTable captureTables[18];
 
-int getNumberOfKingAttackers(int kingIndex, int side) {
-    u64 threatMap;
-    int leastBit;
-    
-    threatMap = getThreatMap(kingIndex, side);
 
-    if (threatMap == 0) return threatMap;
-
-    leastBit = bitScanForward(threatMap);
-
-    // remove the found bit
-    threatMap ^= SINGLE_BIT_LOOKUP[leastBit];
-
-    // threatmap is empty after removing 1 attacker
-    if (threatMap == 0) return 1;
-
-    // king can only have 2 attackers in legal positions
-    return 2;
-}
-
-
-void addWhitePawnPatterns(u64 *gameState, int square, int patternIndex) {
+void add_white_pawn_patterns(u64 *gameState, int square, int patternIndex) {
     CaptureTable captureTable = {square, 0, 1};
     MoveTable moveTable = {square, 0, 1};
     u64 blackPieces = gameState[7];
-    u64 movePattern = getWhitePawnMoveMaps(gameState, square);
-    u64 attackPattern = getWhitePawnAttackMaps(gameState, square);
+    u64 movePattern = get_white_pawn_move_maps(gameState, square);
+    u64 attackPattern = get_white_pawn_attack_maps(gameState, square);
 
     attackPattern &= blackPieces;
 
@@ -64,12 +44,12 @@ void addWhitePawnPatterns(u64 *gameState, int square, int patternIndex) {
     moveTables[patternIndex] = moveTable;
 }
 
-void addBlackPawnPatterns(u64 *gameState, int square, int patternIndex) {
+void add_black_pawn_patterns(u64 *gameState, int square, int patternIndex) {
     CaptureTable captureTable = {square, 0, 1};
     MoveTable moveTable = {square, 0, 1};
     u64 whitePieces = gameState[0];
-    u64 movePattern = getBlackPawnMoveMaps(gameState, square);
-    u64 attackPattern = getBlackPawnAttackMaps(gameState, square);
+    u64 movePattern = get_black_pawn_move_maps(gameState, square);
+    u64 attackPattern = get_black_pawn_attack_maps(gameState, square);
 
     attackPattern &= whitePieces;
 
@@ -79,14 +59,14 @@ void addBlackPawnPatterns(u64 *gameState, int square, int patternIndex) {
     moveTables[patternIndex] = moveTable;
 }
 
-void addWhiteKnightPatterns(u64 *gameState, int square, int patternIndex) {
+void add_white_knight_patterns(u64 *gameState, int square, int patternIndex) {
     CaptureTable captureTable = {square, 0, 0};
     MoveTable moveTable = {square, 0, 0};
     u64 whitePieces = gameState[0];
     u64 blackPieces = gameState[7];
     u64 attackPattern;
     u64 movePattern;
-    u64 pattern = getKnightMaps(gameState, square);
+    u64 pattern = get_knight_maps(gameState, square);
 
     attackPattern = pattern & blackPieces;
     movePattern = pattern ^ attackPattern;
@@ -98,14 +78,14 @@ void addWhiteKnightPatterns(u64 *gameState, int square, int patternIndex) {
     moveTables[patternIndex] = moveTable;
 }
 
-void addBlackKnightPatterns(u64 *gameState, int square, int patternIndex) {
+void add_black_knight_patterns(u64 *gameState, int square, int patternIndex) {
     CaptureTable captureTable = {square, 0, 0};
     MoveTable moveTable = {square, 0, 0};
     u64 whitePieces = gameState[0];
     u64 blackPieces = gameState[7];
     u64 attackPattern;
     u64 movePattern;
-    u64 pattern = getKnightMaps(gameState, square);
+    u64 pattern = get_knight_maps(gameState, square);
 
     attackPattern = pattern & whitePieces;
     movePattern = pattern ^ attackPattern;
@@ -117,14 +97,14 @@ void addBlackKnightPatterns(u64 *gameState, int square, int patternIndex) {
     moveTables[patternIndex] = moveTable;
 }
 
-void addWhiteKingPatterns(u64 *gameState, int square, int patternIndex) {
+void add_white_king_patterns(u64 *gameState, int square, int patternIndex) {
     CaptureTable captureTable = {square, 0, 2};
     MoveTable moveTable = {square, 0, 2};
     u64 whitePieces = gameState[0];
     u64 blackPieces = gameState[7];
     u64 attackPattern;
     u64 movePattern;
-    u64 pattern = getKingMaps(gameState, square);
+    u64 pattern = get_king_maps(gameState, square);
 
     attackPattern = pattern & blackPieces;
     movePattern = pattern ^ attackPattern;
@@ -136,14 +116,14 @@ void addWhiteKingPatterns(u64 *gameState, int square, int patternIndex) {
     moveTables[patternIndex] = moveTable;
 }
 
-void addBlackKingPatterns(u64 *gameState, int square, int patternIndex) {
+void add_black_king_patterns(u64 *gameState, int square, int patternIndex) {
     CaptureTable captureTable = {square, 0, 2};
     MoveTable moveTable = {square, 0, 2};
     u64 whitePieces = gameState[0];
     u64 blackPieces = gameState[7];
     u64 attackPattern;
     u64 movePattern;
-    u64 pattern = getKingMaps(gameState, square);
+    u64 pattern = get_king_maps(gameState, square);
 
     attackPattern = pattern & whitePieces;
     movePattern = pattern ^ attackPattern;
@@ -155,14 +135,14 @@ void addBlackKingPatterns(u64 *gameState, int square, int patternIndex) {
     moveTables[patternIndex] = moveTable;
 }
 
-void addWhiteDiagonalPatterns(u64 *gameState, int square, int patternIndex) {
+void add_white_diagonal_patterns(u64 *gameState, int square, int patternIndex) {
     CaptureTable captureTable = {square, 0, 0};
     MoveTable moveTable = {square, 0, 0};
     u64 whitePieces = gameState[0];
     u64 blackPieces = gameState[7];
     u64 attackPattern;
     u64 movePattern;
-    u64 pattern = getDiagonalMaps(gameState, square);
+    u64 pattern = get_diagonal_maps(gameState, square);
 
     attackPattern = pattern & blackPieces;
     movePattern = pattern ^ attackPattern;
@@ -174,14 +154,14 @@ void addWhiteDiagonalPatterns(u64 *gameState, int square, int patternIndex) {
     moveTables[patternIndex] = moveTable;
 }
 
-void addBlackDiagonalPatterns(u64 *gameState, int square, int patternIndex) {
+void add_black_diagonal_patterns(u64 *gameState, int square, int patternIndex) {
     CaptureTable captureTable = {square, 0, 0};
     MoveTable moveTable = {square, 0, 0};
     u64 whitePieces = gameState[0];
     u64 blackPieces = gameState[7];
     u64 attackPattern;
     u64 movePattern;
-    u64 pattern = getDiagonalMaps(gameState, square);
+    u64 pattern = get_diagonal_maps(gameState, square);
 
     attackPattern = pattern & whitePieces;
     movePattern = pattern ^ attackPattern;
@@ -193,14 +173,14 @@ void addBlackDiagonalPatterns(u64 *gameState, int square, int patternIndex) {
     moveTables[patternIndex] = moveTable;
 }
 
-void addWhiteLinearPatterns(u64 *gameState, int square, int patternIndex) {
+void add_white_linear_patterns(u64 *gameState, int square, int patternIndex) {
     CaptureTable captureTable = {square, 0, 0};
     MoveTable moveTable = {square, 0, 0};
     u64 whitePieces = gameState[0];
     u64 blackPieces = gameState[7];
     u64 attackPattern;
     u64 movePattern;
-    u64 pattern = getLinearMaps(gameState, square);
+    u64 pattern = get_linear_maps(gameState, square);
 
     attackPattern = pattern & blackPieces;
     movePattern = pattern ^ attackPattern;
@@ -212,14 +192,14 @@ void addWhiteLinearPatterns(u64 *gameState, int square, int patternIndex) {
     moveTables[patternIndex] = moveTable;
 }
 
-void addBlackLinearPatterns(u64 *gameState, int square, int patternIndex) {
+void add_black_linear_patterns(u64 *gameState, int square, int patternIndex) {
     CaptureTable captureTable = {square, 0, 0};
     MoveTable moveTable = {square, 0, 0};
     u64 whitePieces = gameState[0];
     u64 blackPieces = gameState[7];
     u64 attackPattern;
     u64 movePattern;
-    u64 pattern = getLinearMaps(gameState, square);
+    u64 pattern = get_linear_maps(gameState, square);
 
     attackPattern = pattern & whitePieces;
     movePattern = pattern ^ attackPattern;
@@ -233,58 +213,58 @@ void addBlackLinearPatterns(u64 *gameState, int square, int patternIndex) {
 
 
 
-bool shortWhiteCastlingSquaresEmpty() {
-    u64 *gameState = GAME_STATE_STACK[GAME_STATE_STACK_POINTER];
+bool short_white_castling_squares_empty() {
+    u64 *gameState = g_gameStateStack[g_root + g_ply];
 
     u64 whitePieces = gameState[0];
     u64 blackPieces = gameState[7];
 
-    if (squareOccupied(whitePieces, 5) || squareOccupied(blackPieces, 5)) return false;
+    if (square_occupied(whitePieces, 5) || square_occupied(blackPieces, 5)) return false;
 
-    if (squareOccupied(whitePieces, 6) || squareOccupied(blackPieces, 6)) return false;
+    if (square_occupied(whitePieces, 6) || square_occupied(blackPieces, 6)) return false;
 
     return true;
 }
 
-bool longWhiteCastlingSquaresEmpty() {
-    u64 *gameState = GAME_STATE_STACK[GAME_STATE_STACK_POINTER];
+bool long_white_castling_squares_empty() {
+    u64 *gameState = g_gameStateStack[g_root + g_ply];
 
     u64 whitePieces = gameState[0];
     u64 blackPieces = gameState[7];
 
-    if (squareOccupied(whitePieces, 1) || squareOccupied(blackPieces, 1)) return false;
+    if (square_occupied(whitePieces, 1) || square_occupied(blackPieces, 1)) return false;
 
-    if (squareOccupied(whitePieces, 2) || squareOccupied(blackPieces, 2)) return false;
+    if (square_occupied(whitePieces, 2) || square_occupied(blackPieces, 2)) return false;
 
-    if (squareOccupied(whitePieces, 3) || squareOccupied(blackPieces, 3)) return false;
+    if (square_occupied(whitePieces, 3) || square_occupied(blackPieces, 3)) return false;
 
     return true;
 }
 
-bool shortBlackCastlingSquaresEmpty() {
-    u64 *gameState = GAME_STATE_STACK[GAME_STATE_STACK_POINTER];
+bool short_black_castling_squares_empty() {
+    u64 *gameState = g_gameStateStack[g_root + g_ply];
 
     u64 whitePieces = gameState[0];
     u64 blackPieces = gameState[7];
 
-    if (squareOccupied(whitePieces, 61) || squareOccupied(blackPieces, 61)) return false;
+    if (square_occupied(whitePieces, 61) || square_occupied(blackPieces, 61)) return false;
 
-    if (squareOccupied(whitePieces, 62) || squareOccupied(blackPieces, 62)) return false;
+    if (square_occupied(whitePieces, 62) || square_occupied(blackPieces, 62)) return false;
 
     return true;
 }
 
-bool longBlackCastlingSquaresEmpty() {
-    u64 *gameState = GAME_STATE_STACK[GAME_STATE_STACK_POINTER];
+bool long_black_castling_squares_empty() {
+    u64 *gameState = g_gameStateStack[g_root + g_ply];
 
     u64 whitePieces = gameState[0];
     u64 blackPieces = gameState[7];
 
-    if (squareOccupied(whitePieces, 57) || squareOccupied(blackPieces, 57)) return false;
+    if (square_occupied(whitePieces, 57) || square_occupied(blackPieces, 57)) return false;
 
-    if (squareOccupied(whitePieces, 58) || squareOccupied(blackPieces, 58)) return false;
+    if (square_occupied(whitePieces, 58) || square_occupied(blackPieces, 58)) return false;
 
-    if (squareOccupied(whitePieces, 59) || squareOccupied(blackPieces, 59)) return false;
+    if (square_occupied(whitePieces, 59) || square_occupied(blackPieces, 59)) return false;
 
     return true;
 }
@@ -312,12 +292,12 @@ bool longBlackCastlingSquaresEmpty() {
 // the 3-fold repetition (4 bits) and the 50-move rule (9 bits)
 
 // side: 0 == white, 1 == black
-int generateMoves(Move *movesArr, int side) {
+int generate_moves(Move *movesArr, int side) {
     int i;
     // next free index in moves array
     int patternIndex = 0;
     int moveIndex = 0;
-    u64 *gameState = GAME_STATE_STACK[GAME_STATE_STACK_POINTER];
+    u64 *gameState = g_gameStateStack[g_root + g_ply];
     u64 whitePieces = gameState[0];
     u64 whitePawns = gameState[1];
     u64 whiteKnights = gameState[2];
@@ -340,77 +320,79 @@ int generateMoves(Move *movesArr, int side) {
     u64 whiteLinears = whiteQueens | whiteRooks;
     u64 blackLinears = blackQueens | blackRooks;
 
-    bool isEnPassant = isEnPassantAllowed(otherGameInfo);
+    bool isEnPassant = is_enpassant_allowed(otherGameInfo);
+
+    u64 attackSet = g_attackSets[g_ply];
 
     if (side == 1) {
         while(whitePawns != 0) {
-            int index = bitScanForward(whitePawns);
+            int index = bitscan_forward(whitePawns);
             whitePawns &= (whitePawns - 1); // reset the least significant bit
-            addWhitePawnPatterns(gameState, index, patternIndex);
+            add_white_pawn_patterns(gameState, index, patternIndex);
             patternIndex++;
         }
 
         while(whiteKnights != 0) {
-            int index = bitScanForward(whiteKnights);
+            int index = bitscan_forward(whiteKnights);
             whiteKnights &= (whiteKnights - 1); // reset the least significant bit
-            addWhiteKnightPatterns(gameState, index, patternIndex);
+            add_white_knight_patterns(gameState, index, patternIndex);
             patternIndex++;
         }
 
         while(whiteDiagonals != 0) {
-            int index = bitScanForward(whiteDiagonals);
+            int index = bitscan_forward(whiteDiagonals);
             whiteDiagonals &= (whiteDiagonals - 1); // reset the least significant bit
-            addWhiteDiagonalPatterns(gameState, index, patternIndex);
+            add_white_diagonal_patterns(gameState, index, patternIndex);
             patternIndex++;
         }
 
         while(whiteLinears != 0) {
-            int index = bitScanForward(whiteLinears);
+            int index = bitscan_forward(whiteLinears);
             whiteLinears &= (whiteLinears - 1); // reset the least significant bit
-            addWhiteLinearPatterns(gameState, index, patternIndex);
+            add_white_linear_patterns(gameState, index, patternIndex);
             patternIndex++;
         }
 
         while(whiteKings != 0) {
-            int index = bitScanForward(whiteKings);
+            int index = bitscan_forward(whiteKings);
             whiteKings &= (whiteKings - 1); // reset the least significant bit
-            addWhiteKingPatterns(gameState, index, patternIndex);
+            add_white_king_patterns(gameState, index, patternIndex);
             patternIndex++;
         }
     }
     else {
         while(blackPawns != 0) {
-            int index = bitScanForward(blackPawns);
+            int index = bitscan_forward(blackPawns);
             blackPawns &= (blackPawns - 1); // reset the least significant bit
-            addBlackPawnPatterns(gameState, index, patternIndex);
+            add_black_pawn_patterns(gameState, index, patternIndex);
             patternIndex++;
         }
 
         while(blackKnights != 0) {
-            int index = bitScanForward(blackKnights);
+            int index = bitscan_forward(blackKnights);
             blackKnights &= (blackKnights - 1); // reset the least significant bit
-            addBlackKnightPatterns(gameState, index, patternIndex);
+            add_black_knight_patterns(gameState, index, patternIndex);
             patternIndex++;
         }
 
         while(blackDiagonals != 0) {
-            int index = bitScanForward(blackDiagonals);
+            int index = bitscan_forward(blackDiagonals);
             blackDiagonals &= (blackDiagonals - 1); // reset the least significant bit
-            addBlackDiagonalPatterns(gameState, index, patternIndex);
+            add_black_diagonal_patterns(gameState, index, patternIndex);
             patternIndex++;
         }
 
         while(blackLinears != 0) {
-            int index = bitScanForward(blackLinears);
+            int index = bitscan_forward(blackLinears);
             blackLinears &= (blackLinears - 1); // reset the least significant bit
-            addBlackLinearPatterns(gameState, index, patternIndex);
+            add_black_linear_patterns(gameState, index, patternIndex);
             patternIndex++;
         }
 
         while(blackKings != 0) {
-            int index = bitScanForward(blackKings);
+            int index = bitscan_forward(blackKings);
             blackKings &= (blackKings - 1); // reset the least significant bit
-            addBlackKingPatterns(gameState, index, patternIndex);
+            add_black_king_patterns(gameState, index, patternIndex);
             patternIndex++;
         }
     }
@@ -428,43 +410,47 @@ int generateMoves(Move *movesArr, int side) {
         pattern = captureTable.captureBitMap;
         type = captureTable.pieceType;
 
+        attackSet |= pattern;
+
         // pawn move
         if (type == 1) {
             int row;
             // if row is 6 or 1, there is a possibility of promotion
             row = from / 8;
             while (pattern != 0) {
-                to = bitScanForward(pattern);
+                to = bitscan_forward(pattern);
                 pattern &= (pattern - 1);
 
                 // promotion
                 if ((row == 6 && side == 1) || (row == 1 && side == -1)) {
-                    movesArr[moveIndex] = createMove(from, to, 1, 0, 0);
+                    movesArr[moveIndex] = create_move(from, to, 1, 0, 0);
                     moveIndex++;
-                    movesArr[moveIndex] = createMove(from, to, 2, 0, 0);
+                    movesArr[moveIndex] = create_move(from, to, 2, 0, 0);
                     moveIndex++;
-                    movesArr[moveIndex] = createMove(from, to, 3, 0, 0);
+                    movesArr[moveIndex] = create_move(from, to, 3, 0, 0);
                     moveIndex++;
-                    movesArr[moveIndex] = createMove(from, to, 4, 0, 0);
+                    movesArr[moveIndex] = create_move(from, to, 4, 0, 0);
                     moveIndex++;
                 }
                 // no promotion
                 else {
-                    movesArr[moveIndex] = createMove(from, to, 0, 0, 0);
+                    movesArr[moveIndex] = create_move(from, to, 0, 0, 0);
                     moveIndex++;
                 }
             }
         }
         else {
             while (pattern != 0) {
-                to = bitScanForward(pattern);
+                to = bitscan_forward(pattern);
                 pattern &= (pattern - 1);
 
-                movesArr[moveIndex] = createMove(from, to, 0, 0, 0);
+                movesArr[moveIndex] = create_move(from, to, 0, 0, 0);
                 moveIndex++;
             }
         }
     }
+
+    g_attackSets[g_ply] = attackSet;
 
     // then create non-capturing moves
     for (i = 0; i < patternIndex; i++) {
@@ -484,33 +470,33 @@ int generateMoves(Move *movesArr, int side) {
             // if row is 6 or 1, there is a possibility of promotion
             int row = from / 8;
             while (pattern != 0) {
-                to = bitScanForward(pattern);
+                to = bitscan_forward(pattern);
                 pattern &= (pattern - 1);
 
                 // promotion
                 if ((row == 6 && side == 1) || (row == 1 && side == -1)) {
-                    movesArr[moveIndex] = createMove(from, to, 1, 0, 0);
+                    movesArr[moveIndex] = create_move(from, to, 1, 0, 0);
                     moveIndex++;
-                    movesArr[moveIndex] = createMove(from, to, 2, 0, 0);
+                    movesArr[moveIndex] = create_move(from, to, 2, 0, 0);
                     moveIndex++;
-                    movesArr[moveIndex] = createMove(from, to, 3, 0, 0);
+                    movesArr[moveIndex] = create_move(from, to, 3, 0, 0);
                     moveIndex++;
-                    movesArr[moveIndex] = createMove(from, to, 4, 0, 0);
+                    movesArr[moveIndex] = create_move(from, to, 4, 0, 0);
                     moveIndex++;
                 }
                 // no promotion
                 else {
-                    movesArr[moveIndex] = createMove(from, to, 0, 0, 0);
+                    movesArr[moveIndex] = create_move(from, to, 0, 0, 0);
                     moveIndex++;
                 }
             }
         }
         else {
             while (pattern != 0) {
-                to = bitScanForward(pattern);
+                to = bitscan_forward(pattern);
                 pattern &= (pattern - 1);
 
-                movesArr[moveIndex] = createMove(from, to, 0, 0, 0);
+                movesArr[moveIndex] = create_move(from, to, 0, 0, 0);
                 moveIndex++;
             }
         }
@@ -518,32 +504,32 @@ int generateMoves(Move *movesArr, int side) {
 
     // handle enPassant
     if (isEnPassant) {
-        int enPassantSquare = getEnPassantSquare(otherGameInfo);
+        int enPassantSquare = get_enpassant_square(otherGameInfo);
         int enPassantColumn = enPassantSquare % 8;
 
         if (side == 1) {
             whitePawns = gameState[1];
 
-            if (enPassantColumn != 0 && squareOccupied(whitePawns, enPassantSquare - 1)) {
-                movesArr[moveIndex] = createMove(enPassantSquare - 1, enPassantSquare + 8, 0, 0, 1);
+            if (enPassantColumn != 0 && square_occupied(whitePawns, enPassantSquare - 1)) {
+                movesArr[moveIndex] = create_move(enPassantSquare - 1, enPassantSquare + 8, 0, 0, 1);
                 moveIndex++;
             }
 
-            if (enPassantColumn != 7 && squareOccupied(whitePawns, enPassantSquare + 1)) {
-                movesArr[moveIndex] = createMove(enPassantSquare + 1, enPassantSquare + 8, 0, 0, 1);
+            if (enPassantColumn != 7 && square_occupied(whitePawns, enPassantSquare + 1)) {
+                movesArr[moveIndex] = create_move(enPassantSquare + 1, enPassantSquare + 8, 0, 0, 1);
                 moveIndex++;
             }
         }
         else {
             blackPawns = gameState[8];
 
-            if (enPassantColumn != 0 && squareOccupied(blackPawns, enPassantSquare - 1)) {
-                movesArr[moveIndex] = createMove(enPassantSquare - 1, enPassantSquare - 8, 0, 0, 1);
+            if (enPassantColumn != 0 && square_occupied(blackPawns, enPassantSquare - 1)) {
+                movesArr[moveIndex] = create_move(enPassantSquare - 1, enPassantSquare - 8, 0, 0, 1);
                 moveIndex++;
             }
 
-            if (enPassantColumn != 7 && squareOccupied(blackPawns, enPassantSquare + 1)) {
-                movesArr[moveIndex] = createMove(enPassantSquare + 1, enPassantSquare - 8, 0, 0, 1);
+            if (enPassantColumn != 7 && square_occupied(blackPawns, enPassantSquare + 1)) {
+                movesArr[moveIndex] = create_move(enPassantSquare + 1, enPassantSquare - 8, 0, 0, 1);
                 moveIndex++;
             }
         }
@@ -551,42 +537,42 @@ int generateMoves(Move *movesArr, int side) {
 
     // castling move generation
     if (side == 1) {
-        if (canWhiteCastleShort(otherGameInfo)) {
-            if (shortWhiteCastlingSquaresEmpty()) {
+        if (can_white_castle_short(otherGameInfo)) {
+            if (short_white_castling_squares_empty()) {
                 // king cant be or move through any threatened squares
-                if (!isSquareThreatened(4, side) && !isSquareThreatened(5, side) && !isSquareThreatened(5, side)) {
-                    movesArr[moveIndex] = createMove(4, 6, 0, 1, 0);
+                if (!is_square_threatened(4, side) && !is_square_threatened(5, side) && !is_square_threatened(5, side)) {
+                    movesArr[moveIndex] = create_move(4, 6, 0, 1, 0);
                     moveIndex++;
                 }
             }
         }
 
-        if (canWhiteCastleLong(otherGameInfo)) {
-            if (longWhiteCastlingSquaresEmpty()) {
+        if (can_white_castle_long(otherGameInfo)) {
+            if (long_white_castling_squares_empty()) {
                 // king cant be or move through any threatened squares
-                if (!isSquareThreatened(2, side) && !isSquareThreatened(3, side) && !isSquareThreatened(4, side)) {
-                    movesArr[moveIndex] = createMove(4, 2, 0, 2, 0);
+                if (!is_square_threatened(2, side) && !is_square_threatened(3, side) && !is_square_threatened(4, side)) {
+                    movesArr[moveIndex] = create_move(4, 2, 0, 2, 0);
                     moveIndex++;
                 }
             }
         }
     }
     else {
-        if (canBlackCastleShort(otherGameInfo)) {
-            if (shortBlackCastlingSquaresEmpty()) {
+        if (can_black_castle_short(otherGameInfo)) {
+            if (short_black_castling_squares_empty()) {
                 // king cant be or move through any threatened squares
-                if (!isSquareThreatened(60, side) && !isSquareThreatened(61, side) && !isSquareThreatened(62, side)) {
-                    movesArr[moveIndex] = createMove(60, 62, 0, 3, 0);
+                if (!is_square_threatened(60, side) && !is_square_threatened(61, side) && !is_square_threatened(62, side)) {
+                    movesArr[moveIndex] = create_move(60, 62, 0, 3, 0);
                     moveIndex++;
                 }
             }
         }
 
-        if (canBlackCastleLong(otherGameInfo)) {
-            if (longBlackCastlingSquaresEmpty()) {
+        if (can_black_castle_long(otherGameInfo)) {
+            if (long_black_castling_squares_empty()) {
                 // king cant be or move through any threatened squares
-                if (!isSquareThreatened(58, side) && !isSquareThreatened(59, side) && !isSquareThreatened(60, side)) {
-                    movesArr[moveIndex] = createMove(60, 58, 0, 4, 0);
+                if (!is_square_threatened(58, side) && !is_square_threatened(59, side) && !is_square_threatened(60, side)) {
+                    movesArr[moveIndex] = create_move(60, 58, 0, 4, 0);
                     moveIndex++; 
                 }
             }
@@ -597,12 +583,12 @@ int generateMoves(Move *movesArr, int side) {
 }
 
 // only generate capturing moves (pseudolegal), used in qsearch
-int generateCaptures(Move *movesArr, int side) {
+int generate_captures(Move *movesArr, int side) {
     int i;
     // next free index in moves array
     int patternIndex = 0;
     int moveIndex = 0;
-    u64 *gameState = GAME_STATE_STACK[GAME_STATE_STACK_POINTER];
+    u64 *gameState = g_gameStateStack[g_root + g_ply];
     u64 whitePieces = gameState[0];
     u64 whitePawns = gameState[1];
     u64 whiteKnights = gameState[2];
@@ -625,77 +611,78 @@ int generateCaptures(Move *movesArr, int side) {
     u64 whiteLinears = whiteQueens | whiteRooks;
     u64 blackLinears = blackQueens | blackRooks;
 
-    bool isEnPassant = isEnPassantAllowed(otherGameInfo);
+    bool isEnPassant = is_enpassant_allowed(otherGameInfo);
+    u64 attackSet = g_attackSets[g_ply];
 
     if (side == 1) {
         while(whitePawns != 0) {
-            int index = bitScanForward(whitePawns);
+            int index = bitscan_forward(whitePawns);
             whitePawns &= (whitePawns - 1); // reset the least significant bit
-            addWhitePawnPatterns(gameState, index, patternIndex);
+            add_white_pawn_patterns(gameState, index, patternIndex);
             patternIndex++;
         }
 
         while(whiteKnights != 0) {
-            int index = bitScanForward(whiteKnights);
+            int index = bitscan_forward(whiteKnights);
             whiteKnights &= (whiteKnights - 1); // reset the least significant bit
-            addWhiteKnightPatterns(gameState, index, patternIndex);
+            add_white_knight_patterns(gameState, index, patternIndex);
             patternIndex++;
         }
 
         while(whiteDiagonals != 0) {
-            int index = bitScanForward(whiteDiagonals);
+            int index = bitscan_forward(whiteDiagonals);
             whiteDiagonals &= (whiteDiagonals - 1); // reset the least significant bit
-            addWhiteDiagonalPatterns(gameState, index, patternIndex);
+            add_white_diagonal_patterns(gameState, index, patternIndex);
             patternIndex++;
         }
 
         while(whiteLinears != 0) {
-            int index = bitScanForward(whiteLinears);
+            int index = bitscan_forward(whiteLinears);
             whiteLinears &= (whiteLinears - 1); // reset the least significant bit
-            addWhiteLinearPatterns(gameState, index, patternIndex);
+            add_white_linear_patterns(gameState, index, patternIndex);
             patternIndex++;
         }
 
         while(whiteKings != 0) {
-            int index = bitScanForward(whiteKings);
+            int index = bitscan_forward(whiteKings);
             whiteKings &= (whiteKings - 1); // reset the least significant bit
-            addWhiteKingPatterns(gameState, index, patternIndex);
+            add_white_king_patterns(gameState, index, patternIndex);
             patternIndex++;
         }
     }
     else {
         while(blackPawns != 0) {
-            int index = bitScanForward(blackPawns);
+            int index = bitscan_forward(blackPawns);
             blackPawns &= (blackPawns - 1); // reset the least significant bit
-            addBlackPawnPatterns(gameState, index, patternIndex);
+            add_black_pawn_patterns(gameState, index, patternIndex);
             patternIndex++;
         }
 
         while(blackKnights != 0) {
-            int index = bitScanForward(blackKnights);
+            int index = bitscan_forward(blackKnights);
             blackKnights &= (blackKnights - 1); // reset the least significant bit
-            addBlackKnightPatterns(gameState, index, patternIndex);
+            add_black_knight_patterns(gameState, index, patternIndex);
             patternIndex++;
         }
 
         while(blackDiagonals != 0) {
-            int index = bitScanForward(blackDiagonals);
+            int index = bitscan_forward(blackDiagonals);
             blackDiagonals &= (blackDiagonals - 1); // reset the least significant bit
-            addBlackDiagonalPatterns(gameState, index, patternIndex);
+            add_black_diagonal_patterns(gameState, index, patternIndex);
             patternIndex++;
         }
 
         while(blackLinears != 0) {
-            int index = bitScanForward(blackLinears);
+            int index = bitscan_forward(blackLinears);
             blackLinears &= (blackLinears - 1); // reset the least significant bit
-            addBlackLinearPatterns(gameState, index, patternIndex);
+            add_black_linear_patterns(gameState, index, patternIndex);
             patternIndex++;
         }
 
         while(blackKings != 0) {
-            int index = bitScanForward(blackKings);
+            int index = bitscan_forward(blackKings);
             blackKings &= (blackKings - 1); // reset the least significant bit
-            addBlackKingPatterns(gameState, index, patternIndex);
+            add_black_king_patterns(gameState, index, patternIndex);
             patternIndex++;
         }
     }
@@ -713,72 +700,76 @@ int generateCaptures(Move *movesArr, int side) {
         pattern = captureTable.captureBitMap;
         type = captureTable.pieceType;
 
+        attackSet |= pattern;
+
         // pawn move
         if (type == 1) {
             int row;
             // if row is 6 or 1, there is a possibility of promotion
             row = from / 8;
             while (pattern != 0) {
-                to = bitScanForward(pattern);
+                to = bitscan_forward(pattern);
                 pattern &= (pattern - 1);
 
                 // promotion
                 if ((row == 6 && side == 1) || (row == 1 && side == -1)) {
-                    movesArr[moveIndex] = createMove(from, to, 1, 0, 0);
+                    movesArr[moveIndex] = create_move(from, to, 1, 0, 0);
                     moveIndex++;
-                    movesArr[moveIndex] = createMove(from, to, 2, 0, 0);
+                    movesArr[moveIndex] = create_move(from, to, 2, 0, 0);
                     moveIndex++;
-                    movesArr[moveIndex] = createMove(from, to, 3, 0, 0);
+                    movesArr[moveIndex] = create_move(from, to, 3, 0, 0);
                     moveIndex++;
-                    movesArr[moveIndex] = createMove(from, to, 4, 0, 0);
+                    movesArr[moveIndex] = create_move(from, to, 4, 0, 0);
                     moveIndex++;
                 }
                 // no promotion
                 else {
-                    movesArr[moveIndex] = createMove(from, to, 0, 0, 0);
+                    movesArr[moveIndex] = create_move(from, to, 0, 0, 0);
                     moveIndex++;
                 }
             }
         }
         else {
             while (pattern != 0) {
-                to = bitScanForward(pattern);
+                to = bitscan_forward(pattern);
                 pattern &= (pattern - 1);
 
-                movesArr[moveIndex] = createMove(from, to, 0, 0, 0);
+                movesArr[moveIndex] = create_move(from, to, 0, 0, 0);
                 moveIndex++;
             }
         }
     }
 
+    g_attackSets[g_ply] = attackSet;
+
     // handle enPassant
     if (isEnPassant) {
-        int enPassantSquare = getEnPassantSquare(otherGameInfo);
+        int enPassantSquare = get_enpassant_square(otherGameInfo);
         int enPassantColumn = enPassantSquare % 8;
 
         if (side == 1) {
             whitePawns = gameState[1];
 
-            if (enPassantColumn != 0 && squareOccupied(whitePawns, enPassantSquare - 1)) {
-                movesArr[moveIndex] = createMove(enPassantSquare - 1, enPassantSquare + 8, 0, 0, 1);
+            if (enPassantColumn != 0 && square_occupied(whitePawns, enPassantSquare - 1)) {
+                movesArr[moveIndex] = create_move(enPassantSquare - 1, enPassantSquare + 8, 0, 0, 1);
                 moveIndex++;
             }
 
-            if (enPassantColumn != 7 && squareOccupied(whitePawns, enPassantSquare + 1)) {
-                movesArr[moveIndex] = createMove(enPassantSquare + 1, enPassantSquare + 8, 0, 0, 1);
+            if (enPassantColumn != 7 && square_occupied(whitePawns, enPassantSquare + 1)) {
+                movesArr[moveIndex] = create_move(enPassantSquare + 1, enPassantSquare + 8, 0, 0, 1);
                 moveIndex++;
             }
         }
         else {
             blackPawns = gameState[8];
 
-            if (enPassantColumn != 0 && squareOccupied(blackPawns, enPassantSquare - 1)) {
-                movesArr[moveIndex] = createMove(enPassantSquare - 1, enPassantSquare - 8, 0, 0, 1);
+            if (enPassantColumn != 0 && square_occupied(blackPawns, enPassantSquare - 1)) {
+                movesArr[moveIndex] = create_move(enPassantSquare - 1, enPassantSquare - 8, 0, 0, 1);
                 moveIndex++;
             }
 
-            if (enPassantColumn != 7 && squareOccupied(blackPawns, enPassantSquare + 1)) {
-                movesArr[moveIndex] = createMove(enPassantSquare + 1, enPassantSquare - 8, 0, 0, 1);
+            if (enPassantColumn != 7 && square_occupied(blackPawns, enPassantSquare + 1)) {
+                movesArr[moveIndex] = create_move(enPassantSquare + 1, enPassantSquare - 8, 0, 0, 1);
                 moveIndex++;
             }
         }

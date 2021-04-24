@@ -8,10 +8,11 @@
 #include "Constants.h"
 
 // parses a fen string into a gamestate
-void parseUciPosition(u64 *gameState, char *fenStr) {
+void parse_uci_position(char *fenStr) {
     int i;
     // fen starts from top left of the board (index 56 in our board representation)
     int index = 56;
+    u64 *gameState = g_gameStateStack[g_root + g_ply];
     u64 whitePieces = 0LLU;
     u64 whitePawns = 0LLU;
     u64 whiteKnights = 0LLU;
@@ -68,53 +69,53 @@ void parseUciPosition(u64 *gameState, char *fenStr) {
 
             if (!isBoardFinished) {
                 if (fenChar == 'p') {
-                    blackPawns = fillSquare(blackPawns, index);
-                    blackPieces = fillSquare(blackPieces, index);
+                    blackPawns = fill_square(blackPawns, index);
+                    blackPieces = fill_square(blackPieces, index);
                 }
                 else if (fenChar == 'n') {
-                    blackKnights = fillSquare(blackKnights, index);
-                    blackPieces = fillSquare(blackPieces, index);
+                    blackKnights = fill_square(blackKnights, index);
+                    blackPieces = fill_square(blackPieces, index);
                 }
                 else if (fenChar == 'b') {
-                    blackBishops = fillSquare(blackBishops, index);
-                    blackPieces = fillSquare(blackPieces, index);
+                    blackBishops = fill_square(blackBishops, index);
+                    blackPieces = fill_square(blackPieces, index);
                 }
                 else if (fenChar == 'r') {
-                    blackRooks = fillSquare(blackRooks, index);
-                    blackPieces = fillSquare(blackPieces, index);
+                    blackRooks = fill_square(blackRooks, index);
+                    blackPieces = fill_square(blackPieces, index);
                 }
                 else if (fenChar == 'q') {
-                    blackQueens = fillSquare(blackQueens, index);
-                    blackPieces = fillSquare(blackPieces, index);
+                    blackQueens = fill_square(blackQueens, index);
+                    blackPieces = fill_square(blackPieces, index);
                 }
                 else if (fenChar == 'k') {
-                    blackKings = fillSquare(blackKings, index);
-                    blackPieces = fillSquare(blackPieces, index);
+                    blackKings = fill_square(blackKings, index);
+                    blackPieces = fill_square(blackPieces, index);
                 }
 
                 else if (fenChar == 'P') {
-                    whitePawns = fillSquare(whitePawns, index);
-                    whitePieces = fillSquare(whitePieces, index);
+                    whitePawns = fill_square(whitePawns, index);
+                    whitePieces = fill_square(whitePieces, index);
                 }
                 else if (fenChar == 'N') {
-                    whiteKnights = fillSquare(whiteKnights, index);
-                    whitePieces = fillSquare(whitePieces, index);
+                    whiteKnights = fill_square(whiteKnights, index);
+                    whitePieces = fill_square(whitePieces, index);
                 }
                 else if (fenChar == 'B') {
-                    whiteBishops = fillSquare(whiteBishops, index);
-                    whitePieces = fillSquare(whitePieces, index);
+                    whiteBishops = fill_square(whiteBishops, index);
+                    whitePieces = fill_square(whitePieces, index);
                 }
                 else if (fenChar == 'R') {
-                    whiteRooks = fillSquare(whiteRooks, index);
-                    whitePieces = fillSquare(whitePieces, index);
+                    whiteRooks = fill_square(whiteRooks, index);
+                    whitePieces = fill_square(whitePieces, index);
                 }
                 else if (fenChar == 'Q') {
-                    whiteQueens = fillSquare(whiteQueens, index);
-                    whitePieces = fillSquare(whitePieces, index);
+                    whiteQueens = fill_square(whiteQueens, index);
+                    whitePieces = fill_square(whitePieces, index);
                 }
                 else if (fenChar == 'K') {
-                    whiteKings = fillSquare(whiteKings, index);
-                    whitePieces = fillSquare(whitePieces, index);
+                    whiteKings = fill_square(whiteKings, index);
+                    whitePieces = fill_square(whitePieces, index);
                 }
 
                 if (fenChar == '/') {
@@ -138,11 +139,11 @@ void parseUciPosition(u64 *gameState, char *fenStr) {
             else if (!isSideFinished) {
                 // white to move
                 if (fenChar == 'w') {
-                    otherGameInfo = setSideToPlay(otherGameInfo, 1);
+                    otherGameInfo = set_side_to_play(otherGameInfo, 1);
                 }
                 // black to move
                 else if (fenChar == 'b') {
-                    otherGameInfo = setSideToPlay(otherGameInfo, -1);
+                    otherGameInfo = set_side_to_play(otherGameInfo, -1);
                 }
 
                 if (fenChar == ' ') {
@@ -152,19 +153,19 @@ void parseUciPosition(u64 *gameState, char *fenStr) {
             else if (!isCastlingFinished) {
                 // white castles kingside (short)
                 if (fenChar == 'K') {
-                    otherGameInfo = setWhiteCastleShort(otherGameInfo);
+                    otherGameInfo = set_white_castle_short(otherGameInfo);
                 }
                 // white castles queenside (long)
                 else if (fenChar == 'Q') {
-                    otherGameInfo = setWhiteCastleLong(otherGameInfo);
+                    otherGameInfo = set_white_castle_long(otherGameInfo);
                 }
                 // black castles kingside (short)
                 else if (fenChar == 'k') {
-                    otherGameInfo = setBlackCastleShort(otherGameInfo);
+                    otherGameInfo = set_black_castle_short(otherGameInfo);
                 }
                 // black castles queenside (long)
                 else if (fenChar == 'q') {
-                    otherGameInfo = setBlackCastleLong(otherGameInfo);
+                    otherGameInfo = set_black_castle_long(otherGameInfo);
                 }
 
                 if (fenChar == ' ') {
@@ -205,8 +206,8 @@ void parseUciPosition(u64 *gameState, char *fenStr) {
                         enPassantPieceIndex = enPassantIndex - 8;
                     }
 
-                    otherGameInfo = setEnPassantAllowed(otherGameInfo, true);
-                    otherGameInfo = setEnPassantSquare(otherGameInfo, enPassantPieceIndex);
+                    otherGameInfo = set_enpassant_allowed(otherGameInfo, true);
+                    otherGameInfo = set_enpassant_square(otherGameInfo, enPassantPieceIndex);
                 }
             }
         }
@@ -230,11 +231,11 @@ void parseUciPosition(u64 *gameState, char *fenStr) {
         blackQueens = 0b0000100000000000000000000000000000000000000000000000000000000000LLU;
         blackKings = 0b0001000000000000000000000000000000000000000000000000000000000000LLU;
 
-        otherGameInfo = setSideToPlay(otherGameInfo, 1);
-        otherGameInfo = setWhiteCastleShort(otherGameInfo);
-        otherGameInfo = setWhiteCastleLong(otherGameInfo);
-        otherGameInfo = setBlackCastleShort(otherGameInfo);
-        otherGameInfo = setBlackCastleLong(otherGameInfo);
+        otherGameInfo = set_side_to_play(otherGameInfo, 1);
+        otherGameInfo = set_white_castle_short(otherGameInfo);
+        otherGameInfo = set_white_castle_long(otherGameInfo);
+        otherGameInfo = set_black_castle_short(otherGameInfo);
+        otherGameInfo = set_black_castle_long(otherGameInfo);
 
         if (nextChar == ' ' && fenStr[17 + 1] == 'm' && fenStr[17 + 2] == 'o' && fenStr[17 + 3] == 'v' && fenStr[17 + 4] == 'e' && fenStr[17 + 5] == 's') {
             movesAfterPosition = true;
@@ -273,8 +274,7 @@ void parseUciPosition(u64 *gameState, char *fenStr) {
             bool enPassantAllowed;
             int side;
 
-            gameState = GAME_STATE_STACK[GAME_STATE_STACK_POINTER];
-            u64 *newGameState = GAME_STATE_STACK[GAME_STATE_STACK_POINTER + 1];
+            gameState = g_gameStateStack[g_root + g_ply];
 
             whitePieces = gameState[0];
             whitePawns = gameState[1];
@@ -294,66 +294,66 @@ void parseUciPosition(u64 *gameState, char *fenStr) {
 
             otherGameInfo = gameState[14];
 
-            enPassantSquare = getEnPassantSquare(otherGameInfo);
-            enPassantAllowed = isEnPassantAllowed(otherGameInfo);
+            enPassantSquare = get_enpassant_square(otherGameInfo);
+            enPassantAllowed = is_enpassant_allowed(otherGameInfo);
 
-            side = getSideToPlay(otherGameInfo);
+            side = get_side_to_play(otherGameInfo);
 
             //printf("gamestate: %d\n", GAME_STATE_STACK_POINTER);
             //printf("index: %d\n", i);
 
             // handle promotions
             if (fenStr[i + 4] == 'n') {
-                nextMove = createMove(from, to, 1, 0, 0);
+                nextMove = create_move(from, to, 1, 0, 0);
                 i += 5;
             }
             else if (fenStr[i + 4] == 'b') {
-                nextMove = createMove(from, to, 2, 0, 0);
+                nextMove = create_move(from, to, 2, 0, 0);
                 i += 5;
             }
             else if (fenStr[i + 4] == 'r') {
-                nextMove = createMove(from, to, 3, 0, 0);
+                nextMove = create_move(from, to, 3, 0, 0);
                 i += 5;
             }
             else if (fenStr[i + 4] == 'q') {
-                nextMove = createMove(from, to, 4, 0, 0);
+                nextMove = create_move(from, to, 4, 0, 0);
                 i += 5;
             }
             // handle white short castling
-            else if (from == 4 && to == 6 && squareOccupied(whiteKings, from)) {
-                nextMove = createMove(from, to, 0, 1, 0);
+            else if (from == 4 && to == 6 && square_occupied(whiteKings, from)) {
+                nextMove = create_move(from, to, 0, 1, 0);
                 i += 4;
             }
             // handle white long castling
-            else if (from == 4 && to == 2 && squareOccupied(whiteKings, from)) {
-                nextMove = createMove(from, to, 0, 2, 0);
+            else if (from == 4 && to == 2 && square_occupied(whiteKings, from)) {
+                nextMove = create_move(from, to, 0, 2, 0);
                 i += 4;
             }
             // handle black short castling
-            else if (from == 60 && to == 62 && squareOccupied(blackKings, from)) {
-                nextMove = createMove(from, to, 0, 3, 0);
+            else if (from == 60 && to == 62 && square_occupied(blackKings, from)) {
+                nextMove = create_move(from, to, 0, 3, 0);
                 i += 4;
             }
             // handle black long castling
-            else if (from == 60 && to == 58 && squareOccupied(blackKings, from)) {
-                nextMove = createMove(from, to, 0, 4, 0);
+            else if (from == 60 && to == 58 && square_occupied(blackKings, from)) {
+                nextMove = create_move(from, to, 0, 4, 0);
                 i += 4;
             }
             // handle en passant
-            else if ((side == 1 && (to == enPassantSquare + 8) && enPassantAllowed && squareOccupied(whitePawns, from)) || (side == -1 && (to == enPassantSquare - 8) && enPassantAllowed && squareOccupied(blackPawns, from))) {
-                nextMove = createMove(from, to, 0, 0, 1);
+            else if ((side == 1 && (to == enPassantSquare + 8) && enPassantAllowed && square_occupied(whitePawns, from)) || (side == -1 && (to == enPassantSquare - 8) && enPassantAllowed && square_occupied(blackPawns, from))) {
+                nextMove = create_move(from, to, 0, 0, 1);
                 i += 4;
             }
             // a normal move
             else {
-                nextMove = createMove(from, to, 0, 0, 0);
+                nextMove = create_move(from, to, 0, 0, 0);
                 i += 4;
             }
 
             //printf("%d, %d, %d, %d, %d\n", nextMove.from, nextMove.to, nextMove.promotion, nextMove.castling, nextMove.enPassant);
             //printf ("enpassant allowed: %d, enpassant square: %d\n", enPassantAllowed, enPassantSquare);
             
-            makeMove(nextMove);
+            make_move(nextMove, true);
 
             // in uci newline terminates commands
             if (fenStr[i] == '\n') {

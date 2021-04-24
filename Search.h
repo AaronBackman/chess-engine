@@ -3,8 +3,7 @@
 
 #include "Move.h"
 
-extern Move SELECTED_MOVE;
-extern int SEARCHED_DEPTH;
+extern Move g_selectedMove;
 extern bool checkmate;
 
 void *search(void *vargp);

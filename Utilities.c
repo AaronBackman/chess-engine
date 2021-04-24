@@ -8,13 +8,13 @@
 #include "Move.h"
 #include "Init.h"
 
-Move createMove(int from, int to, int promotion, int castle, bool enPassant) {
+Move create_move(int from, int to, int promotion, int castle, bool enPassant) {
     Move move = {from, to, promotion, castle, enPassant};
 
     return move;
 }
 
-bool squareOccupied(u64 board, int index) {
+bool square_occupied(u64 board, int index) {
     u64 bitIndex = SINGLE_BIT_LOOKUP[index];
 
     if ((board & bitIndex) == 0LLU) {
@@ -23,67 +23,67 @@ bool squareOccupied(u64 board, int index) {
     else return true;
 }
 
-u64 emptySquare(u64 board, int index) {
+u64 empty_square(u64 board, int index) {
     return board & ~SINGLE_BIT_LOOKUP[index];
 }
 
-u64 fillSquare(u64 board, int index) {
+u64 fill_square(u64 board, int index) {
     return board | SINGLE_BIT_LOOKUP[index];
 }
 
-bool canWhiteCastleShort(u64 meta) {
+bool can_white_castle_short(u64 meta) {
     return (meta & 1LLU) > 0;
 }
 
-bool canWhiteCastleLong(u64 meta) {
+bool can_white_castle_long(u64 meta) {
     return (meta & SINGLE_BIT_LOOKUP[1]) > 0;
 }
 
-bool canBlackCastleShort(u64 meta) {
+bool can_black_castle_short(u64 meta) {
     return (meta & SINGLE_BIT_LOOKUP[2]) > 0;
 }
 
-bool canBlackCastleLong(u64 meta) {
+bool can_black_castle_long(u64 meta) {
     return (meta & SINGLE_BIT_LOOKUP[3]) > 0;
 }
 
-u64 removeWhiteCastleShort(u64 meta) {
+u64 remove_white_castle_short(u64 meta) {
     return meta & ~(1LLU);
 }
 
-u64 removeWhiteCastleLong(u64 meta) {
+u64 remove_white_castle_long(u64 meta) {
     return meta & ~SINGLE_BIT_LOOKUP[1];
 }
 
-u64 removeBlackCastleShort(u64 meta) {
+u64 remove_black_castle_short(u64 meta) {
     return meta & ~SINGLE_BIT_LOOKUP[2];
 }
 
-u64 removeBlackCastleLong(u64 meta) {
+u64 remove_black_castle_long(u64 meta) {
     return meta &=~SINGLE_BIT_LOOKUP[3];
 }
 
-u64 setWhiteCastleShort(u64 meta) {
+u64 set_white_castle_short(u64 meta) {
     return meta |= (1LLU);
 }
 
-u64 setWhiteCastleLong(u64 meta) {
+u64 set_white_castle_long(u64 meta) {
     return meta |= SINGLE_BIT_LOOKUP[1];
 }
 
-u64 setBlackCastleShort(u64 meta) {
+u64 set_black_castle_short(u64 meta) {
     return meta |= SINGLE_BIT_LOOKUP[2];
 }
 
-u64 setBlackCastleLong(u64 meta) {
+u64 set_black_castle_long(u64 meta) {
     return meta |= SINGLE_BIT_LOOKUP[3];
 }
 
-bool isEnPassantAllowed(u64 meta) {
+bool is_enpassant_allowed(u64 meta) {
     return (meta & SINGLE_BIT_LOOKUP[4]) > 0;
 }
 
-u64 setEnPassantAllowed(u64 meta, bool enPassantAllowed) {
+u64 set_enpassant_allowed(u64 meta, bool enPassantAllowed) {
     if (enPassantAllowed) {
         meta |= SINGLE_BIT_LOOKUP[4];
     }
@@ -94,19 +94,19 @@ u64 setEnPassantAllowed(u64 meta, bool enPassantAllowed) {
     return meta;
 }
 
-u64 setEnPassantSquare(u64 meta, u64 square) {
+u64 set_enpassant_square(u64 meta, u64 square) {
     meta &= ~(0b111111LLU << 5);
     meta |= (square << 5);
 
     return meta;
 }
 
-u64 getEnPassantSquare(u64 meta) {
+u64 get_enpassant_square(u64 meta) {
     return (meta & (0b111111LLU << 5)) >> 5;
 }
 
 // 1 == white plays, -1 == black plays
-int getSideToPlay(u64 meta) {
+int get_side_to_play(u64 meta) {
     if ((meta & SINGLE_BIT_LOOKUP[11]) > 0) {
         return 1;
     }
@@ -116,7 +116,7 @@ int getSideToPlay(u64 meta) {
 }
 
 // 1 == white plays, -1 == black plays
-u64 setSideToPlay(u64 meta, int side) {
+u64 set_side_to_play(u64 meta, int side) {
     if (side == 1) {
         // set 12th bit to 1
         meta |= SINGLE_BIT_LOOKUP[11];
@@ -129,7 +129,7 @@ u64 setSideToPlay(u64 meta, int side) {
     return meta;
 }
 
-void moveToString(char *str, Move move) {
+void move_to_string(char *str, Move move) {
     str[0] = 'a' + move.from % 8;
     str[1] = '1' + move.from / 8;
     str[2] = 'a' + move.to % 8;
@@ -168,7 +168,7 @@ const int index64Forward[64] = {
 };
 
 // gets the least significant bit using de brujn bitscan algorithm
-int bitScanForward(u64 board) {
+int bitscan_forward(u64 board) {
     const u64 debruijn64 = 0x03f79d71b4cb0a89;
     assert (board != 0);
     return index64Forward[((board & -board) * debruijn64) >> 58];
@@ -186,7 +186,7 @@ const int index64Reverse[64] = {
 };
 
 // gets the most significant bit using de brujn bitscan algorithm
-int bitScanReverse(u64 board) {
+int bitscan_reverse(u64 board) {
    const u64 debruijn64 = 0x03f79d71b4cb0a89;
    assert (board != 0);
    board |= board >> 1; 
@@ -198,8 +198,8 @@ int bitScanReverse(u64 board) {
    return index64Reverse[(board * debruijn64) >> 58];
 }
 
-void printBoard() {
-    u64 *gameState = GAME_STATE_STACK[GAME_STATE_STACK_POINTER];
+void print_board() {
+    u64 *gameState = g_gameStateStack[g_root + g_ply];
 
     //printf("stackpointer: %d", GAME_STATE_STACK_POINTER);
 
@@ -227,36 +227,36 @@ void printBoard() {
     while (i >= 0 && i < 64) {
         printf(" ");
 
-        if (!squareOccupied(whitePieces, i) && !squareOccupied(blackPieces, i)) {
+        if (!square_occupied(whitePieces, i) && !square_occupied(blackPieces, i)) {
             printf("__");
         }
 
-        if (squareOccupied(whitePieces, i)) printf("+");
-        if (squareOccupied(blackPieces, i)) printf("#");
+        if (square_occupied(whitePieces, i)) printf("+");
+        if (square_occupied(blackPieces, i)) printf("#");
 
-        if (squareOccupied(whitePawns, i)) printf("P");
+        if (square_occupied(whitePawns, i)) printf("P");
 
-        if (squareOccupied(whiteBishops, i)) printf("B");
+        if (square_occupied(whiteBishops, i)) printf("B");
 
-        if (squareOccupied(whiteKnights, i)) printf("N");
+        if (square_occupied(whiteKnights, i)) printf("N");
 
-        if (squareOccupied(whiteRooks, i)) printf("R");
+        if (square_occupied(whiteRooks, i)) printf("R");
 
-        if (squareOccupied(whiteQueens, i)) printf("Q");
+        if (square_occupied(whiteQueens, i)) printf("Q");
 
-        if (squareOccupied(whiteKings, i)) printf("K");
+        if (square_occupied(whiteKings, i)) printf("K");
 
-        if (squareOccupied(blackPawns, i)) printf("p");
+        if (square_occupied(blackPawns, i)) printf("p");
 
-        if (squareOccupied(blackBishops, i)) printf("b");
+        if (square_occupied(blackBishops, i)) printf("b");
 
-        if (squareOccupied(blackKnights, i)) printf("n");
+        if (square_occupied(blackKnights, i)) printf("n");
 
-        if (squareOccupied(blackRooks, i)) printf("r");
+        if (square_occupied(blackRooks, i)) printf("r");
 
-        if (squareOccupied(blackQueens, i)) printf("q");
+        if (square_occupied(blackQueens, i)) printf("q");
 
-        if (squareOccupied(blackKings, i)) printf("k");
+        if (square_occupied(blackKings, i)) printf("k");
 
         printf(" ");
 
@@ -273,6 +273,6 @@ void printBoard() {
     printf("\n\n\n");
 }
 
-int getManhattanDistance(int sq1, int sq2) {
+int get_manhattan_distance(int sq1, int sq2) {
     return MD[sq1][sq2];
 }

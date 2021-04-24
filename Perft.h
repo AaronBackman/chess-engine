@@ -1,6 +1,6 @@
 #ifndef PERFT_H
 #define PERFT_H
 
-void perftDivide(int depth);
+void perft_divide(int depth);
 
 #endif

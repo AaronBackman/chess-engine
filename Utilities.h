@@ -3,40 +3,39 @@
 
 #include "Move.h"
 
-Move createMove(int from, int to, int promotion, int castle, bool enPassant);
-bool squareOccupied(u64 board, int index);
-u64 emptySquare(u64 board, int index);
-u64 fillSquare(u64 board, int index);
+Move create_move(int from, int to, int promotion, int castle, bool enPassant);
+bool square_occupied(u64 board, int index);
+u64 empty_square(u64 board, int index);
+u64 fill_square(u64 board, int index);
 
-bool canWhiteCastleShort(u64 meta);
-bool canWhiteCastleLong(u64 meta);
-bool canBlackCastleShort(u64 meta);
-bool canBlackCastleLong(u64 meta);
-u64 removeWhiteCastleShort(u64 meta);
-u64 removeWhiteCastleLong(u64 meta);
-u64 removeBlackCastleShort(u64 meta);
-u64 removeBlackCastleLong(u64 meta);
+bool can_white_castle_short(u64 meta);
+bool can_white_castle_long(u64 meta);
+bool can_black_castle_short(u64 meta);
+bool can_black_castle_long(u64 meta);
+u64 remove_white_castle_short(u64 meta);
+u64 remove_white_castle_long(u64 meta);
+u64 remove_black_castle_short(u64 meta);
+u64 remove_black_castle_long(u64 meta);
 
-u64 setWhiteCastleShort(u64 meta);
-u64 setWhiteCastleLong(u64 meta);
-u64 setBlackCastleShort(u64 meta);
-u64 setBlackCastleLong(u64 meta);
+u64 set_white_castle_short(u64 meta);
+u64 set_white_castle_long(u64 meta);
+u64 set_black_castle_short(u64 meta);
+u64 set_black_castle_long(u64 meta);
 
-bool isEnPassantAllowed(u64 meta);
-u64 setEnPassantAllowed(u64 meta, bool enPassantAllowed);
-u64 setEnPassantSquare(u64 meta, u64 square);
-u64 getEnPassantSquare(u64 meta);
+bool is_enpassant_allowed(u64 meta);
+u64 set_enpassant_allowed(u64 meta, bool enPassantAllowed);
+u64 set_enpassant_square(u64 meta, u64 square);
+u64 get_enpassant_square(u64 meta);
 
-int getSideToPlay(u64 meta);
-u64 setSideToPlay(u64 meta, int side);
+int get_side_to_play(u64 meta);
+u64 set_side_to_play(u64 meta, int side);
 
-void moveToString(char *str, Move move);
-void parseUciPosition(u64 *gameState, char *fenStr);
-int bitScanForward(u64 board);
-int bitScanReverse(u64 board);
+void move_to_string(char *str, Move move);
+int bitscan_forward(u64 board);
+int bitscan_reverse(u64 board);
 
-int getManhattanDistance(int sq1, int sq2);
+int get_manhattan_distance(int sq1, int sq2);
 
-void printBoard();
+void print_board();
 
 #endif

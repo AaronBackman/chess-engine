@@ -21,13 +21,16 @@ typedef unsigned char BYTE;
 
 #define ALPHA_BETA_MIN -1000000000
 #define ALPHA_BETA_MAX 1000000000
+#define DRAW 0
+#define CHECKMATE 10000000
 
-extern u64 GAME_STATE_STACK[MAX_DEPTH + MAX_TURNS][15];
-extern int GAME_STATE_STACK_POINTER;
-extern int CANCEL_THREAD;
+extern u64 g_gameStateStack[MAX_DEPTH + MAX_TURNS][15];
+extern int g_root;
+extern int g_cancelThread;
+extern int g_ply;
 
-extern int MOVE_STACK_POINTER;
-extern Move MOVE_STACK[MAX_DEPTH][MAX_MOVES];
+extern Move g_moveStack[MAX_DEPTH][MAX_MOVES];
+extern u64 g_attackSets[MAX_DEPTH];
 
 // precalculated bit shifts, for example singleBitLookUp[15] == 1LLU << 15
 extern u64 SINGLE_BIT_LOOKUP[64];
@@ -36,7 +39,5 @@ extern u64 NORTH_EAST_LOOKUP_PATTERN[64];
 extern u64 NORTH_WEST_LOOKUP_PATTERN[64];
 extern u64 SOUTH_EAST_LOOKUP_PATTERN[64];
 extern u64 SOUTH_WEST_LOOKUP_PATTERN[64];
-
-void setLookUpTables();
 
 #endif

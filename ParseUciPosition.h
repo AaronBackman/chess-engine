@@ -1,6 +1,6 @@
 #ifndef PARSE_UCI_POSITION_H
 #define PARSE_UCI_POSITION_H
 
-void parseUciPosition(u64 *gameState, char *fenStr);
+void parse_uci_position(char *fenStr);
 
 #endif

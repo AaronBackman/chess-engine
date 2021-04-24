@@ -50,6 +50,6 @@ extern unsigned char CMD[64];
 // the center manhattan distance
 extern unsigned char MD[64][64];
 
-void setLookUpTables();
+void set_lookup_tables();
 
 #endif

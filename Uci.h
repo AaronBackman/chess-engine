@@ -1,6 +1,6 @@
 #ifndef UCI_H
 #define UCI_H
 
-void uciListen();
+void uci_listen();
 
 #endif

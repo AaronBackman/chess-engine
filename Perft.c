@@ -20,36 +20,36 @@ u64 perft(int depth, int side) {
   if (depth == 0) 
     return 1ULL;
 
-  moveCount = generateMoves(moves, side);
+  moveCount = generate_moves(moves, side);
 
   for (i = 0; i < moveCount; i++) {
-    makeMove(moves[i]);
-    if (!isKingThreatened(side)) {
+    make_move(moves[i], false);
+    if (!is_king_threatened(side)) {
       nodes += perft(depth - 1, -side);
     }
-    unMakeMove();
+    unmake_move();
   }
   return nodes;
 }
 
 
-void perftDivide(int depth) {
+void perft_divide(int depth) {
   Move moves[MAX_MOVES];
   int moveCount;
   int i;
   u64 nodes = 0;
-  int side = getSideToPlay(GAME_STATE_STACK[GAME_STATE_STACK_POINTER][14]);
+  int side = get_side_to_play(g_gameStateStack[g_root][14]);
 
   if (depth == 0) 
     return;
 
-  moveCount = generateMoves(moves, side);
+  moveCount = generate_moves(moves, side);
   for (i = 0; i < moveCount; i++) {
     u64 dividedNodes = 0;
     Move move = moves[i];
 
-    makeMove(move);
-    if (!isKingThreatened(side)) {
+    make_move(move, false);
+    if (!is_king_threatened(side)) {
       char *moveNotation;
       char *moveNotationFrom;
       char *moveNotationTo;
@@ -70,7 +70,7 @@ void perftDivide(int depth) {
 
       free(moveNotation);
     }
-    unMakeMove();
+    unmake_move();
   }
 
   printf("total nodes: %llu\n\n", nodes);

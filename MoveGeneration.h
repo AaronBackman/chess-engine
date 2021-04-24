@@ -1,7 +1,7 @@
 #ifndef MOVE_GENERATION_H
 #define MOVE_GENERATION_H
 
-int generateMoves(Move *movesArr, int side);
-int generateCaptures(Move *movesArr, int side);
+int generate_moves(Move *movesArr, int side);
+int generate_captures(Move *movesArr, int side);
 
 #endif

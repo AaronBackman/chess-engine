@@ -204,7 +204,7 @@ unsigned char CMD[64] = {
 unsigned char MD[64][64];
 
 // manhattan distance between 2 squares
-int calcManhattanDistance(int sq1, int sq2) {
+int calc_manhattan_distance(int sq1, int sq2) {
    int file1, file2, rank1, rank2;
    int rankDistance, fileDistance;
 
@@ -218,18 +218,18 @@ int calcManhattanDistance(int sq1, int sq2) {
    return rankDistance + fileDistance;
 }
 
-void initManhattanDistanceArr() {
+void init_manhattan_distance_arr() {
     int i;
     int j;
 
     for (i = 0; i < 64; i++) {
         for (j = 0; j < 64; j++) {
-            MD[i][j] = calcManhattanDistance(i, j);
+            MD[i][j] = calc_manhattan_distance(i, j);
         }
     }
 }
 
-void setSingleBitLookUp() {
+void set_single_bit_lookup() {
   int i;
 
   for (i = 0; i < 64; i++) {
@@ -237,7 +237,7 @@ void setSingleBitLookUp() {
   }
 }
 
-void setNorthEastLookUp() {
+void set_north_east_lookup() {
   int boardIndex;
 
   for (boardIndex = 0; boardIndex < 64; boardIndex++) {
@@ -251,7 +251,7 @@ void setNorthEastLookUp() {
     for (i = 9; boardIndex + i < 64 && boardIndex % 8 + j < 8; i += 9) {
         destinationSquare = boardIndex + i;
 
-        pattern = fillSquare(pattern, destinationSquare);
+        pattern = fill_square(pattern, destinationSquare);
 
         j++;
     }
@@ -260,7 +260,7 @@ void setNorthEastLookUp() {
   }
 }
 
-void setNorthWestLookUp() {
+void set_north_west_lookup() {
   int boardIndex;
 
   for (boardIndex = 0; boardIndex < 64; boardIndex++) {
@@ -274,7 +274,7 @@ void setNorthWestLookUp() {
     for (i = 7; boardIndex + i < 64 && boardIndex % 8 + j >= 0; i += 7) {
         destinationSquare = boardIndex + i;
 
-        pattern = fillSquare(pattern, destinationSquare);
+        pattern = fill_square(pattern, destinationSquare);
 
         j--;
     }
@@ -283,7 +283,7 @@ void setNorthWestLookUp() {
   }
 }
 
-void setSouthEastLookUp() {
+void set_south_east_lookup() {
   int boardIndex;
 
   for (boardIndex = 0; boardIndex < 64; boardIndex++) {
@@ -297,7 +297,7 @@ void setSouthEastLookUp() {
     for (i = -7; boardIndex + i >= 0 && boardIndex % 8 + j < 8; i -= 7) {
         destinationSquare = boardIndex + i;
 
-        pattern = fillSquare(pattern, destinationSquare);
+        pattern = fill_square(pattern, destinationSquare);
 
         j++;
     }
@@ -306,7 +306,7 @@ void setSouthEastLookUp() {
   }
 }
 
-void setSouthWestLookUp() {
+void set_south_west_lookup() {
   int boardIndex;
 
   for (boardIndex = 0; boardIndex < 64; boardIndex++) {
@@ -320,7 +320,7 @@ void setSouthWestLookUp() {
     for (i = -9; boardIndex + i >= 0 && boardIndex % 8 + j >= 0; i -= 9) {
         destinationSquare = boardIndex + i;
 
-        pattern = fillSquare(pattern, destinationSquare);
+        pattern = fill_square(pattern, destinationSquare);
 
         j--;
     }
@@ -330,7 +330,7 @@ void setSouthWestLookUp() {
 }
 
 
-void setNorthLookUp() {
+void set_north_lookup() {
   int boardIndex;
 
   for (boardIndex = 0; boardIndex < 64; boardIndex++) {
@@ -341,14 +341,14 @@ void setNorthLookUp() {
     // check linear, non-diagonal attacks from up
     for (i = 1; boardIndex + i * 8 < 64; i++) {
         destinationSquare = boardIndex + i * 8;
-        pattern = fillSquare(pattern, destinationSquare);
+        pattern = fill_square(pattern, destinationSquare);
     }
 
     NORTH_LOOKUP_PATTERN[boardIndex] = pattern;
   }
 }
 
-void setWestLookUp() {
+void set_west_lookup() {
   int boardIndex;
 
   for (boardIndex = 0; boardIndex < 64; boardIndex++) {
@@ -359,14 +359,14 @@ void setWestLookUp() {
     // check linear, non-diagonal attacks from left
     for (i = 1; boardIndex % 8 - i >= 0; i++) {
         destinationSquare = boardIndex - i;
-        pattern = fillSquare(pattern, destinationSquare);
+        pattern = fill_square(pattern, destinationSquare);
     }
 
     WEST_LOOKUP_PATTERN[boardIndex] = pattern;
   }
 }
 
-void setSouthLookUp() {
+void set_south_lookup() {
   int boardIndex;
 
   for (boardIndex = 0; boardIndex < 64; boardIndex++) {
@@ -377,14 +377,14 @@ void setSouthLookUp() {
     // check linear, non-diagonal attacks from up
     for (i = 1; boardIndex - i * 8 >= 0; i++) {
         destinationSquare = boardIndex - i * 8;
-        pattern = fillSquare(pattern, destinationSquare);
+        pattern = fill_square(pattern, destinationSquare);
     }
 
     SOUTH_LOOKUP_PATTERN[boardIndex] = pattern;
   }
 }
 
-void setEastLookUp() {
+void set_east_lookup() {
   int boardIndex;
 
   for (boardIndex = 0; boardIndex < 64; boardIndex++) {
@@ -395,14 +395,14 @@ void setEastLookUp() {
     // check linear, non-diagonal attacks from left
     for (i = 1; boardIndex % 8 + i < 8; i++) {
         destinationSquare = boardIndex + i;
-        pattern = fillSquare(pattern, destinationSquare);
+        pattern = fill_square(pattern, destinationSquare);
     }
 
     EAST_LOOKUP_PATTERN[boardIndex] = pattern;
   }
 }
 
-void setKingLookUp() {
+void set_king_lookup() {
   int boardIndex;
 
   for (boardIndex = 0; boardIndex < 64; boardIndex++) {
@@ -417,14 +417,14 @@ void setKingLookUp() {
             if ((boardIndex + i * 8 < 0) || (boardIndex + i * 8 > 63)) continue;
 
             destinationSquare = boardIndex + j + i * 8;
-            pattern = fillSquare(pattern, destinationSquare);
+            pattern = fill_square(pattern, destinationSquare);
         }
     }
     KING_LOOKUP_PATTERN[boardIndex] = pattern;
   }
 }
 
-void setKnightLookUp() {
+void set_knight_lookup() {
   int boardIndex;
 
   for (boardIndex = 0; boardIndex < 64; boardIndex++) {
@@ -443,7 +443,7 @@ void setKnightLookUp() {
               // cant move outside the board
               if (destinationSquare > 63 || destinationSquare < 0) continue;
 
-              pattern = fillSquare(pattern, destinationSquare);
+              pattern = fill_square(pattern, destinationSquare);
           }
       }
     }
@@ -451,7 +451,7 @@ void setKnightLookUp() {
   }
 }
 
-void setWhitePawnAttackLookUp() {
+void set_white_pawn_attack_lookup() {
   int boardIndex;
 
   for (boardIndex = 0; boardIndex < 64; boardIndex++) {
@@ -466,10 +466,10 @@ void setWhitePawnAttackLookUp() {
 
     if (row != 7) {
       if (column != 0) {
-        pattern = fillSquare(pattern, boardIndex + 7);
+        pattern = fill_square(pattern, boardIndex + 7);
       }
       if (column != 7) {
-        pattern = fillSquare(pattern, boardIndex + 9);
+        pattern = fill_square(pattern, boardIndex + 9);
       }
     }
     
@@ -477,7 +477,7 @@ void setWhitePawnAttackLookUp() {
   }
 }
 
-void setWhitePawnMoveLookUp() {
+void set_white_pawn_move_lookup() {
   int boardIndex;
 
   for (boardIndex = 0; boardIndex < 64; boardIndex++) {
@@ -493,11 +493,11 @@ void setWhitePawnMoveLookUp() {
     if (row != 7) {
       // first pawn move can be 2 squares
       if (row == 1) {
-        pattern = fillSquare(pattern, boardIndex + 16);
+        pattern = fill_square(pattern, boardIndex + 16);
       }
       // no pawns can be on first and last rows
       if (row != 0 && row != 7) {
-        pattern = fillSquare(pattern, boardIndex + 8);
+        pattern = fill_square(pattern, boardIndex + 8);
       }
     }
     
@@ -505,7 +505,7 @@ void setWhitePawnMoveLookUp() {
   }
 }
 
-void setBlackPawnAttackLookUp() {
+void set_black_pawn_attack_lookup() {
   int boardIndex;
 
   for (boardIndex = 0; boardIndex < 64; boardIndex++) {
@@ -520,10 +520,10 @@ void setBlackPawnAttackLookUp() {
 
     if (row != 0) {
       if (column != 0) {
-        pattern = fillSquare(pattern, boardIndex - 9);
+        pattern = fill_square(pattern, boardIndex - 9);
       }
       if (column != 7) {
-        pattern = fillSquare(pattern, boardIndex - 7);
+        pattern = fill_square(pattern, boardIndex - 7);
       }
     }
     
@@ -531,7 +531,7 @@ void setBlackPawnAttackLookUp() {
   }
 }
 
-void setBlackPawnMoveLookUp() {
+void set_black_pawn_move_lookup() {
   int boardIndex;
 
   for (boardIndex = 0; boardIndex < 64; boardIndex++) {
@@ -547,11 +547,11 @@ void setBlackPawnMoveLookUp() {
     if (row != 0) {
       // first pawn move can be 2 squares
       if (row == 6) {
-        pattern = fillSquare(pattern, boardIndex - 16);
+        pattern = fill_square(pattern, boardIndex - 16);
       }
       // no pawns can be on first and last rows
       if (row != 0 && row != 7) {
-        pattern = fillSquare(pattern, boardIndex - 8);
+        pattern = fill_square(pattern, boardIndex - 8);
       }
     }
     
@@ -559,26 +559,26 @@ void setBlackPawnMoveLookUp() {
   }
 }
 
-void setLookUpTables() {
-    initManhattanDistanceArr();
-    setSingleBitLookUp();
+void set_lookup_tables() {
+    init_manhattan_distance_arr();
+    set_single_bit_lookup();
 
     // set diagonal lookUptables
-    setNorthEastLookUp();
-    setNorthWestLookUp();
-    setSouthEastLookUp();
-    setSouthWestLookUp();
+    set_north_east_lookup();
+    set_north_west_lookup();
+    set_south_east_lookup();
+    set_south_west_lookup();
 
     // set straight lookUptables
-    setNorthLookUp();
-    setWestLookUp();
-    setSouthLookUp();
-    setEastLookUp();
+    set_north_lookup();
+    set_west_lookup();
+    set_south_lookup();
+    set_east_lookup();
 
-    setKingLookUp();
-    setKnightLookUp();
-    setWhitePawnAttackLookUp();
-    setWhitePawnMoveLookUp();
-    setBlackPawnAttackLookUp();
-    setBlackPawnMoveLookUp();
+    set_king_lookup();
+    set_knight_lookup();
+    set_white_pawn_attack_lookup();
+    set_white_pawn_move_lookup();
+    set_black_pawn_attack_lookup();
+    set_black_pawn_move_lookup();
 }

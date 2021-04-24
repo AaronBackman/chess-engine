@@ -9,12 +9,10 @@
 #include "MakeMove.h"
 #include "LegalityChecks.h"
 #include "Utilities.h"
-#include "Perft.h"
 #include "Uci.h"
 
 void main(void) {
-    uciListen();
-    //perftDivide(4);
+    uci_listen();
 }
 
 // compile with gcc -pthread -o Program *.c

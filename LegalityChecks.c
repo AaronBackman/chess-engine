@@ -8,11 +8,11 @@
 #include "Utilities.h"
 #include "AttackMaps.h"
 
-u64 getThreatMap(int originSquare, int side) {
+u64 get_threat_map(int originSquare, int side) {
     int i;
     int j;
     int squareIndex;
-    u64 *gameState = GAME_STATE_STACK[GAME_STATE_STACK_POINTER];
+    u64 *gameState = g_gameStateStack[g_root + g_ply];
 
     u64 whitePieces = gameState[0];
     u64 whitePawns = gameState[1];
@@ -45,90 +45,90 @@ u64 getThreatMap(int originSquare, int side) {
 
     if (side == 1) {
         // pawns can always attack each other
-        pawnPattern = getWhitePawnAttackMaps(gameState, originSquare);
+        pawnPattern = get_white_pawn_attack_maps(gameState, originSquare);
         threatMap |= (pawnPattern & blackPawns);
 
-        knightPattern = getKnightMaps(gameState, originSquare);
+        knightPattern = get_knight_maps(gameState, originSquare);
         threatMap |= (knightPattern & blackKnights);
 
-        diagonalPattern = getDiagonalMaps(gameState, originSquare);
+        diagonalPattern = get_diagonal_maps(gameState, originSquare);
         threatMap |= (diagonalPattern & blackDiagonals);
 
-        linearPattern = getLinearMaps(gameState, originSquare);
+        linearPattern = get_linear_maps(gameState, originSquare);
         threatMap |= (linearPattern & blackLinears);
 
-        kingPattern = getKingMaps(gameState, originSquare);
+        kingPattern = get_king_maps(gameState, originSquare);
         threatMap |= (kingPattern & blackKings);
     }
     else {
         // pawns can always attack each other
-        pawnPattern = getBlackPawnAttackMaps(gameState, originSquare);
+        pawnPattern = get_black_pawn_attack_maps(gameState, originSquare);
         threatMap |= (pawnPattern & whitePawns);
 
-        knightPattern = getKnightMaps(gameState, originSquare);
+        knightPattern = get_knight_maps(gameState, originSquare);
         threatMap |= (knightPattern & whiteKnights);
 
-        diagonalPattern = getDiagonalMaps(gameState, originSquare);
+        diagonalPattern = get_diagonal_maps(gameState, originSquare);
         threatMap |= (diagonalPattern & whiteDiagonals);
 
-        linearPattern = getLinearMaps(gameState, originSquare);
+        linearPattern = get_linear_maps(gameState, originSquare);
         threatMap |= (linearPattern & whiteLinears);
 
-        kingPattern = getKingMaps(gameState, originSquare);
+        kingPattern = get_king_maps(gameState, originSquare);
         threatMap |= (kingPattern & whiteKings);
     }
 
     return threatMap;
 }
 
-bool isSquareThreatened(int originSquare, int side) {
+bool is_square_threatened(int originSquare, int side) {
     u64 threatMap;
 
-    threatMap = getThreatMap(originSquare, side);
+    threatMap = get_threat_map(originSquare, side);
 
     // if threats are not an empty set, square is threatened
     return threatMap != 0;
 }
 
-bool isKingThreatened(int side) {
+bool is_king_threatened(int side) {
     int i;
     int kingIndex;
-    u64 *gameState = GAME_STATE_STACK[GAME_STATE_STACK_POINTER];
+    u64 *gameState = g_gameStateStack[g_root + g_ply];
     u64 whiteKings = gameState[6];
     u64 blackKings = gameState[13];
 
     if (side == 1) {
         // find the kings square first
-        kingIndex = bitScanForward(whiteKings);
-        return isSquareThreatened(kingIndex, side);
+        kingIndex = bitscan_forward(whiteKings);
+        return is_square_threatened(kingIndex, side);
     }
     else {
         // find the kings square first
-        kingIndex = bitScanForward(blackKings);
-        return isSquareThreatened(kingIndex, side);
+        kingIndex = bitscan_forward(blackKings);
+        return is_square_threatened(kingIndex, side);
     }
 }
 
 // filters out pseudo-legal moves, basically notices checkmates and draws by no moves
-bool checkIfNoLegalMoves(int side) {
+bool check_if_no_legal_moves(int side) {
     int moveCount;
     int i;
     Move checkMateMoves[MAX_MOVES];
 
-    moveCount = generateMoves(checkMateMoves, side);
+    moveCount = generate_moves(checkMateMoves, side);
 
     // no possible pseudo-legal moves -> no legal moves either
     if (moveCount == 0) return true;
 
     bool noMoves = true;
     for (i = 0; i < moveCount; i++) {
-        makeMove(checkMateMoves[i]);
-        if (!isKingThreatened(side)) {
+        make_move(checkMateMoves[i], false);
+        if (!is_king_threatened(side)) {
             noMoves = false;
-            unMakeMove();
+            unmake_move();
             break;
         }
-        unMakeMove();
+        unmake_move();
     }
 
     return noMoves;

@@ -1,7 +1,7 @@
 #ifndef MAKE_MOVE_H
 #define MAKE_MOVE_H
 
-void makeMove(Move move);
-void unMakeMove();
+void make_move(Move move, bool permanent);
+void unmake_move();
 
 #endif

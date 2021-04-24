@@ -10,8 +10,9 @@
 #include "Init.h"
 #include "Utilities.h"
 #include "ParseUciPosition.h"
+#include "Perft.h"
 
-void uciListen() {
+void uci_listen() {
   bool initReady = false;
   // false if position is being changed based on input
   bool positionReady = true;
@@ -24,7 +25,7 @@ void uciListen() {
     input = (char*) malloc(maxInputLength * sizeof(char));
     fgets(input, maxInputLength, stdin);
 
-    printf("gamestack %d movestack %d\n", GAME_STATE_STACK_POINTER, MOVE_STACK_POINTER);
+    printf("root %d ply %d\n", g_root, g_ply);
 
 
     if (strcmp(input, "uci\n") == 0) {
@@ -45,7 +46,7 @@ void uciListen() {
 
     if (strcmp(input, "isready\n") == 0) {
       if (!initReady) {
-        setLookUpTables();
+        set_lookup_tables();
         initReady = true;
       }
       if (!positionReady) {
@@ -61,8 +62,8 @@ void uciListen() {
 
     if (strcmp(input, "ucinewgame\n") == 0) {
       positionReady = false;
-      GAME_STATE_STACK_POINTER = 0;
-      parseUciPosition(GAME_STATE_STACK[GAME_STATE_STACK_POINTER], "position fen rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1\n");
+      g_root = 0;
+      parse_uci_position("position fen rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1\n");
       positionReady = true;
 
       free(input);
@@ -71,11 +72,11 @@ void uciListen() {
 
     if (strncmp(input, "position", 8) == 0) {
       positionReady = false;
-      GAME_STATE_STACK_POINTER = 0;
-      parseUciPosition(GAME_STATE_STACK[GAME_STATE_STACK_POINTER], input);
+      g_root = 0;
+      parse_uci_position(input);
       positionReady = true;
 
-      printBoard();
+      //print_board();
       
       free(input);
       continue;
@@ -93,9 +94,9 @@ void uciListen() {
       char *moveStr;
 
       pthread_cancel(threadId);
-      CANCEL_THREAD = 1;
+      g_cancelThread = 1;
       moveStr = (char*) malloc(8 * sizeof(char));
-      moveToString(moveStr, SELECTED_MOVE);
+      move_to_string(moveStr, g_selectedMove);
 
       printf("bestmove %s\n", moveStr);
       fflush(stdout);
@@ -114,7 +115,7 @@ void uciListen() {
       int argsFilled;
       // based on remaining time for the side and the increment
       int calcTime;
-      int side = getSideToPlay(GAME_STATE_STACK[GAME_STATE_STACK_POINTER][14]);
+      int side = get_side_to_play(g_gameStateStack[g_root][14]);
       int i;
       
       
@@ -123,20 +124,20 @@ void uciListen() {
       // no increment
       if (argsFilled == 2) {
         if (side == 1) {
-          calcTime = whiteTime * 1000 / 40;
+          calcTime = whiteTime * 1000 / 50;
         }
         else {
-          calcTime = blackTime * 1000 / 40;
+          calcTime = blackTime * 1000 / 50;
         }
       }
       // increment
       else if (argsFilled == 4) {
         if (side == 1) {
-          calcTime = whiteTime * 1000 / 40;
+          calcTime = whiteTime * 1000 / 50;
           calcTime += whiteIncrement * 1000;
         }
         else {
-          calcTime = blackTime * 1000 / 40;
+          calcTime = blackTime * 1000 / 50;
           calcTime += blackIncrement * 1000;
         }
       }
@@ -165,9 +166,9 @@ void uciListen() {
       }
 
       pthread_cancel(threadId);
-      CANCEL_THREAD = 1;
+      g_cancelThread = 1;
       moveStr = (char*) malloc(8 * sizeof(char));
-      moveToString(moveStr, SELECTED_MOVE);
+      move_to_string(moveStr, g_selectedMove);
 
       printf("bestmove %s\n", moveStr);
       fflush(stdout);
@@ -177,15 +178,17 @@ void uciListen() {
       continue;
     }
 
+    if (strncmp(input, "go perft", 8) == 0) {
+      int depth;
+
+      sscanf(input, "go perft %d", &depth);
+
+      perft_divide(depth);
+
+      free(input);
+      continue;
+    }
+
     free(input);
   }
-  /*
-  pthread_create(&threadId, NULL, search, NULL);
-  pthread_detach(threadId);
-  sleep(5);
-  pthread_cancel(threadId);
-
-  // some important initializations
-  setLookUpTables();
-  */
 }

@@ -5,15 +5,15 @@
 #include "Move.h"
 #include "Utilities.h"
 
-void makeMove(Move move) {
+void make_move(Move move, bool permanent) {
     int from = move.from;
     int to = move.to;
     int promotion = move.promotion;
     int castle = move.castling;
     bool enPassant = move.enPassant;
 
-    u64 *gameState = GAME_STATE_STACK[GAME_STATE_STACK_POINTER];
-    u64 *newGameState = GAME_STATE_STACK[GAME_STATE_STACK_POINTER + 1];
+    u64 *gameState = g_gameStateStack[g_root + g_ply];
+    u64 *newGameState = g_gameStateStack[g_root + g_ply + 1];
 
     u64 whitePieces = gameState[0];
     u64 whitePawns = gameState[1];
@@ -34,32 +34,37 @@ void makeMove(Move move) {
     u64 otherGameInfo = gameState[14];
     u64 movePattern = SINGLE_BIT_LOOKUP[from] | SINGLE_BIT_LOOKUP[to];
 
-    int side = getSideToPlay(otherGameInfo);
+    int side = get_side_to_play(otherGameInfo);
 
-    GAME_STATE_STACK_POINTER++;
+    if (permanent) {
+        g_root++;
+    }
+    else {
+        g_ply++;
+    }
 
     // previous en passant possibility ends with this move
-    otherGameInfo = setEnPassantAllowed(otherGameInfo, false);
+    otherGameInfo = set_enpassant_allowed(otherGameInfo, false);
     // switch side to play
-    otherGameInfo = setSideToPlay(otherGameInfo, -side);
+    otherGameInfo = set_side_to_play(otherGameInfo, -side);
     
     // castling is handled separately because it is the only move that moves 2 pieces at the same time
     if (castle != 0) {
         // white moving
         if (side == 1) {
             // set white castling to 0
-            otherGameInfo = removeWhiteCastleShort(otherGameInfo);
-            otherGameInfo = removeWhiteCastleLong(otherGameInfo);
+            otherGameInfo = remove_white_castle_short(otherGameInfo);
+            otherGameInfo = remove_white_castle_long(otherGameInfo);
 
             // kingside
             if (castle == 1) {
                 whiteKings ^= movePattern;
                 whitePieces ^= movePattern;
 
-                whiteRooks = emptySquare(whiteRooks, 7);
-                whitePieces = emptySquare(whitePieces, 7);
-                whiteRooks = fillSquare(whiteRooks, 5);
-                whitePieces = fillSquare(whitePieces, 5);
+                whiteRooks = empty_square(whiteRooks, 7);
+                whitePieces = empty_square(whitePieces, 7);
+                whiteRooks = fill_square(whiteRooks, 5);
+                whitePieces = fill_square(whitePieces, 5);
             }
 
             // queenside
@@ -67,28 +72,28 @@ void makeMove(Move move) {
                 whiteKings ^= movePattern;
                 whitePieces ^= movePattern;
 
-                whiteRooks = emptySquare(whiteRooks, 0);
-                whitePieces = emptySquare(whitePieces, 0);
-                whiteRooks = fillSquare(whiteRooks, 3);
-                whitePieces = fillSquare(whitePieces, 3);
+                whiteRooks = empty_square(whiteRooks, 0);
+                whitePieces = empty_square(whitePieces, 0);
+                whiteRooks = fill_square(whiteRooks, 3);
+                whitePieces = fill_square(whitePieces, 3);
             }
         }
 
         // black moving
         else {
             // set black castling to 0
-            otherGameInfo = removeBlackCastleShort(otherGameInfo);
-            otherGameInfo = removeBlackCastleLong(otherGameInfo);
+            otherGameInfo = remove_black_castle_short(otherGameInfo);
+            otherGameInfo = remove_black_castle_long(otherGameInfo);
 
             // kingside
             if (castle == 3) {
                 blackKings ^= movePattern;
                 blackPieces ^= movePattern;
 
-                blackRooks = emptySquare(blackRooks, 63);
-                blackPieces = emptySquare(blackPieces, 63);
-                blackRooks = fillSquare(blackRooks, 61);
-                blackPieces = fillSquare(blackPieces, 61);
+                blackRooks = empty_square(blackRooks, 63);
+                blackPieces = empty_square(blackPieces, 63);
+                blackRooks = fill_square(blackRooks, 61);
+                blackPieces = fill_square(blackPieces, 61);
 
             }
 
@@ -97,16 +102,16 @@ void makeMove(Move move) {
                 blackKings ^= movePattern;
                 blackPieces ^= movePattern;
 
-                blackRooks = emptySquare(blackRooks, 56);
-                blackPieces = emptySquare(blackPieces, 56);
-                blackRooks = fillSquare(blackRooks, 59);
-                blackPieces = fillSquare(blackPieces, 59);
+                blackRooks = empty_square(blackRooks, 56);
+                blackPieces = empty_square(blackPieces, 56);
+                blackRooks = fill_square(blackRooks, 59);
+                blackPieces = fill_square(blackPieces, 59);
             }
         }
     }
 
     else if (enPassant) {
-        u64 enPassantBit = SINGLE_BIT_LOOKUP[getEnPassantSquare(otherGameInfo)];
+        u64 enPassantBit = SINGLE_BIT_LOOKUP[get_enpassant_square(otherGameInfo)];
         if (side == 1) {
             whitePieces ^= movePattern;
             whitePawns ^= movePattern;
@@ -125,116 +130,116 @@ void makeMove(Move move) {
 
     // a normal move or promotion
     else {
-        if (squareOccupied(whitePieces, to)) {
-            whitePieces = emptySquare(whitePieces, to);
+        if (square_occupied(whitePieces, to)) {
+            whitePieces = empty_square(whitePieces, to);
 
-            if (squareOccupied(whitePawns, to)) {
-                whitePawns = emptySquare(whitePawns, to);
+            if (square_occupied(whitePawns, to)) {
+                whitePawns = empty_square(whitePawns, to);
             }
 
-            else if (squareOccupied(whiteKnights, to)) {
-                whiteKnights = emptySquare(whiteKnights, to);
+            else if (square_occupied(whiteKnights, to)) {
+                whiteKnights = empty_square(whiteKnights, to);
             }
             
-            else if (squareOccupied(whiteBishops, to)) {
-                whiteBishops = emptySquare(whiteBishops, to);
+            else if (square_occupied(whiteBishops, to)) {
+                whiteBishops = empty_square(whiteBishops, to);
             }
             
-            else if (squareOccupied(whiteRooks, to)) {
-                whiteRooks = emptySquare(whiteRooks, to);
+            else if (square_occupied(whiteRooks, to)) {
+                whiteRooks = empty_square(whiteRooks, to);
 
                 // cant castle anymore if the castling took is taken
-                if (to == 0 && canWhiteCastleLong(otherGameInfo)) {
-                    otherGameInfo = removeWhiteCastleLong(otherGameInfo);
+                if (to == 0 && can_white_castle_long(otherGameInfo)) {
+                    otherGameInfo = remove_white_castle_long(otherGameInfo);
                 }
                 // cant castle anymore if the castling took is taken
-                else if (to == 7 && canWhiteCastleShort(otherGameInfo)) {
-                    otherGameInfo = removeWhiteCastleShort(otherGameInfo);
+                else if (to == 7 && can_white_castle_short(otherGameInfo)) {
+                    otherGameInfo = remove_white_castle_short(otherGameInfo);
                 }
             }
             
-            else if (squareOccupied(whiteQueens, to)) {
-                whiteQueens = emptySquare(whiteQueens, to);
+            else if (square_occupied(whiteQueens, to)) {
+                whiteQueens = empty_square(whiteQueens, to);
             }
             
             else {
-                whiteKings = emptySquare(whiteKings, to);
+                whiteKings = empty_square(whiteKings, to);
             }
         }
 
 
-        else if (squareOccupied(blackPieces, to)) {
-            blackPieces = emptySquare(blackPieces, to);
+        else if (square_occupied(blackPieces, to)) {
+            blackPieces = empty_square(blackPieces, to);
 
-            if (squareOccupied(blackPawns, to)) {
-                blackPawns = emptySquare(blackPawns, to);
+            if (square_occupied(blackPawns, to)) {
+                blackPawns = empty_square(blackPawns, to);
             }
 
-            else if (squareOccupied(blackKnights, to)) {
-                blackKnights = emptySquare(blackKnights, to);
+            else if (square_occupied(blackKnights, to)) {
+                blackKnights = empty_square(blackKnights, to);
             }
             
-            else if (squareOccupied(blackBishops, to)) {
-                blackBishops = emptySquare(blackBishops, to);
+            else if (square_occupied(blackBishops, to)) {
+                blackBishops = empty_square(blackBishops, to);
             }
             
-            else if (squareOccupied(blackRooks, to)) {
-                blackRooks = emptySquare(blackRooks, to);
+            else if (square_occupied(blackRooks, to)) {
+                blackRooks = empty_square(blackRooks, to);
 
                 // cant castle anymore if the castling took is taken
-                if (to == 56 && canBlackCastleLong(otherGameInfo)) {
-                    otherGameInfo = removeBlackCastleLong(otherGameInfo);
+                if (to == 56 && can_black_castle_long(otherGameInfo)) {
+                    otherGameInfo = remove_black_castle_long(otherGameInfo);
                 }
                 // cant castle anymore if the castling took is taken
-                else if (to == 63 && canBlackCastleShort(otherGameInfo)) {
-                    otherGameInfo = removeBlackCastleShort(otherGameInfo);
+                else if (to == 63 && can_black_castle_short(otherGameInfo)) {
+                    otherGameInfo = remove_black_castle_short(otherGameInfo);
                 }
             }
             
-            else if (squareOccupied(blackQueens, to)) {
-                blackQueens = emptySquare(blackQueens, to);
+            else if (square_occupied(blackQueens, to)) {
+                blackQueens = empty_square(blackQueens, to);
             }
             
             else {
-                blackKings = emptySquare(blackKings, to);
+                blackKings = empty_square(blackKings, to);
             }
         }
 
         if (side == 1) {
             whitePieces ^= movePattern;
 
-            if (squareOccupied(whitePawns, from)) {
+            if (square_occupied(whitePawns, from)) {
                 whitePawns ^= movePattern;
 
                 // moved 2 squares, en passant possible on next move
                 if (to - from == 16) {
-                    otherGameInfo = setEnPassantAllowed(otherGameInfo, true);
-                    otherGameInfo = setEnPassantSquare(otherGameInfo, to);
+                    otherGameInfo = set_enpassant_allowed(otherGameInfo, true);
+                    otherGameInfo = set_enpassant_square(otherGameInfo, to);
                 }
             }
 
-            else if (squareOccupied(whiteKnights, from)) {
+            else if (square_occupied(whiteKnights, from)) {
                 whiteKnights ^= movePattern;
             }
             
-            else if (squareOccupied(whiteBishops, from)) {
+            else if (square_occupied(whiteBishops, from)) {
                 whiteBishops ^= movePattern;
             }
             
-            else if (squareOccupied(whiteRooks, from)) {
+            else if (square_occupied(whiteRooks, from)) {
                 whiteRooks ^= movePattern;
 
                 // remove castling rights, if rook moves
-                if (from == 0 && canWhiteCastleLong(otherGameInfo)) {
-                    otherGameInfo = removeWhiteCastleLong(otherGameInfo);
+                if (from == 0 && can_white_castle_long(otherGameInfo)) {
+                    otherGameInfo = remove_white_castle_long(otherGameInfo);
                 }
 
-                if (from == 7 && canWhiteCastleShort(otherGameInfo)) {
-                    otherGameInfo = removeWhiteCastleShort(otherGameInfo);
+                if (from == 7 && can_white_castle_short(otherGameInfo)) {
+                    otherGameInfo = remove_white_castle_short(otherGameInfo);
                 }
             }
             
-            else if (squareOccupied(whiteQueens, from)) {
+            else if (square_occupied(whiteQueens, from)) {
                 whiteQueens ^= movePattern;
             }
             
@@ -242,12 +247,12 @@ void makeMove(Move move) {
                 whiteKings ^= movePattern;
 
                 // remove both castling rights, if king moves
-                if (from == 4 && canWhiteCastleLong(otherGameInfo)) {
-                    otherGameInfo = removeWhiteCastleLong(otherGameInfo);
+                if (from == 4 && can_white_castle_long(otherGameInfo)) {
+                    otherGameInfo = remove_white_castle_long(otherGameInfo);
                 }
 
-                if (from == 4 && canWhiteCastleShort(otherGameInfo)) {
-                    otherGameInfo = removeWhiteCastleShort(otherGameInfo);
+                if (from == 4 && can_white_castle_short(otherGameInfo)) {
+                    otherGameInfo = remove_white_castle_short(otherGameInfo);
                 }
             }
         }
@@ -256,38 +261,38 @@ void makeMove(Move move) {
         else {
             blackPieces ^= movePattern;
 
-            if (squareOccupied(blackPawns, from)) {
+            if (square_occupied(blackPawns, from)) {
                 blackPawns ^= movePattern;
 
                 // moved 2 squares, en passant possible on next move
                 if (to - from == -16) {
-                    otherGameInfo = setEnPassantAllowed(otherGameInfo, true);
-                    otherGameInfo = setEnPassantSquare(otherGameInfo, to);
+                    otherGameInfo = set_enpassant_allowed(otherGameInfo, true);
+                    otherGameInfo = set_enpassant_square(otherGameInfo, to);
                 }
             }
 
-            else if (squareOccupied(blackKnights, from)) {
+            else if (square_occupied(blackKnights, from)) {
                 blackKnights ^= movePattern;
             }
             
-            else if (squareOccupied(blackBishops, from)) {
+            else if (square_occupied(blackBishops, from)) {
                 blackBishops ^= movePattern;
             }
             
-            else if (squareOccupied(blackRooks, from)) {
+            else if (square_occupied(blackRooks, from)) {
                 blackRooks ^= movePattern;
 
                 // remove castling rights, if rook moves
-                if (from == 56 && canBlackCastleLong(otherGameInfo)) {
-                    otherGameInfo = removeBlackCastleLong(otherGameInfo);
+                if (from == 56 && can_black_castle_long(otherGameInfo)) {
+                    otherGameInfo = remove_black_castle_long(otherGameInfo);
                 }
 
-                if (from == 63 && canBlackCastleShort(otherGameInfo)) {
-                    otherGameInfo = removeBlackCastleShort(otherGameInfo);
+                if (from == 63 && can_black_castle_short(otherGameInfo)) {
+                    otherGameInfo = remove_black_castle_short(otherGameInfo);
                 }
             }
             
-            else if (squareOccupied(blackQueens, from)) {
+            else if (square_occupied(blackQueens, from)) {
                 blackQueens ^= movePattern;
             }
             
@@ -295,12 +300,12 @@ void makeMove(Move move) {
                 blackKings ^= movePattern;
 
                 // remove both castling rights, if king moves
-                if (from == 60 && canBlackCastleLong(otherGameInfo)) {
-                    otherGameInfo = removeBlackCastleLong(otherGameInfo);
+                if (from == 60 && can_black_castle_long(otherGameInfo)) {
+                    otherGameInfo = remove_black_castle_long(otherGameInfo);
                 }
 
-                if (from == 60 && canBlackCastleShort(otherGameInfo)) {
-                    otherGameInfo = removeBlackCastleShort(otherGameInfo);
+                if (from == 60 && can_black_castle_short(otherGameInfo)) {
+                    otherGameInfo = remove_black_castle_short(otherGameInfo);
                 }
             }
         }
@@ -309,43 +314,43 @@ void makeMove(Move move) {
         // handle promotion of pawn
         if (promotion != 0) {
             if (side == 1) {
-                whitePawns = emptySquare(whitePawns, to);
+                whitePawns = empty_square(whitePawns, to);
 
                 // promote to knight
                 if (promotion == 1) {
-                    whiteKnights = fillSquare(whiteKnights, to);
+                    whiteKnights = fill_square(whiteKnights, to);
                 }
                 // promote to bishop
                 else if (promotion == 2) {
-                    whiteBishops = fillSquare(whiteBishops, to);
+                    whiteBishops = fill_square(whiteBishops, to);
                 }
                 // promote to rook
                 else if (promotion == 3) {
-                    whiteRooks = fillSquare(whiteRooks, to);
+                    whiteRooks = fill_square(whiteRooks, to);
                 }
                 // promote to queen
                 else {
-                    whiteQueens = fillSquare(whiteQueens, to);
+                    whiteQueens = fill_square(whiteQueens, to);
                 }
             }
             else {
-                blackPawns = emptySquare(blackPawns, to);
+                blackPawns = empty_square(blackPawns, to);
 
                 // promote to knight
                 if (promotion == 1) {
-                    blackKnights = fillSquare(blackKnights, to);
+                    blackKnights = fill_square(blackKnights, to);
                 }
                 // promote to bishop
                 else if (promotion == 2) {
-                    blackBishops = fillSquare(blackBishops, to);
+                    blackBishops = fill_square(blackBishops, to);
                 }
                 // promote to rook
                 else if (promotion == 3) {
-                    blackRooks = fillSquare(blackRooks, to);
+                    blackRooks = fill_square(blackRooks, to);
                 }
                 // promote to queen
                 else {
-                    blackQueens = fillSquare(blackQueens, to);
+                    blackQueens = fill_square(blackQueens, to);
                 }
             }
         }
@@ -370,6 +375,6 @@ void makeMove(Move move) {
     newGameState[14] = otherGameInfo;
 }
 
-void unMakeMove() {
-    GAME_STATE_STACK_POINTER--;
+void unmake_move() {
+    g_ply--;
 }
