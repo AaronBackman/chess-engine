@@ -1,15 +1,12 @@
 #ifndef MOVE_H
 #define MOVE_H
 
-typedef unsigned long long u64;
-typedef unsigned int u32;
+typedef unsigned short u16;
 
 typedef struct move {
-    u32 from : 6;
-    u32 to : 6;
-    u32 promotion : 3;
-    u32 castling : 3;
-    u32 enPassant : 1; // index of the captured piece
+    u16 from : 6;
+    u16 to : 6;
+    u16 code: 4;
 } Move;
 
 #endif

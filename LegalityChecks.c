@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "Move.h"
+#include "Board.h"
 #include "MakeMove.h"
 #include "Constants.h"
 #include "MoveGeneration.h"
@@ -12,25 +13,24 @@ u64 get_threat_map(int originSquare, int side) {
     int i;
     int j;
     int squareIndex;
-    u64 *gameState = g_gameStateStack[g_root + g_ply];
+    Board gameState = g_gameStateStack[g_root + g_ply];
+    u64 whitePieces = gameState.whitePieces;
+    u64 whitePawns = gameState.pawns & whitePieces;
+    u64 whiteKnights = gameState.knights & whitePieces;
+    u64 whiteBishops = gameState.bishops & whitePieces;
+    u64 whiteRooks = gameState.rooks & whitePieces;
+    u64 whiteQueens = gameState.queens & whitePieces;
+    u64 whiteKings = gameState.kings & whitePieces;
 
-    u64 whitePieces = gameState[0];
-    u64 whitePawns = gameState[1];
-    u64 whiteKnights = gameState[2];
-    u64 whiteBishops = gameState[3];
-    u64 whiteRooks = gameState[4];
-    u64 whiteQueens = gameState[5];
-    u64 whiteKings = gameState[6];
+    u64 blackPieces = gameState.blackPieces;
+    u64 blackPawns = gameState.pawns & blackPieces;
+    u64 blackKnights = gameState.knights & blackPieces;
+    u64 blackBishops = gameState.bishops & blackPieces;
+    u64 blackRooks = gameState.rooks & blackPieces;
+    u64 blackQueens = gameState.queens & blackPieces;
+    u64 blackKings = gameState.kings & blackPieces;
 
-    u64 blackPieces = gameState[7];
-    u64 blackPawns = gameState[8];
-    u64 blackKnights = gameState[9];
-    u64 blackBishops = gameState[10];
-    u64 blackRooks = gameState[11];
-    u64 blackQueens = gameState[12];
-    u64 blackKings = gameState[13];
-
-    u64 otherGameInfo = gameState[14];
+    u64 otherGameInfo = gameState.meta;
     u64 whiteDiagonals = whiteBishops | whiteQueens;
     u64 whiteLinears = whiteRooks | whiteQueens;
     u64 blackDiagonals = blackBishops | blackQueens;
@@ -93,9 +93,9 @@ bool is_square_threatened(int originSquare, int side) {
 bool is_king_threatened(int side) {
     int i;
     int kingIndex;
-    u64 *gameState = g_gameStateStack[g_root + g_ply];
-    u64 whiteKings = gameState[6];
-    u64 blackKings = gameState[13];
+    Board gameState = g_gameStateStack[g_root + g_ply];
+    u64 whiteKings = gameState.kings & gameState.whitePieces;
+    u64 blackKings = gameState.kings & gameState.blackPieces;
 
     if (side == 1) {
         // find the kings square first

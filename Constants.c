@@ -1,6 +1,6 @@
 #include "Constants.h"
 
-u64 g_gameStateStack[MAX_DEPTH + MAX_TURNS][15];
+Board g_gameStateStack[MAX_DEPTH + MAX_TURNS];
 u64 g_zobristStack[MAX_DEPTH + MAX_TURNS];
 int g_root = -1;
 

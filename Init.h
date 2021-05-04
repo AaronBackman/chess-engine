@@ -2,6 +2,7 @@
 #define INIT_H
 
 #include "Move.h"
+#include "TranspositionTable.h"
 
 // precalculated bit shifts, for example singleBitLookUp[15] == 1LLU << 15
 extern u64 SINGLE_BIT_LOOKUP[64];
@@ -60,6 +61,8 @@ extern u64 BLACK_KING_ZOBRIST[64];
 extern u64 BLACK_TO_MOVE_ZOBRIST;
 extern u64 CASTLING_ZOBRIST[4];
 extern u64 ENPASSANT_FILE_ZOBRIST[8];
+
+extern TranspositionTableEntry tTable[TRANSPOSITION_TABLE_SIZE];
 
 // the center manhattan distance
 extern unsigned char CMD[64];

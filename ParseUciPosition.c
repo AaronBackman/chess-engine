@@ -5,6 +5,7 @@
 #include <stdio.h>
 
 #include "Utilities.h"
+#include "Board.h"
 #include "Init.h"
 #include "MakeMove.h"
 #include "Constants.h"
@@ -14,22 +15,16 @@ void parse_uci_position(char *fenStr) {
     int i;
     // fen starts from top left of the board (index 56 in our board representation)
     int index = 56;
-    u64 *gameState = g_gameStateStack[g_root + g_ply];
+    Board gameState = g_gameStateStack[g_root + g_ply];
     u64 whitePieces = 0LLU;
-    u64 whitePawns = 0LLU;
-    u64 whiteKnights = 0LLU;
-    u64 whiteBishops = 0LLU;
-    u64 whiteRooks = 0LLU;
-    u64 whiteQueens = 0LLU;
-    u64 whiteKings = 0LLU;
-
     u64 blackPieces = 0LLU;
-    u64 blackPawns = 0LLU;
-    u64 blackKnights = 0LLU;
-    u64 blackBishops = 0LLU;
-    u64 blackRooks = 0LLU;
-    u64 blackQueens = 0LLU;
-    u64 blackKings = 0LLU;
+
+    u64 pawns = 0LLU;
+    u64 knights = 0LLU;
+    u64 bishops = 0LLU;
+    u64 rooks = 0LLU;
+    u64 queens = 0LLU;
+    u64 kings = 0LLU;
 
     u64 otherGameInfo = 0LLU;
 
@@ -73,74 +68,74 @@ void parse_uci_position(char *fenStr) {
 
             if (!isBoardFinished) {
                 if (fenChar == 'p') {
-                    blackPawns = fill_square(blackPawns, index);
+                    pawns = fill_square(pawns, index);
                     blackPieces = fill_square(blackPieces, index);
 
                     zobristKey ^= BLACK_PAWN_ZOBRIST[index];
                 }
                 else if (fenChar == 'n') {
-                    blackKnights = fill_square(blackKnights, index);
+                    knights = fill_square(knights, index);
                     blackPieces = fill_square(blackPieces, index);
 
                     zobristKey ^= BLACK_KNIGHT_ZOBRIST[index];
                 }
                 else if (fenChar == 'b') {
-                    blackBishops = fill_square(blackBishops, index);
+                    bishops = fill_square(bishops, index);
                     blackPieces = fill_square(blackPieces, index);
 
                     zobristKey ^= BLACK_BISHOP_ZOBRIST[index];
                 }
                 else if (fenChar == 'r') {
-                    blackRooks = fill_square(blackRooks, index);
+                    rooks = fill_square(rooks, index);
                     blackPieces = fill_square(blackPieces, index);
 
                     zobristKey ^= BLACK_ROOK_ZOBRIST[index];
                 }
                 else if (fenChar == 'q') {
-                    blackQueens = fill_square(blackQueens, index);
+                    queens = fill_square(queens, index);
                     blackPieces = fill_square(blackPieces, index);
 
                     zobristKey ^= BLACK_QUEEN_ZOBRIST[index];
                 }
                 else if (fenChar == 'k') {
-                    blackKings = fill_square(blackKings, index);
+                    kings = fill_square(kings, index);
                     blackPieces = fill_square(blackPieces, index);
 
                     zobristKey ^= BLACK_KING_ZOBRIST[index];
                 }
 
                 else if (fenChar == 'P') {
-                    whitePawns = fill_square(whitePawns, index);
+                    pawns = fill_square(pawns, index);
                     whitePieces = fill_square(whitePieces, index);
 
                     zobristKey ^= WHITE_PAWN_ZOBRIST[index];
                 }
                 else if (fenChar == 'N') {
-                    whiteKnights = fill_square(whiteKnights, index);
+                    knights = fill_square(knights, index);
                     whitePieces = fill_square(whitePieces, index);
 
                     zobristKey ^= WHITE_KNIGHT_ZOBRIST[index];
                 }
                 else if (fenChar == 'B') {
-                    whiteBishops = fill_square(whiteBishops, index);
+                    bishops = fill_square(bishops, index);
                     whitePieces = fill_square(whitePieces, index);
 
                     zobristKey ^= WHITE_BISHOP_ZOBRIST[index];
                 }
                 else if (fenChar == 'R') {
-                    whiteRooks = fill_square(whiteRooks, index);
+                    rooks = fill_square(rooks, index);
                     whitePieces = fill_square(whitePieces, index);
 
                     zobristKey ^= WHITE_ROOK_ZOBRIST[index];
                 }
                 else if (fenChar == 'Q') {
-                    whiteQueens = fill_square(whiteQueens, index);
+                    queens = fill_square(queens, index);
                     whitePieces = fill_square(whitePieces, index);
 
                     zobristKey ^= WHITE_QUEEN_ZOBRIST[index];
                 }
                 else if (fenChar == 'K') {
-                    whiteKings = fill_square(whiteKings, index);
+                    kings = fill_square(kings, index);
                     whitePieces = fill_square(whitePieces, index);
 
                     zobristKey ^= WHITE_KING_ZOBRIST[index];
@@ -250,20 +245,14 @@ void parse_uci_position(char *fenStr) {
         char nextChar = fenStr[17];
 
         whitePieces = 0b0000000000000000000000000000000000000000000000001111111111111111LLU;
-        whitePawns = 0b0000000000000000000000000000000000000000000000001111111100000000LLU;
-        whiteKnights = 0b0000000000000000000000000000000000000000000000000000000001000010LLU;
-        whiteBishops = 0b0000000000000000000000000000000000000000000000000000000000100100LLU;
-        whiteRooks = 0b0000000000000000000000000000000000000000000000000000000010000001LLU;
-        whiteQueens = 0b0000000000000000000000000000000000000000000000000000000000001000LLU;
-        whiteKings = 0b0000000000000000000000000000000000000000000000000000000000010000LLU;
-
         blackPieces = 0b1111111111111111000000000000000000000000000000000000000000000000LLU;
-        blackPawns = 0b0000000011111111000000000000000000000000000000000000000000000000LLU;
-        blackKnights = 0b0100001000000000000000000000000000000000000000000000000000000000LLU;
-        blackBishops = 0b0010010000000000000000000000000000000000000000000000000000000000LLU;
-        blackRooks = 0b1000000100000000000000000000000000000000000000000000000000000000LLU;
-        blackQueens = 0b0000100000000000000000000000000000000000000000000000000000000000LLU;
-        blackKings = 0b0001000000000000000000000000000000000000000000000000000000000000LLU;
+        
+        pawns =   0b0000000011111111000000000000000000000000000000001111111100000000LLU;
+        knights = 0b0100001000000000000000000000000000000000000000000000000001000010LLU;
+        bishops = 0b0010010000000000000000000000000000000000000000000000000000100100LLU;
+        rooks =   0b1000000100000000000000000000000000000000000000000000000010000001LLU;
+        queens =  0b0000100000000000000000000000000000000000000000000000000000001000LLU;
+        kings =   0b0001000000000000000000000000000000000000000000000000000000010000LLU;
 
         zobristKey ^= WHITE_PAWN_ZOBRIST[8];
         zobristKey ^= WHITE_PAWN_ZOBRIST[9];
@@ -326,23 +315,20 @@ void parse_uci_position(char *fenStr) {
 
     //printf("gamestate outside: %d\n", GAME_STATE_STACK_POINTER);
 
-    gameState[0] = whitePieces;
-    gameState[1] = whitePawns;
-    gameState[2] = whiteKnights;
-    gameState[3] = whiteBishops;
-    gameState[4] = whiteRooks;
-    gameState[5] = whiteQueens;
-    gameState[6] = whiteKings;
+    gameState.whitePieces = whitePieces;
+    gameState.blackPieces = blackPieces;
+    
+    gameState.pawns = pawns;
+    gameState.knights = knights;
+    gameState.bishops = bishops;
+    gameState.rooks = rooks;
+    gameState.queens = queens;
+    gameState.kings = kings;
 
-    gameState[7] = blackPieces;
-    gameState[8] = blackPawns;
-    gameState[9] = blackKnights;
-    gameState[10] = blackBishops;
-    gameState[11] = blackRooks;
-    gameState[12] = blackQueens;
-    gameState[13] = blackKings;
+    gameState.meta = otherGameInfo;
 
-    gameState[14] = otherGameInfo;
+    g_gameStateStack[g_root + g_ply] = gameState;
+
     g_zobristStack[0] = zobristKey;
 
     printf("zobrist: %llu\n", g_zobristStack[g_root + g_ply]);
@@ -360,23 +346,17 @@ void parse_uci_position(char *fenStr) {
 
             gameState = g_gameStateStack[g_root + g_ply];
 
-            whitePieces = gameState[0];
-            whitePawns = gameState[1];
-            whiteKnights = gameState[2];
-            whiteBishops = gameState[3];
-            whiteRooks = gameState[4];
-            whiteQueens = gameState[5];
-            whiteKings = gameState[6];
+            whitePieces = gameState.whitePieces;
+            blackPieces = gameState.blackPieces;
 
-            blackPieces = gameState[7];
-            blackPawns = gameState[8];
-            blackKnights = gameState[9];
-            blackBishops = gameState[10];
-            blackRooks = gameState[11];
-            blackQueens = gameState[12];
-            blackKings = gameState[13];
+            pawns = gameState.pawns;
+            knights = gameState.knights;
+            bishops = gameState.bishops;
+            rooks = gameState.rooks;
+            queens = gameState.queens;
+            kings = gameState.kings;
 
-            otherGameInfo = gameState[14];
+            otherGameInfo = gameState.meta;
 
             enPassantSquare = get_enpassant_square(otherGameInfo);
             enPassantAllowed = is_enpassant_allowed(otherGameInfo);
@@ -388,49 +368,74 @@ void parse_uci_position(char *fenStr) {
 
             // handle promotions
             if (fenStr[i + 4] == 'n') {
-                nextMove = create_move(from, to, 1, 0, 0);
+                if (square_occupied(whitePieces | blackPieces, to)) {
+                    nextMove = create_move(from, to, KNIGHT_PROMOTION_CAPTURE_MOVE);
+                }
+                else {
+                    nextMove = create_move(from, to, KNIGHT_PROMOTION_MOVE);
+                }
                 i += 5;
             }
             else if (fenStr[i + 4] == 'b') {
-                nextMove = create_move(from, to, 2, 0, 0);
+                if (square_occupied(whitePieces | blackPieces, to)) {
+                    nextMove = create_move(from, to, BISHOP_PROMOTION_CAPTURE_MOVE);
+                }
+                else {
+                    nextMove = create_move(from, to, BISHOP_PROMOTION_MOVE);
+                }
                 i += 5;
             }
             else if (fenStr[i + 4] == 'r') {
-                nextMove = create_move(from, to, 3, 0, 0);
+                if (square_occupied(whitePieces | blackPieces, to)) {
+                    nextMove = create_move(from, to, ROOK_PROMOTION_CAPTURE_MOVE);
+                }
+                else {
+                    nextMove = create_move(from, to, ROOK_PROMOTION_MOVE);
+                }
                 i += 5;
             }
             else if (fenStr[i + 4] == 'q') {
-                nextMove = create_move(from, to, 4, 0, 0);
+                if (square_occupied(whitePieces | blackPieces, to)) {
+                    nextMove = create_move(from, to, QUEEN_PROMOTION_CAPTURE_MOVE);
+                }
+                else {
+                    nextMove = create_move(from, to, QUEEN_PROMOTION_MOVE);
+                }
                 i += 5;
             }
             // handle white short castling
-            else if (from == 4 && to == 6 && square_occupied(whiteKings, from)) {
-                nextMove = create_move(from, to, 0, 1, 0);
+            else if (from == 4 && to == 6 && square_occupied(kings, from)) {
+                nextMove = create_move(from, to, KING_CASTLE_MOVE);
                 i += 4;
             }
             // handle white long castling
-            else if (from == 4 && to == 2 && square_occupied(whiteKings, from)) {
-                nextMove = create_move(from, to, 0, 2, 0);
+            else if (from == 4 && to == 2 && square_occupied(kings, from)) {
+                nextMove = create_move(from, to, QUEEN_CASTLE_MOVE);
                 i += 4;
             }
             // handle black short castling
-            else if (from == 60 && to == 62 && square_occupied(blackKings, from)) {
-                nextMove = create_move(from, to, 0, 3, 0);
+            else if (from == 60 && to == 62 && square_occupied(kings, from)) {
+                nextMove = create_move(from, to, KING_CASTLE_MOVE);
                 i += 4;
             }
             // handle black long castling
-            else if (from == 60 && to == 58 && square_occupied(blackKings, from)) {
-                nextMove = create_move(from, to, 0, 4, 0);
+            else if (from == 60 && to == 58 && square_occupied(kings, from)) {
+                nextMove = create_move(from, to, QUEEN_CASTLE_MOVE);
                 i += 4;
             }
             // handle en passant
-            else if ((side == 1 && (to == enPassantSquare + 8) && enPassantAllowed && square_occupied(whitePawns, from)) || (side == -1 && (to == enPassantSquare - 8) && enPassantAllowed && square_occupied(blackPawns, from))) {
-                nextMove = create_move(from, to, 0, 0, 1);
+            else if ((side == 1 && (to == enPassantSquare + 8) && enPassantAllowed && square_occupied(pawns & whitePieces, from)) || (side == -1 && (to == enPassantSquare - 8) && enPassantAllowed && square_occupied(pawns & blackPieces, from))) {
+                nextMove = create_move(from, to, EP_CAPTURE_MOVE);
                 i += 4;
             }
             // a normal move
             else {
-                nextMove = create_move(from, to, 0, 0, 0);
+                if (square_occupied(whitePieces | blackPieces, to)) {
+                    nextMove = create_move(from, to, CAPTURE_MOVE);
+                }
+                else {
+                    nextMove = create_move(from, to, QUIET_MOVE);
+                }
                 i += 4;
             }
 
@@ -450,4 +455,6 @@ void parse_uci_position(char *fenStr) {
             }
         }
     }
+
+    printf("zobrist: %llu\n", g_zobristStack[g_root + g_ply]);
 }

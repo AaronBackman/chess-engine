@@ -4,36 +4,35 @@
 #include "Constants.h"
 #include "Init.h"
 #include "Move.h"
+#include "Board.h"
 #include "Utilities.h"
 
 void make_move(Move move, bool permanent) {
-    int from = move.from;
-    int to = move.to;
-    int promotion = move.promotion;
-    int castle = move.castling;
-    bool enPassant = move.enPassant;
+    u16 code = move.code;
+    u16 from = move.from;
+    u16 to = move.to;
 
-    u64 *gameState = g_gameStateStack[g_root + g_ply];
-    u64 *newGameState = g_gameStateStack[g_root + g_ply + 1];
+    Board gameState = g_gameStateStack[g_root + g_ply];
+    Board newGameState = g_gameStateStack[g_root + g_ply + 1];
     u64 zobristKey = g_zobristStack[g_root + g_ply];
 
-    u64 whitePieces = gameState[0];
-    u64 whitePawns = gameState[1];
-    u64 whiteKnights = gameState[2];
-    u64 whiteBishops = gameState[3];
-    u64 whiteRooks = gameState[4];
-    u64 whiteQueens = gameState[5];
-    u64 whiteKings = gameState[6];
+    u64 whitePieces = gameState.whitePieces;
+    u64 whitePawns = gameState.pawns & whitePieces;
+    u64 whiteKnights = gameState.knights & whitePieces;
+    u64 whiteBishops = gameState.bishops & whitePieces;
+    u64 whiteRooks = gameState.rooks & whitePieces;
+    u64 whiteQueens = gameState.queens & whitePieces;
+    u64 whiteKings = gameState.kings & whitePieces;
 
-    u64 blackPieces = gameState[7];
-    u64 blackPawns = gameState[8];
-    u64 blackKnights = gameState[9];
-    u64 blackBishops = gameState[10];
-    u64 blackRooks = gameState[11];
-    u64 blackQueens = gameState[12];
-    u64 blackKings = gameState[13];
+    u64 blackPieces = gameState.blackPieces;
+    u64 blackPawns = gameState.pawns & blackPieces;
+    u64 blackKnights = gameState.knights & blackPieces;
+    u64 blackBishops = gameState.bishops & blackPieces;
+    u64 blackRooks = gameState.rooks & blackPieces;
+    u64 blackQueens = gameState.queens & blackPieces;
+    u64 blackKings = gameState.kings & blackPieces;
 
-    u64 otherGameInfo = gameState[14];
+    u64 otherGameInfo = gameState.meta;
     u64 movePattern = SINGLE_BIT_LOOKUP[from] | SINGLE_BIT_LOOKUP[to];
 
     int side = get_side_to_play(otherGameInfo);
@@ -55,7 +54,7 @@ void make_move(Move move, bool permanent) {
     zobristKey ^= BLACK_TO_MOVE_ZOBRIST;
     
     // castling is handled separately because it is the only move that moves 2 pieces at the same time
-    if (castle != 0) {
+    if (code == KING_CASTLE_MOVE || code == QUEEN_CASTLE_MOVE) {
         // white moving
         if (side == 1) {
             // set white castling to 0
@@ -66,7 +65,7 @@ void make_move(Move move, bool permanent) {
             zobristKey ^= CASTLING_ZOBRIST[1];
 
             // kingside
-            if (castle == 1) {
+            if (code == KING_CASTLE_MOVE) {
                 whiteKings ^= movePattern;
                 whitePieces ^= movePattern;
 
@@ -82,7 +81,7 @@ void make_move(Move move, bool permanent) {
             }
 
             // queenside
-            else if (castle == 2) {
+            else if (code == QUEEN_CASTLE_MOVE) {
                 whiteKings ^= movePattern;
                 whitePieces ^= movePattern;
 
@@ -108,7 +107,7 @@ void make_move(Move move, bool permanent) {
             zobristKey ^= CASTLING_ZOBRIST[3];
 
             // kingside
-            if (castle == 3) {
+            if (code == KING_CASTLE_MOVE) {
                 blackKings ^= movePattern;
                 blackPieces ^= movePattern;
 
@@ -125,7 +124,7 @@ void make_move(Move move, bool permanent) {
             }
 
             // queenside
-            else if (castle == 4) {
+            else if (code == QUEEN_CASTLE_MOVE) {
                 blackKings ^= movePattern;
                 blackPieces ^= movePattern;
 
@@ -142,7 +141,7 @@ void make_move(Move move, bool permanent) {
         }
     }
 
-    else if (enPassant) {
+    else if (code == EP_CAPTURE_MOVE) {
         int enpassantSquare = get_enpassant_square(otherGameInfo);
         int enpassantColumn = enpassantSquare % 8;
         u64 enPassantBit = SINGLE_BIT_LOOKUP[enpassantSquare];
@@ -177,7 +176,7 @@ void make_move(Move move, bool permanent) {
 
     // a normal move or promotion
     else {
-        if (square_occupied(whitePieces, to)) {
+        if ((side == -1) && (code == CAPTURE_MOVE || code >= KNIGHT_PROMOTION_CAPTURE_MOVE)) {
             whitePieces = empty_square(whitePieces, to);
 
             if (square_occupied(whitePawns, to)) {
@@ -223,7 +222,7 @@ void make_move(Move move, bool permanent) {
         }
 
 
-        else if (square_occupied(blackPieces, to)) {
+        else if ((side == 1) && (code == CAPTURE_MOVE || code >= KNIGHT_PROMOTION_CAPTURE_MOVE)) {
             blackPieces = empty_square(blackPieces, to);
 
             if (square_occupied(blackPawns, to)) {
@@ -409,23 +408,23 @@ void make_move(Move move, bool permanent) {
 
 
         // handle promotion of pawn
-        if (promotion != 0) {
+        if (code >= KNIGHT_PROMOTION_MOVE) {
             if (side == 1) {
                 whitePawns = empty_square(whitePawns, to);
                 zobristKey ^= WHITE_PAWN_ZOBRIST[to];
 
                 // promote to knight
-                if (promotion == 1) {
+                if (code == KNIGHT_PROMOTION_MOVE || code == KNIGHT_PROMOTION_CAPTURE_MOVE) {
                     whiteKnights = fill_square(whiteKnights, to);
                     zobristKey ^= WHITE_KNIGHT_ZOBRIST[to];
                 }
                 // promote to bishop
-                else if (promotion == 2) {
+                else if (code == BISHOP_PROMOTION_MOVE || code == BISHOP_PROMOTION_CAPTURE_MOVE) {
                     whiteBishops = fill_square(whiteBishops, to);
                     zobristKey ^= WHITE_BISHOP_ZOBRIST[to];
                 }
                 // promote to rook
-                else if (promotion == 3) {
+                else if (code == ROOK_PROMOTION_MOVE || code == ROOK_PROMOTION_CAPTURE_MOVE) {
                     whiteRooks = fill_square(whiteRooks, to);
                     zobristKey ^= WHITE_ROOK_ZOBRIST[to];
                 }
@@ -440,17 +439,17 @@ void make_move(Move move, bool permanent) {
                 zobristKey ^= BLACK_PAWN_ZOBRIST[to];
 
                 // promote to knight
-                if (promotion == 1) {
+                if (code == KNIGHT_PROMOTION_MOVE || code == KNIGHT_PROMOTION_CAPTURE_MOVE) {
                     blackKnights = fill_square(blackKnights, to);
                     zobristKey ^= BLACK_KNIGHT_ZOBRIST[to];
                 }
                 // promote to bishop
-                else if (promotion == 2) {
+                else if (code == BISHOP_PROMOTION_MOVE || code == BISHOP_PROMOTION_CAPTURE_MOVE) {
                     blackBishops = fill_square(blackBishops, to);
                     zobristKey ^= BLACK_BISHOP_ZOBRIST[to];
                 }
                 // promote to rook
-                else if (promotion == 3) {
+                else if (code == ROOK_PROMOTION_MOVE || code == ROOK_PROMOTION_CAPTURE_MOVE) {
                     blackRooks = fill_square(blackRooks, to);
                     zobristKey ^= BLACK_ROOK_ZOBRIST[to];
                 }
@@ -463,23 +462,19 @@ void make_move(Move move, bool permanent) {
         }
     }
 
-    newGameState[0] = whitePieces;
-    newGameState[1] = whitePawns;
-    newGameState[2] = whiteKnights;
-    newGameState[3] = whiteBishops;
-    newGameState[4] = whiteRooks;
-    newGameState[5] = whiteQueens;
-    newGameState[6] = whiteKings;
+    newGameState.whitePieces = whitePieces;
+    newGameState.blackPieces = blackPieces;
 
-    newGameState[7] = blackPieces;
-    newGameState[8] = blackPawns;
-    newGameState[9] = blackKnights;
-    newGameState[10] = blackBishops;
-    newGameState[11] = blackRooks;
-    newGameState[12] = blackQueens;
-    newGameState[13] = blackKings;
+    newGameState.pawns = whitePawns | blackPawns;
+    newGameState.knights = whiteKnights | blackKnights;
+    newGameState.bishops = whiteBishops | blackBishops;
+    newGameState.rooks = whiteRooks | blackRooks;
+    newGameState.queens = whiteQueens | blackQueens;
+    newGameState.kings = whiteKings | blackKings;
 
-    newGameState[14] = otherGameInfo;
+    newGameState.meta = otherGameInfo;
+
+    g_gameStateStack[g_root + g_ply] = newGameState;
 
     g_zobristStack[g_root + g_ply] = zobristKey;
 }

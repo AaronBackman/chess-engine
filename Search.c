@@ -6,6 +6,8 @@
 
 #include "Constants.h"
 #include "Move.h"
+#include "TranspositionTable.h"
+#include "Board.h"
 #include "MoveGeneration.h"
 #include "MakeMove.h"
 #include "LegalityChecks.h"
@@ -13,7 +15,6 @@
 #include "Init.h"
 #include "Perft.h"
 
-Move principalVariation;
 Move g_selectedMove;
 int searchedDepth;
 
@@ -22,6 +23,7 @@ int ORIGINAL_MOVE_STACK_POINTER;
 
 u64 nodeCount = 0;
 u64 quiescentNodeCount = 0;
+u64 transpositionCount = 0;
 
 bool checkmate;
 bool losingCheckMate;
@@ -64,9 +66,9 @@ int black_king_to_corners() {
     int whiteKingIndex;
     int blackKingIndex;
 
-    u64 *gameState = g_gameStateStack[g_root + g_ply];
-    u64 whiteKings = gameState[6];
-    u64 blackKings = gameState[13];
+    Board gameState = g_gameStateStack[g_root + g_ply];
+    u64 whiteKings = gameState.kings & gameState.whitePieces;
+    u64 blackKings = gameState.kings & gameState.blackPieces;
 
     whiteKingIndex = bitscan_forward(whiteKings);
     blackKingIndex = bitscan_forward(blackKings);
@@ -81,9 +83,9 @@ int white_king_to_corners() {
     int whiteKingIndex;
     int blackKingIndex;
 
-    u64 *gameState = g_gameStateStack[g_root + g_ply];
-    u64 whiteKings = gameState[6];
-    u64 blackKings = gameState[13];
+    Board gameState = g_gameStateStack[g_root + g_ply];
+    u64 whiteKings = gameState.kings & gameState.whitePieces;
+    u64 blackKings = gameState.kings & gameState.blackPieces;
 
     whiteKingIndex = bitscan_forward(whiteKings);
     blackKingIndex = bitscan_forward(blackKings);
@@ -92,183 +94,183 @@ int white_king_to_corners() {
 }
 
 int evaluate(int side) {
-  u64 *gameState = g_gameStateStack[g_root + g_ply];
-  u64 whitePieces = gameState[0];
-  u64 whitePawns = gameState[1];
-  u64 whiteKnights = gameState[2];
-  u64 whiteBishops = gameState[3];
-  u64 whiteRooks = gameState[4];
-  u64 whiteQueens = gameState[5];
-  u64 whiteKings = gameState[6];
+    Board gameState = g_gameStateStack[g_root + g_ply];
+    u64 whitePieces = gameState.whitePieces;
+    u64 whitePawns = gameState.pawns & whitePieces;
+    u64 whiteKnights = gameState.knights & whitePieces;
+    u64 whiteBishops = gameState.bishops & whitePieces;
+    u64 whiteRooks = gameState.rooks & whitePieces;
+    u64 whiteQueens = gameState.queens & whitePieces;
+    u64 whiteKings = gameState.kings & whitePieces;
 
-  u64 blackPieces = gameState[7];
-  u64 blackPawns = gameState[8];
-  u64 blackKnights = gameState[9];
-  u64 blackBishops = gameState[10];
-  u64 blackRooks = gameState[11];
-  u64 blackQueens = gameState[12];
-  u64 blackKings = gameState[13];
-  int score;
-  int openingScore;
-  int endgameScore;
-  int mopUpScore;
-  int index;
-  int whiteOpeningMaterial = 0;
-  int blackOpeningMaterial = 0;
-  int whiteEndgameMaterial = 0;
-  int blackEndgameMaterial = 0;
-  int phase;
-  // weighted sum of pieces (not pawns and kings)
-  int whitePieceSum;
-  int blackPieceSum;
+    u64 blackPieces = gameState.blackPieces;
+    u64 blackPawns = gameState.pawns & blackPieces;
+    u64 blackKnights = gameState.knights & blackPieces;
+    u64 blackBishops = gameState.bishops & blackPieces;
+    u64 blackRooks = gameState.rooks & blackPieces;
+    u64 blackQueens = gameState.queens & blackPieces;
+    u64 blackKings = gameState.kings & blackPieces;
+    int score;
+    int openingScore;
+    int endgameScore;
+    int mopUpScore;
+    int index;
+    int whiteOpeningMaterial = 0;
+    int blackOpeningMaterial = 0;
+    int whiteEndgameMaterial = 0;
+    int blackEndgameMaterial = 0;
+    int phase;
+    // weighted sum of pieces (not pawns and kings)
+    int whitePieceSum;
+    int blackPieceSum;
 
-  // number of each piece type and color
-  int wp = 0;
-  int bp = 0;
-  int wn = 0;
-  int bn = 0;
-  int wb = 0;
-  int bb = 0;
-  int wr = 0;
-  int br = 0;
-  int wq = 0;
-  int bq = 0;
-
-
-  // first calculate the opening score
-  while (whitePawns != 0) {
-      index = bitscan_forward(whitePawns);
-      whitePawns &= (whitePawns - 1);
-      whiteOpeningMaterial += PAWN_SCORE + WHITE_PAWN_PIECE_SQUARE_TABLE[index];
-      wp++;
-  }
-  while (whiteKnights!= 0) {
-      index = bitscan_forward(whiteKnights);
-      whiteKnights &= (whiteKnights - 1);
-      whiteOpeningMaterial += KNIGHT_SCORE + WHITE_KNIGHT_PIECE_SQUARE_TABLE[index];
-      wn++;
-  }
-  while (whiteBishops != 0) {
-      index = bitscan_forward(whiteBishops);
-      whiteBishops &= (whiteBishops - 1);
-      whiteOpeningMaterial += BISHOP_SCORE + WHITE_BISHOP_PIECE_SQUARE_TABLE[index];
-      wb++;
-  }
-  while (whiteRooks != 0) {
-      index = bitscan_forward(whiteRooks);
-      whiteRooks &= (whiteRooks - 1);
-      whiteOpeningMaterial += ROOK_SCORE + WHITE_ROOK_PIECE_SQUARE_TABLE[index];
-      wr++;
-  }
-  while (whiteQueens != 0) {
-      index = bitscan_forward(whiteQueens);
-      whiteQueens &= (whiteQueens - 1);
-      whiteOpeningMaterial += QUEEN_SCORE + WHITE_QUEEN_PIECE_SQUARE_TABLE[index];
-      wq++;
-  }
-
-  // endgame and opening evaluate similarly until now
-  whiteEndgameMaterial = whiteOpeningMaterial;
-
-  // only 1 king can exist
-  index = bitscan_forward(whiteKings);
-  whiteOpeningMaterial += KING_SCORE + WHITE_KING_PIECE_SQUARE_TABLE_OPENING[index];
-  whiteEndgameMaterial += KING_SCORE + WHITE_KING_PIECE_SQUARE_TABLE_ENDGAME[index];
+    // number of each piece type and color
+    int wp = 0;
+    int bp = 0;
+    int wn = 0;
+    int bn = 0;
+    int wb = 0;
+    int bb = 0;
+    int wr = 0;
+    int br = 0;
+    int wq = 0;
+    int bq = 0;
 
 
-  while (blackPawns != 0) {
-      index = bitscan_forward(blackPawns);
-      blackPawns &= (blackPawns - 1);
-      blackOpeningMaterial += PAWN_SCORE + BLACK_PAWN_PIECE_SQUARE_TABLE[index];
-      bp++;
-  }
-  while (blackKnights!= 0) {
-      index = bitscan_forward(blackKnights);
-      blackKnights &= (blackKnights - 1);
-      blackOpeningMaterial += KNIGHT_SCORE+ BLACK_KNIGHT_PIECE_SQUARE_TABLE[index];
-      bn++;
-  }
-  while (blackBishops != 0) {
-      index = bitscan_forward(blackBishops);
-      blackBishops &= (blackBishops - 1);
-      blackOpeningMaterial += BISHOP_SCORE+ BLACK_BISHOP_PIECE_SQUARE_TABLE[index];
-      bb++;
-  }
-  while (blackRooks != 0) {
-      index = bitscan_forward(blackRooks);
-      blackRooks &= (blackRooks - 1);
-      blackOpeningMaterial += ROOK_SCORE+ BLACK_ROOK_PIECE_SQUARE_TABLE[index];
-      br++;
-  }
-  while (blackQueens != 0) {
-      index = bitscan_forward(blackQueens);
-      blackQueens &= (blackQueens - 1);
-      blackOpeningMaterial += QUEEN_SCORE+ BLACK_QUEEN_PIECE_SQUARE_TABLE[index];
-      bq++;
-  }
+    // first calculate the opening score
+    while (whitePawns != 0) {
+        index = bitscan_forward(whitePawns);
+        whitePawns &= (whitePawns - 1);
+        whiteOpeningMaterial += PAWN_SCORE + WHITE_PAWN_PIECE_SQUARE_TABLE[index];
+        wp++;
+    }
+    while (whiteKnights!= 0) {
+        index = bitscan_forward(whiteKnights);
+        whiteKnights &= (whiteKnights - 1);
+        whiteOpeningMaterial += KNIGHT_SCORE + WHITE_KNIGHT_PIECE_SQUARE_TABLE[index];
+        wn++;
+    }
+    while (whiteBishops != 0) {
+        index = bitscan_forward(whiteBishops);
+        whiteBishops &= (whiteBishops - 1);
+        whiteOpeningMaterial += BISHOP_SCORE + WHITE_BISHOP_PIECE_SQUARE_TABLE[index];
+        wb++;
+    }
+    while (whiteRooks != 0) {
+        index = bitscan_forward(whiteRooks);
+        whiteRooks &= (whiteRooks - 1);
+        whiteOpeningMaterial += ROOK_SCORE + WHITE_ROOK_PIECE_SQUARE_TABLE[index];
+        wr++;
+    }
+    while (whiteQueens != 0) {
+        index = bitscan_forward(whiteQueens);
+        whiteQueens &= (whiteQueens - 1);
+        whiteOpeningMaterial += QUEEN_SCORE + WHITE_QUEEN_PIECE_SQUARE_TABLE[index];
+        wq++;
+    }
 
-  whitePieceSum = wn * 3 + wb * 3 + wr * 5 + wq * 9;
-  blackPieceSum = bn * 3 + bb * 3 + br * 5 + bq * 9;
-  // check draw by insufficient material
-  if (wp + bp == 0) {
-      //printf("insufficient material");
-      if ((whitePieceSum - blackPieceSum) < 4 && (whitePieceSum - blackPieceSum) > -4) {
-          return DRAW;
-      }
-  }
+    // endgame and opening evaluate similarly until now
+    whiteEndgameMaterial = whiteOpeningMaterial;
 
-  // white can try to checkmate the opponent
-  if ((whitePieceSum - blackPieceSum) >= 4 && blackPieceSum <= 9) {
-      //printf("white mopup");
-      mopUpScore = black_king_to_corners() * side;
-  }
-  // black can try to checkmate the opponent
-  else if ((blackPieceSum - whitePieceSum) >= 4 && whitePieceSum <= 9) {
-      //printf("black mopup");
-      mopUpScore = -1 * white_king_to_corners() * side;
-  }
-  else {
-      mopUpScore = 0;
-  }
-
-  // endgame and opening evaluate similarly until now
-  blackEndgameMaterial = blackOpeningMaterial;
-
-  // only 1 king can exist
-  index = bitscan_forward(blackKings);
-  blackOpeningMaterial += KING_SCORE + BLACK_KING_PIECE_SQUARE_TABLE_OPENING[index];;
-  blackEndgameMaterial += KING_SCORE + BLACK_KING_PIECE_SQUARE_TABLE_ENDGAME[index];
+    // only 1 king can exist
+    index = bitscan_forward(whiteKings);
+    whiteOpeningMaterial += KING_SCORE + WHITE_KING_PIECE_SQUARE_TABLE_OPENING[index];
+    whiteEndgameMaterial += KING_SCORE + WHITE_KING_PIECE_SQUARE_TABLE_ENDGAME[index];
 
 
-  // tapered evaluation score
-  phase = calc_phase(wp, bp, wn, bn, wb, bb, wr, br, wq, bq);
-  openingScore = (whiteOpeningMaterial - blackOpeningMaterial) * side;
-  endgameScore = (whiteEndgameMaterial - blackEndgameMaterial) * side;
-  score = ((openingScore * (256 - phase)) + (endgameScore * phase)) / 256;
-  score += mopUpScore;
+    while (blackPawns != 0) {
+        index = bitscan_forward(blackPawns);
+        blackPawns &= (blackPawns - 1);
+        blackOpeningMaterial += PAWN_SCORE + BLACK_PAWN_PIECE_SQUARE_TABLE[index];
+        bp++;
+    }
+    while (blackKnights!= 0) {
+        index = bitscan_forward(blackKnights);
+        blackKnights &= (blackKnights - 1);
+        blackOpeningMaterial += KNIGHT_SCORE+ BLACK_KNIGHT_PIECE_SQUARE_TABLE[index];
+        bn++;
+    }
+    while (blackBishops != 0) {
+        index = bitscan_forward(blackBishops);
+        blackBishops &= (blackBishops - 1);
+        blackOpeningMaterial += BISHOP_SCORE+ BLACK_BISHOP_PIECE_SQUARE_TABLE[index];
+        bb++;
+    }
+    while (blackRooks != 0) {
+        index = bitscan_forward(blackRooks);
+        blackRooks &= (blackRooks - 1);
+        blackOpeningMaterial += ROOK_SCORE+ BLACK_ROOK_PIECE_SQUARE_TABLE[index];
+        br++;
+    }
+    while (blackQueens != 0) {
+        index = bitscan_forward(blackQueens);
+        blackQueens &= (blackQueens - 1);
+        blackOpeningMaterial += QUEEN_SCORE+ BLACK_QUEEN_PIECE_SQUARE_TABLE[index];
+        bq++;
+    }
 
-  return score;
+    whitePieceSum = wn * 3 + wb * 3 + wr * 5 + wq * 9;
+    blackPieceSum = bn * 3 + bb * 3 + br * 5 + bq * 9;
+    // check draw by insufficient material
+    if (wp + bp == 0) {
+        //printf("insufficient material");
+        if ((whitePieceSum - blackPieceSum) < 4 && (whitePieceSum - blackPieceSum) > -4) {
+            return DRAW;
+        }
+    }
+
+    // white can try to checkmate the opponent
+    if ((whitePieceSum - blackPieceSum) >= 4 && blackPieceSum <= 9) {
+        //printf("white mopup");
+        mopUpScore = black_king_to_corners() * side;
+    }
+    // black can try to checkmate the opponent
+    else if ((blackPieceSum - whitePieceSum) >= 4 && whitePieceSum <= 9) {
+        //printf("black mopup");
+        mopUpScore = -1 * white_king_to_corners() * side;
+    }
+    else {
+        mopUpScore = 0;
+    }
+
+    // endgame and opening evaluate similarly until now
+    blackEndgameMaterial = blackOpeningMaterial;
+
+    // only 1 king can exist
+    index = bitscan_forward(blackKings);
+    blackOpeningMaterial += KING_SCORE + BLACK_KING_PIECE_SQUARE_TABLE_OPENING[index];;
+    blackEndgameMaterial += KING_SCORE + BLACK_KING_PIECE_SQUARE_TABLE_ENDGAME[index];
+
+
+    // tapered evaluation score
+    phase = calc_phase(wp, bp, wn, bn, wb, bb, wr, br, wq, bq);
+    openingScore = (whiteOpeningMaterial - blackOpeningMaterial) * side;
+    endgameScore = (whiteEndgameMaterial - blackEndgameMaterial) * side;
+    score = ((openingScore * (256 - phase)) + (endgameScore * phase)) / 256;
+    score += mopUpScore;
+
+    return score;
 }
 
 void sort_moves(Move *movesArr, u64 attackSet, int end, int side) {
     int i;
     int start = 0;
-    u64 *gameState = g_gameStateStack[g_root + g_ply];
-    u64 whitePieces = gameState[0];
-    u64 whitePawns = gameState[1];
-    u64 whiteKnights = gameState[2];
-    u64 whiteBishops = gameState[3];
-    u64 whiteRooks = gameState[4];
-    u64 whiteQueens = gameState[5];
-    u64 whiteKings = gameState[6];
+    Board gameState = g_gameStateStack[g_root + g_ply];
+    u64 whitePieces = gameState.whitePieces;
+    u64 whitePawns = gameState.pawns & whitePieces;
+    u64 whiteKnights = gameState.knights & whitePieces;
+    u64 whiteBishops = gameState.bishops & whitePieces;
+    u64 whiteRooks = gameState.rooks & whitePieces;
+    u64 whiteQueens = gameState.queens & whitePieces;
+    u64 whiteKings = gameState.kings & whitePieces;
 
-    u64 blackPieces = gameState[7];
-    u64 blackPawns = gameState[8];
-    u64 blackKnights = gameState[9];
-    u64 blackBishops = gameState[10];
-    u64 blackRooks = gameState[11];
-    u64 blackQueens = gameState[12];
-    u64 blackKings = gameState[13];
+    u64 blackPieces = gameState.blackPieces;
+    u64 blackPawns = gameState.pawns & blackPieces;
+    u64 blackKnights = gameState.knights & blackPieces;
+    u64 blackBishops = gameState.bishops & blackPieces;
+    u64 blackRooks = gameState.rooks & blackPieces;
+    u64 blackQueens = gameState.queens & blackPieces;
+    u64 blackKings = gameState.kings & blackPieces;
 
     while (attackSet != 0) {
         // most valuable victim - least valuable attacker, is used to sort attacking moves
@@ -482,6 +484,52 @@ int negamax(int alpha, int beta, int depth, int side) {
     int score;
     Move *movesArr = g_moveStack[g_ply];
     u64 attackSet;
+    Move bestMove;
+    bool alphaRise = false;
+
+    Move hashMove;
+    bool foundHashMove = false;
+    TranspositionTableEntry ttEntry;
+    u64 zobristKey = g_zobristStack[g_root + g_ply];
+    u64 ttIndex = zobristKey % TRANSPOSITION_TABLE_SIZE;
+
+    ttEntry = tTable[ttIndex];
+
+    if (ttEntry.zobristKey == zobristKey) {
+        int ttDepth = ttEntry.depth;
+        int ttNodeType = ttEntry.nodeType;
+        hashMove = ttEntry.hashMove;
+        score = ttEntry.score;
+
+        // if entry is deep enough, result can be used directly
+        if (ttDepth == depth) {
+            transpositionCount++;
+            // score is exact
+            if (ttNodeType == PV_NODE) {
+                return score;
+            }
+            // score is lower bound
+            else if (ttNodeType == CUT_NODE) {
+                alpha = score;
+            }
+            // score is upper bound
+            else if (ttNodeType == ALL_NODE) {
+                beta = score;
+            }
+            // should never happen
+            else {
+                printf("Invalid zobrist: %d\n", zobristKey);
+                fflush(stdout);
+                assert(0 != 0);
+            }
+        }
+        else if (ttDepth > depth && ttNodeType == PV_NODE) {
+            transpositionCount++;
+            return score;
+        }
+
+        foundHashMove = true;
+    }
 
     if (g_cancelThread == 1) {
         g_cancelThread = 0;
@@ -490,7 +538,7 @@ int negamax(int alpha, int beta, int depth, int side) {
     }
 
     if (is_repeating()) {
-        if (get_side_to_play(g_gameStateStack[g_root + g_ply][14]) == rootSideToMove) {
+        if (get_side_to_play(g_gameStateStack[g_root + g_ply].meta) == rootSideToMove) {
             return DRAW - CONTEMPT;
         }
         else {
@@ -519,11 +567,14 @@ int negamax(int alpha, int beta, int depth, int side) {
 
             if (score >= beta) {
                 unmake_move();
+                add_tt_entry(zobristKey, beta, move, CUT_NODE, depth);
                 return beta;
             }
 
             if (score > alpha) {
                 alpha = score;
+                bestMove = move;
+                alphaRise = true;
             }
         }
         unmake_move();
@@ -541,6 +592,15 @@ int negamax(int alpha, int beta, int depth, int side) {
         }
     }
 
+    // PV node
+    if (alphaRise) {
+        add_tt_entry(zobristKey, score, bestMove, PV_NODE, depth);
+    }
+    // ALL node
+    else {
+        add_tt_entry(zobristKey, alpha, create_move(0, 0, INVALID_MOVE), ALL_NODE, depth);
+    }
+
     return alpha;
 }
 
@@ -550,18 +610,63 @@ Move negamax_root(int alpha, int beta, int depth, int side) {
     int illegalMoveCount = 0;
     int i;
     Move bestMove;
-    Move hashMove;
+    bool alphaRise = false;
     bool foundHashMove = false;
     int score;
     Move *movesArr = g_moveStack[g_ply];
     u64 attackSet;
+
+    Move hashMove;
+    TranspositionTableEntry ttEntry;
+    u64 zobristKey = g_zobristStack[g_root + g_ply];
+    u64 ttIndex = zobristKey % TRANSPOSITION_TABLE_SIZE;
+
+    ttEntry = tTable[ttIndex];
+
+    if (ttEntry.zobristKey == zobristKey) {
+        int ttDepth = ttEntry.depth;
+        int ttNodeType = ttEntry.nodeType;
+        hashMove = ttEntry.hashMove;
+        score = ttEntry.score;
+
+        // if entry is deep enough, result can be used directly
+        if (ttDepth == depth) {
+            transpositionCount++;
+
+            // score is exact
+            if (ttNodeType == PV_NODE) {
+                return hashMove;
+            }
+            // score is lower bound
+            else if (ttNodeType == CUT_NODE) {
+                alpha = score;
+                bestMove = hashMove;
+            }
+            // score is upper bound
+            else if (ttNodeType == ALL_NODE) {
+                beta = score;
+            }
+            // should never happen
+            else {
+                printf("Invalid zobrist: %d\n", zobristKey);
+                fflush(stdout);
+                assert(0 != 0);
+            }
+        }
+        else if (ttDepth > depth && ttNodeType == PV_NODE) {
+            transpositionCount++;
+            return hashMove;
+        }
+
+        foundHashMove = true;
+    }
 
     moveCount = generate_moves(movesArr, side);
     // attackset is generated alongside the moves
     attackSet = g_attackSets[g_ply];
     sort_moves(movesArr, attackSet, moveCount, side);
 
-    rootSideToMove = get_side_to_play(g_gameStateStack[g_root + g_ply][14]);
+    rootSideToMove = get_side_to_play(g_gameStateStack[g_root + g_ply].meta);
 
     for (i = 0; i < moveCount; i++)  {
         Move move = movesArr[i];
@@ -581,6 +686,7 @@ Move negamax_root(int alpha, int beta, int depth, int side) {
             if (score > alpha) {
                 bestMove = move;
                 alpha = score;
+                alphaRise = true;
 
                 // printf("score rise: %d\n", score);
                 // printf("from: %d, to: %d\n", move.from, move.to);
@@ -594,6 +700,11 @@ Move negamax_root(int alpha, int beta, int depth, int side) {
     //printf("best move: from: %d, to: %d\n", bestMove.from, bestMove.to);
 
     //printf("nodes: %d\n", nodeCount);
+
+    // PV-node
+    if (alphaRise) {
+        add_tt_entry(zobristKey, score, bestMove, PV_NODE, depth);
+    }
 
     if (alpha < -100000) {
         losingCheckMate = true;
@@ -611,8 +722,8 @@ void clean_up_handler(void *vargp) {
 // a thread to calculate the best moves with iterative deepening
 void *search(void *vargp) {
     searchedDepth = 0;
-    u64 *gameState = g_gameStateStack[g_root];
-    u64 otherGameInfo = gameState[14];
+    Board gameState = g_gameStateStack[g_root];
+    u64 otherGameInfo = gameState.meta;
     int side = get_side_to_play(otherGameInfo);
 
     pthread_cleanup_push(clean_up_handler, vargp);
@@ -622,21 +733,19 @@ void *search(void *vargp) {
     checkmate = false;
     losingCheckMate = false;
     g_cancelThread = 0;
-    // initialize as some invalid move
-    principalVariation = create_move(0, 0, 0, 0, 0);
 
     while (searchedDepth < MAX_DEPTH) {
         Move previousMove = g_selectedMove;
         nodeCount = 0;
         quiescentNodeCount = 0;
+        transpositionCount = 0;
 
         g_selectedMove = negamax_root(ALPHA_BETA_MIN, ALPHA_BETA_MAX, searchedDepth + 1, side);
-
-        principalVariation = g_selectedMove;
 
         printf("searched depth: %d\n", searchedDepth);
         printf("nodes: %d\n", nodeCount);
         printf("quiescent: %d\n", quiescentNodeCount);
+        printf("transpositions: %d\n", transpositionCount);
         searchedDepth++;
 
         if (checkmate) {

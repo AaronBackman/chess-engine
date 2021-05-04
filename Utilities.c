@@ -5,31 +5,41 @@
 #include <assert.h>
 
 #include "Constants.h"
+#include "TranspositionTable.h"
 #include "Move.h"
+#include "Board.h"
 #include "Init.h"
+#include "Utilities.h"
 
-Move create_move(int from, int to, int promotion, int castle, bool enPassant) {
-    Move move = {from, to, promotion, castle, enPassant};
+const int index64Reverse[64] = {
+    0, 47,  1, 56, 48, 27,  2, 60,
+   57, 49, 41, 37, 28, 16,  3, 61,
+   54, 58, 35, 52, 50, 42, 21, 44,
+   38, 32, 29, 23, 17, 11,  4, 62,
+   46, 55, 26, 59, 40, 36, 15, 53,
+   34, 51, 20, 43, 31, 22, 10, 45,
+   25, 39, 14, 33, 19, 30,  9, 24,
+   13, 18,  8, 12,  7,  6,  5, 63
+};
 
-    return move;
-}
+const int index64Forward[64] = {
+    0,  1, 48,  2, 57, 49, 28,  3,
+   61, 58, 50, 42, 38, 29, 17,  4,
+   62, 55, 59, 36, 53, 51, 43, 22,
+   45, 39, 33, 30, 24, 18, 12,  5,
+   63, 47, 56, 27, 60, 41, 37, 16,
+   54, 35, 52, 21, 44, 32, 23, 11,
+   46, 26, 40, 15, 34, 20, 31, 10,
+   25, 14, 19,  9, 13,  8,  7,  6
+};
 
-bool square_occupied(u64 board, int index) {
-    u64 bitIndex = SINGLE_BIT_LOOKUP[index];
+extern inline Move create_move(u16 from, u16 to, u16 code);
 
-    if ((board & bitIndex) == 0LLU) {
-        return false;
-    }
-    else return true;
-}
+extern inline bool square_occupied(u64 board, int index);
 
-u64 empty_square(u64 board, int index) {
-    return board & ~SINGLE_BIT_LOOKUP[index];
-}
+extern inline u64 empty_square(u64 board, int index);
 
-u64 fill_square(u64 board, int index) {
-    return board | SINGLE_BIT_LOOKUP[index];
-}
+extern inline u64 fill_square(u64 board, int index);
 
 bool can_white_castle_short(u64 meta) {
     return (meta & 1LLU) > 0;
@@ -135,19 +145,19 @@ void move_to_string(char *str, Move move) {
     str[2] = 'a' + move.to % 8;
     str[3] = '1' + move.to / 8;
 
-    if (move.promotion == 1) {
+    if (move.code == KNIGHT_PROMOTION_MOVE || move.code == KNIGHT_PROMOTION_CAPTURE_MOVE) {
         str[4] = 'n';
         str[5] = '\0';
     }
-    else if (move.promotion == 2) {
+    else if (move.code == BISHOP_PROMOTION_MOVE || move.code == BISHOP_PROMOTION_CAPTURE_MOVE) {
         str[4] = 'b';
         str[5] = '\0';
     }
-    else if (move.promotion == 3) {
+    else if (move.code == ROOK_PROMOTION_MOVE || move.code == ROOK_PROMOTION_CAPTURE_MOVE) {
         str[4] = 'r';
         str[5] = '\0';
     }
-    else if (move.promotion == 4) {
+    else if (move.code == QUEEN_PROMOTION_MOVE || move.code == QUEEN_PROMOTION_CAPTURE_MOVE) {
         str[4] = 'q';
         str[5] = '\0';
     }
@@ -156,70 +166,32 @@ void move_to_string(char *str, Move move) {
     }
 }
 
-const int index64Forward[64] = {
-    0,  1, 48,  2, 57, 49, 28,  3,
-   61, 58, 50, 42, 38, 29, 17,  4,
-   62, 55, 59, 36, 53, 51, 43, 22,
-   45, 39, 33, 30, 24, 18, 12,  5,
-   63, 47, 56, 27, 60, 41, 37, 16,
-   54, 35, 52, 21, 44, 32, 23, 11,
-   46, 26, 40, 15, 34, 20, 31, 10,
-   25, 14, 19,  9, 13,  8,  7,  6
-};
-
 // gets the least significant bit using de brujn bitscan algorithm
-int bitscan_forward(u64 board) {
-    const u64 debruijn64 = 0x03f79d71b4cb0a89;
-    assert (board != 0);
-    return index64Forward[((board & -board) * debruijn64) >> 58];
-}
+extern inline int bitscan_forward(u64 board);
 
-const int index64Reverse[64] = {
-    0, 47,  1, 56, 48, 27,  2, 60,
-   57, 49, 41, 37, 28, 16,  3, 61,
-   54, 58, 35, 52, 50, 42, 21, 44,
-   38, 32, 29, 23, 17, 11,  4, 62,
-   46, 55, 26, 59, 40, 36, 15, 53,
-   34, 51, 20, 43, 31, 22, 10, 45,
-   25, 39, 14, 33, 19, 30,  9, 24,
-   13, 18,  8, 12,  7,  6,  5, 63
-};
 
 // gets the most significant bit using de brujn bitscan algorithm
-int bitscan_reverse(u64 board) {
-   const u64 debruijn64 = 0x03f79d71b4cb0a89;
-   assert (board != 0);
-   board |= board >> 1; 
-   board |= board >> 2;
-   board |= board >> 4;
-   board |= board >> 8;
-   board |= board >> 16;
-   board |= board >> 32;
-   return index64Reverse[(board * debruijn64) >> 58];
-}
+extern inline int bitscan_reverse(u64 board);
 
 void print_board() {
-    u64 *gameState = g_gameStateStack[g_root + g_ply];
+    Board gameState = g_gameStateStack[g_root + g_ply];
+    u64 whitePieces = gameState.whitePieces;
+    u64 whitePawns = gameState.pawns & whitePieces;
+    u64 whiteKnights = gameState.knights & whitePieces;
+    u64 whiteBishops = gameState.bishops & whitePieces;
+    u64 whiteRooks = gameState.rooks & whitePieces;
+    u64 whiteQueens = gameState.queens & whitePieces;
+    u64 whiteKings = gameState.kings & whitePieces;
 
-    //printf("stackpointer: %d", GAME_STATE_STACK_POINTER);
+    u64 blackPieces = gameState.blackPieces;
+    u64 blackPawns = gameState.pawns & blackPieces;
+    u64 blackKnights = gameState.knights & blackPieces;
+    u64 blackBishops = gameState.bishops & blackPieces;
+    u64 blackRooks = gameState.rooks & blackPieces;
+    u64 blackQueens = gameState.queens & blackPieces;
+    u64 blackKings = gameState.kings & blackPieces;
 
-    u64 whitePieces = gameState[0];
-    u64 whitePawns = gameState[1];
-    u64 whiteKnights = gameState[2];
-    u64 whiteBishops = gameState[3];
-    u64 whiteRooks = gameState[4];
-    u64 whiteQueens = gameState[5];
-    u64 whiteKings = gameState[6];
-
-    u64 blackPieces = gameState[7];
-    u64 blackPawns = gameState[8];
-    u64 blackKnights = gameState[9];
-    u64 blackBishops = gameState[10];
-    u64 blackRooks = gameState[11];
-    u64 blackQueens = gameState[12];
-    u64 blackKings = gameState[13];
-
-    u64 otherGameInfo = gameState[14];
+    u64 otherGameInfo = gameState.meta;
     
     int i = 56;
     
@@ -275,4 +247,8 @@ void print_board() {
 
 int get_manhattan_distance(int sq1, int sq2) {
     return MD[sq1][sq2];
+}
+
+void add_tt_entry(u64 zobristKey, int score, Move hashMove, u16 nodeType, u16 depth) {
+    tTable[zobristKey % TRANSPOSITION_TABLE_SIZE] = (TranspositionTableEntry){.zobristKey = zobristKey, .score = score, .hashMove = hashMove, .nodeType = nodeType, .depth = depth};
 }

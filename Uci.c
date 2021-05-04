@@ -6,6 +6,7 @@
 #include <stdbool.h>
 
 #include "Search.h"
+#include "Board.h"
 #include "Constants.h"
 #include "Init.h"
 #include "Utilities.h"
@@ -115,7 +116,7 @@ void uci_listen() {
       int argsFilled;
       // based on remaining time for the side and the increment
       int calcTime;
-      int side = get_side_to_play(g_gameStateStack[g_root][14]);
+      int side = get_side_to_play(g_gameStateStack[g_root].meta);
       int i;
       
       

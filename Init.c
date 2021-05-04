@@ -2,8 +2,11 @@
 #include <stdlib.h>
 
 #include "Constants.h"
+#include "TranspositionTable.h"
 #include "Utilities.h"
 #include "Random.h"
+
+TranspositionTableEntry tTable[TRANSPOSITION_TABLE_SIZE];
 
 u64 SINGLE_BIT_LOOKUP[64];
 u64 NORTH_EAST_LOOKUP_PATTERN[64];

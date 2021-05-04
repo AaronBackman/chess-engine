@@ -5,13 +5,13 @@
 #include "Utilities.h"
 
 // includes squares blocked by own pieces
-u64 get_diagonal_maps(u64 *gameState, int square) {
+u64 get_diagonal_maps(Board gameState, int square) {
     u64 blocker;
     int blockerSquare;
     u64 combinedMap;
 
-    u64 whitePieces = gameState[0];
-    u64 blackPieces = gameState[7];
+    u64 whitePieces = gameState.whitePieces;
+    u64 blackPieces = gameState.blackPieces;
     u64 occupied = whitePieces | blackPieces;
     u64 northEast = NORTH_EAST_LOOKUP_PATTERN[square];
     u64 northWest = NORTH_WEST_LOOKUP_PATTERN[square];
@@ -48,13 +48,13 @@ u64 get_diagonal_maps(u64 *gameState, int square) {
 }
 
 // includes squares blocked by own pieces
-u64 get_linear_maps(u64 *gameState, int square) {
+u64 get_linear_maps(Board gameState, int square) {
     u64 blocker;
     int blockerSquare;
     u64 combinedMap;
 
-    u64 whitePieces = gameState[0];
-    u64 blackPieces = gameState[7];
+    u64 whitePieces = gameState.whitePieces;
+    u64 blackPieces = gameState.blackPieces;
     u64 occupied = whitePieces | blackPieces;
     u64 north = NORTH_LOOKUP_PATTERN[square];
     u64 west = WEST_LOOKUP_PATTERN[square];
@@ -91,12 +91,12 @@ u64 get_linear_maps(u64 *gameState, int square) {
 }
 
 // gets squares where the pawn can move
-u64 get_white_pawn_move_maps(u64 *gameState, int square) {
+u64 get_white_pawn_move_maps(Board gameState, int square) {
     u64 blocker;
     int blockerSquare;
 
-    u64 whitePieces = gameState[0];
-    u64 blackPieces = gameState[7];
+    u64 whitePieces = gameState.whitePieces;
+    u64 blackPieces = gameState.blackPieces;
     u64 occupied = whitePieces | blackPieces;
     u64 pawnMovePattern = WHITE_PAWN_MOVE_LOOKUP_PATTERN[square];
 
@@ -114,12 +114,12 @@ u64 get_white_pawn_move_maps(u64 *gameState, int square) {
 }
 
 // gets squares where the pawn can move
-u64 get_black_pawn_move_maps(u64 *gameState, int square) {
+u64 get_black_pawn_move_maps(Board gameState, int square) {
     u64 blocker;
     int blockerSquare;
 
-    u64 whitePieces = gameState[0];
-    u64 blackPieces = gameState[7];
+    u64 whitePieces = gameState.whitePieces;
+    u64 blackPieces = gameState.blackPieces;
     u64 occupied = whitePieces | blackPieces;
     u64 pawnMovePattern = BLACK_PAWN_MOVE_LOOKUP_PATTERN[square];
 
@@ -137,8 +137,8 @@ u64 get_black_pawn_move_maps(u64 *gameState, int square) {
 }
 
 // gets squares where the pawn can attack, no en passant
-u64 get_white_pawn_attack_maps(u64 *gameState, int square) {
-    u64 blackPieces = gameState[7];
+u64 get_white_pawn_attack_maps(Board gameState, int square) {
+    u64 blackPieces = gameState.blackPieces;
     u64 pawnAttackPattern = WHITE_PAWN_ATTACK_LOOKUP_PATTERN[square];
 
     pawnAttackPattern &= blackPieces;
@@ -147,8 +147,8 @@ u64 get_white_pawn_attack_maps(u64 *gameState, int square) {
 }
 
 // gets squares where the pawn can attack, no en passant
-u64 get_black_pawn_attack_maps(u64 *gameState, int square) {
-    u64 whitePieces = gameState[0];
+u64 get_black_pawn_attack_maps(Board gameState, int square) {
+    u64 whitePieces = gameState.whitePieces;
     u64 pawnAttackPattern = BLACK_PAWN_ATTACK_LOOKUP_PATTERN[square];
 
     pawnAttackPattern &= whitePieces;
@@ -156,10 +156,10 @@ u64 get_black_pawn_attack_maps(u64 *gameState, int square) {
     return pawnAttackPattern;
 }
 
-u64 get_knight_maps(u64 *gameState, int square) {
+u64 get_knight_maps(Board gameState, int square) {
     return KNIGHT_LOOKUP_PATTERN[square];
 }
 
-u64 get_king_maps(u64 *gameState, int square) {
+u64 get_king_maps(Board gameState, int square) {
     return KING_LOOKUP_PATTERN[square];
 }

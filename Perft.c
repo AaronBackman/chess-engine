@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #include "Move.h"
+#include "Board.h"
 #include "Constants.h"
 #include "MakeMove.h"
 #include "LegalityChecks.h"
@@ -22,6 +23,8 @@ u64 perft(int depth, int side) {
 
   moveCount = generate_moves(moves, side);
 
+  //print_board();
+
   for (i = 0; i < moveCount; i++) {
     make_move(moves[i], false);
     if (!is_king_threatened(side)) {
@@ -38,7 +41,7 @@ void perft_divide(int depth) {
   int moveCount;
   int i;
   u64 nodes = 0;
-  int side = get_side_to_play(g_gameStateStack[g_root][14]);
+  int side = get_side_to_play(g_gameStateStack[g_root].meta);
 
   if (depth == 0) 
     return;
@@ -67,6 +70,7 @@ void perft_divide(int depth) {
       moveNotation[4] = '\0';
 
       printf("%s: %llu\n", moveNotation, dividedNodes);
+      //printf("code: %d\n\n", move.code);
 
       free(moveNotation);
     }
