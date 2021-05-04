@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "Constants.h"
+#include "Init.h"
 #include "Move.h"
 #include "Utilities.h"
 
@@ -14,6 +15,7 @@ void make_move(Move move, bool permanent) {
 
     u64 *gameState = g_gameStateStack[g_root + g_ply];
     u64 *newGameState = g_gameStateStack[g_root + g_ply + 1];
+    u64 zobristKey = g_zobristStack[g_root + g_ply];
 
     u64 whitePieces = gameState[0];
     u64 whitePawns = gameState[1];
@@ -43,10 +45,14 @@ void make_move(Move move, bool permanent) {
         g_ply++;
     }
 
-    // previous en passant possibility ends with this move
-    otherGameInfo = set_enpassant_allowed(otherGameInfo, false);
+    if (is_enpassant_allowed(otherGameInfo)) {
+        // previous en passant possibility ends with this move
+        otherGameInfo = set_enpassant_allowed(otherGameInfo, false);
+        zobristKey ^= ENPASSANT_FILE_ZOBRIST[get_enpassant_square(otherGameInfo) % 8];
+    }
     // switch side to play
     otherGameInfo = set_side_to_play(otherGameInfo, -side);
+    zobristKey ^= BLACK_TO_MOVE_ZOBRIST;
     
     // castling is handled separately because it is the only move that moves 2 pieces at the same time
     if (castle != 0) {
@@ -55,6 +61,9 @@ void make_move(Move move, bool permanent) {
             // set white castling to 0
             otherGameInfo = remove_white_castle_short(otherGameInfo);
             otherGameInfo = remove_white_castle_long(otherGameInfo);
+
+            zobristKey ^= CASTLING_ZOBRIST[0];
+            zobristKey ^= CASTLING_ZOBRIST[1];
 
             // kingside
             if (castle == 1) {
@@ -65,6 +74,11 @@ void make_move(Move move, bool permanent) {
                 whitePieces = empty_square(whitePieces, 7);
                 whiteRooks = fill_square(whiteRooks, 5);
                 whitePieces = fill_square(whitePieces, 5);
+
+                zobristKey ^= WHITE_KING_ZOBRIST[from];
+                zobristKey ^= WHITE_KING_ZOBRIST[to];
+                zobristKey ^= WHITE_ROOK_ZOBRIST[7];
+                zobristKey ^= WHITE_ROOK_ZOBRIST[5];
             }
 
             // queenside
@@ -76,6 +90,11 @@ void make_move(Move move, bool permanent) {
                 whitePieces = empty_square(whitePieces, 0);
                 whiteRooks = fill_square(whiteRooks, 3);
                 whitePieces = fill_square(whitePieces, 3);
+
+                zobristKey ^= WHITE_KING_ZOBRIST[from];
+                zobristKey ^= WHITE_KING_ZOBRIST[to];
+                zobristKey ^= WHITE_ROOK_ZOBRIST[0];
+                zobristKey ^= WHITE_ROOK_ZOBRIST[3];
             }
         }
 
@@ -84,6 +103,9 @@ void make_move(Move move, bool permanent) {
             // set black castling to 0
             otherGameInfo = remove_black_castle_short(otherGameInfo);
             otherGameInfo = remove_black_castle_long(otherGameInfo);
+
+            zobristKey ^= CASTLING_ZOBRIST[2];
+            zobristKey ^= CASTLING_ZOBRIST[3];
 
             // kingside
             if (castle == 3) {
@@ -94,6 +116,11 @@ void make_move(Move move, bool permanent) {
                 blackPieces = empty_square(blackPieces, 63);
                 blackRooks = fill_square(blackRooks, 61);
                 blackPieces = fill_square(blackPieces, 61);
+
+                zobristKey ^= BLACK_KING_ZOBRIST[from];
+                zobristKey ^= BLACK_KING_ZOBRIST[to];
+                zobristKey ^= BLACK_ROOK_ZOBRIST[63];
+                zobristKey ^= BLACK_ROOK_ZOBRIST[61];
 
             }
 
@@ -106,25 +133,45 @@ void make_move(Move move, bool permanent) {
                 blackPieces = empty_square(blackPieces, 56);
                 blackRooks = fill_square(blackRooks, 59);
                 blackPieces = fill_square(blackPieces, 59);
+
+                zobristKey ^= BLACK_KING_ZOBRIST[from];
+                zobristKey ^= BLACK_KING_ZOBRIST[to];
+                zobristKey ^= BLACK_ROOK_ZOBRIST[56];
+                zobristKey ^= BLACK_ROOK_ZOBRIST[59];
             }
         }
     }
 
     else if (enPassant) {
-        u64 enPassantBit = SINGLE_BIT_LOOKUP[get_enpassant_square(otherGameInfo)];
+        int enpassantSquare = get_enpassant_square(otherGameInfo);
+        int enpassantColumn = enpassantSquare % 8;
+        u64 enPassantBit = SINGLE_BIT_LOOKUP[enpassantSquare];
+
+        zobristKey ^= ENPASSANT_FILE_ZOBRIST[enpassantColumn];
+        
         if (side == 1) {
             whitePieces ^= movePattern;
             whitePawns ^= movePattern;
 
+            zobristKey ^= WHITE_PAWN_ZOBRIST[from];
+            zobristKey ^= WHITE_PAWN_ZOBRIST[to];
+
             blackPieces ^= enPassantBit;
             blackPawns ^= enPassantBit;
+
+            zobristKey ^= BLACK_PAWN_ZOBRIST[enpassantSquare];
         }
         else {
             blackPieces ^= movePattern;
             blackPawns ^= movePattern;
 
+            zobristKey ^= BLACK_PAWN_ZOBRIST[from];
+            zobristKey ^= BLACK_PAWN_ZOBRIST[to];
+
             whitePieces ^= enPassantBit;
             whitePawns ^= enPassantBit;
+
+            zobristKey ^= WHITE_PAWN_ZOBRIST[enpassantSquare];
         }
     }
 
@@ -135,35 +182,43 @@ void make_move(Move move, bool permanent) {
 
             if (square_occupied(whitePawns, to)) {
                 whitePawns = empty_square(whitePawns, to);
+                zobristKey ^= WHITE_PAWN_ZOBRIST[to];
             }
 
             else if (square_occupied(whiteKnights, to)) {
                 whiteKnights = empty_square(whiteKnights, to);
+                zobristKey ^= WHITE_KNIGHT_ZOBRIST[to];
             }
             
             else if (square_occupied(whiteBishops, to)) {
                 whiteBishops = empty_square(whiteBishops, to);
+                zobristKey ^= WHITE_BISHOP_ZOBRIST[to];
             }
             
             else if (square_occupied(whiteRooks, to)) {
                 whiteRooks = empty_square(whiteRooks, to);
+                zobristKey ^= WHITE_ROOK_ZOBRIST[to];
 
                 // cant castle anymore if the castling took is taken
                 if (to == 0 && can_white_castle_long(otherGameInfo)) {
                     otherGameInfo = remove_white_castle_long(otherGameInfo);
+                    zobristKey ^= CASTLING_ZOBRIST[1];
                 }
                 // cant castle anymore if the castling took is taken
                 else if (to == 7 && can_white_castle_short(otherGameInfo)) {
                     otherGameInfo = remove_white_castle_short(otherGameInfo);
+                    zobristKey ^= CASTLING_ZOBRIST[0];
                 }
             }
             
             else if (square_occupied(whiteQueens, to)) {
                 whiteQueens = empty_square(whiteQueens, to);
+                zobristKey ^= WHITE_QUEEN_ZOBRIST[to];
             }
             
             else {
                 whiteKings = empty_square(whiteKings, to);
+                zobristKey ^= WHITE_KING_ZOBRIST[to];
             }
         }
 
@@ -173,35 +228,43 @@ void make_move(Move move, bool permanent) {
 
             if (square_occupied(blackPawns, to)) {
                 blackPawns = empty_square(blackPawns, to);
+                zobristKey ^= BLACK_PAWN_ZOBRIST[to];
             }
 
             else if (square_occupied(blackKnights, to)) {
                 blackKnights = empty_square(blackKnights, to);
+                zobristKey ^= BLACK_KNIGHT_ZOBRIST[to];
             }
             
             else if (square_occupied(blackBishops, to)) {
                 blackBishops = empty_square(blackBishops, to);
+                zobristKey ^= BLACK_BISHOP_ZOBRIST[to];
             }
             
             else if (square_occupied(blackRooks, to)) {
                 blackRooks = empty_square(blackRooks, to);
+                zobristKey ^= BLACK_ROOK_ZOBRIST[to];
 
                 // cant castle anymore if the castling took is taken
                 if (to == 56 && can_black_castle_long(otherGameInfo)) {
                     otherGameInfo = remove_black_castle_long(otherGameInfo);
+                    zobristKey ^= CASTLING_ZOBRIST[3];
                 }
                 // cant castle anymore if the castling took is taken
                 else if (to == 63 && can_black_castle_short(otherGameInfo)) {
                     otherGameInfo = remove_black_castle_short(otherGameInfo);
+                    zobristKey ^= CASTLING_ZOBRIST[2];
                 }
             }
             
             else if (square_occupied(blackQueens, to)) {
                 blackQueens = empty_square(blackQueens, to);
+                zobristKey ^= BLACK_QUEEN_ZOBRIST[to];
             }
             
             else {
                 blackKings = empty_square(blackKings, to);
+                zobristKey ^= BLACK_KING_ZOBRIST[to];
             }
         }
 
@@ -210,49 +273,66 @@ void make_move(Move move, bool permanent) {
 
             if (square_occupied(whitePawns, from)) {
                 whitePawns ^= movePattern;
+                zobristKey ^= WHITE_PAWN_ZOBRIST[from];
+                zobristKey ^= WHITE_PAWN_ZOBRIST[to];
 
                 // moved 2 squares, en passant possible on next move
                 if (to - from == 16) {
                     otherGameInfo = set_enpassant_allowed(otherGameInfo, true);
                     otherGameInfo = set_enpassant_square(otherGameInfo, to);
+                    zobristKey ^= ENPASSANT_FILE_ZOBRIST[to % 8];
                 }
             }
 
             else if (square_occupied(whiteKnights, from)) {
                 whiteKnights ^= movePattern;
+                zobristKey ^= WHITE_KNIGHT_ZOBRIST[from];
+                zobristKey ^= WHITE_KNIGHT_ZOBRIST[to];
             }
             
             else if (square_occupied(whiteBishops, from)) {
                 whiteBishops ^= movePattern;
+                zobristKey ^= WHITE_BISHOP_ZOBRIST[from];
+                zobristKey ^= WHITE_BISHOP_ZOBRIST[to];
             }
             
             else if (square_occupied(whiteRooks, from)) {
                 whiteRooks ^= movePattern;
+                zobristKey ^= WHITE_ROOK_ZOBRIST[from];
+                zobristKey ^= WHITE_ROOK_ZOBRIST[to];
 
                 // remove castling rights, if rook moves
                 if (from == 0 && can_white_castle_long(otherGameInfo)) {
                     otherGameInfo = remove_white_castle_long(otherGameInfo);
+                    zobristKey ^= CASTLING_ZOBRIST[1];
                 }
 
                 if (from == 7 && can_white_castle_short(otherGameInfo)) {
                     otherGameInfo = remove_white_castle_short(otherGameInfo);
+                    zobristKey ^= CASTLING_ZOBRIST[0];
                 }
             }
             
             else if (square_occupied(whiteQueens, from)) {
                 whiteQueens ^= movePattern;
+                zobristKey ^= WHITE_QUEEN_ZOBRIST[from];
+                zobristKey ^= WHITE_QUEEN_ZOBRIST[to];
             }
             
             else {
                 whiteKings ^= movePattern;
+                zobristKey ^= WHITE_KING_ZOBRIST[from];
+                zobristKey ^= WHITE_KING_ZOBRIST[to];
 
                 // remove both castling rights, if king moves
                 if (from == 4 && can_white_castle_long(otherGameInfo)) {
                     otherGameInfo = remove_white_castle_long(otherGameInfo);
+                    zobristKey ^= CASTLING_ZOBRIST[1];
                 }
 
                 if (from == 4 && can_white_castle_short(otherGameInfo)) {
                     otherGameInfo = remove_white_castle_short(otherGameInfo);
+                    zobristKey ^= CASTLING_ZOBRIST[0];
                 }
             }
         }
@@ -263,49 +343,66 @@ void make_move(Move move, bool permanent) {
 
             if (square_occupied(blackPawns, from)) {
                 blackPawns ^= movePattern;
+                zobristKey ^= BLACK_PAWN_ZOBRIST[from];
+                zobristKey ^= BLACK_PAWN_ZOBRIST[to];
 
                 // moved 2 squares, en passant possible on next move
                 if (to - from == -16) {
                     otherGameInfo = set_enpassant_allowed(otherGameInfo, true);
                     otherGameInfo = set_enpassant_square(otherGameInfo, to);
+                    zobristKey ^= ENPASSANT_FILE_ZOBRIST[to % 8];
                 }
             }
 
             else if (square_occupied(blackKnights, from)) {
                 blackKnights ^= movePattern;
+                zobristKey ^= BLACK_KNIGHT_ZOBRIST[from];
+                zobristKey ^= BLACK_KNIGHT_ZOBRIST[to];
             }
             
             else if (square_occupied(blackBishops, from)) {
                 blackBishops ^= movePattern;
+                zobristKey ^= BLACK_BISHOP_ZOBRIST[from];
+                zobristKey ^= BLACK_BISHOP_ZOBRIST[to];
             }
             
             else if (square_occupied(blackRooks, from)) {
                 blackRooks ^= movePattern;
+                zobristKey ^= BLACK_ROOK_ZOBRIST[from];
+                zobristKey ^= BLACK_ROOK_ZOBRIST[to];
 
                 // remove castling rights, if rook moves
                 if (from == 56 && can_black_castle_long(otherGameInfo)) {
                     otherGameInfo = remove_black_castle_long(otherGameInfo);
+                    zobristKey ^= CASTLING_ZOBRIST[3];
                 }
 
                 if (from == 63 && can_black_castle_short(otherGameInfo)) {
                     otherGameInfo = remove_black_castle_short(otherGameInfo);
+                    zobristKey ^= CASTLING_ZOBRIST[2];
                 }
             }
             
             else if (square_occupied(blackQueens, from)) {
                 blackQueens ^= movePattern;
+                zobristKey ^= BLACK_QUEEN_ZOBRIST[from];
+                zobristKey ^= BLACK_QUEEN_ZOBRIST[to];
             }
             
             else {
                 blackKings ^= movePattern;
+                zobristKey ^= BLACK_KING_ZOBRIST[from];
+                zobristKey ^= BLACK_KING_ZOBRIST[to];
 
                 // remove both castling rights, if king moves
                 if (from == 60 && can_black_castle_long(otherGameInfo)) {
                     otherGameInfo = remove_black_castle_long(otherGameInfo);
+                    zobristKey ^= CASTLING_ZOBRIST[3];
                 }
 
                 if (from == 60 && can_black_castle_short(otherGameInfo)) {
                     otherGameInfo = remove_black_castle_short(otherGameInfo);
+                    zobristKey ^= CASTLING_ZOBRIST[2];
                 }
             }
         }
@@ -315,42 +412,52 @@ void make_move(Move move, bool permanent) {
         if (promotion != 0) {
             if (side == 1) {
                 whitePawns = empty_square(whitePawns, to);
+                zobristKey ^= WHITE_PAWN_ZOBRIST[to];
 
                 // promote to knight
                 if (promotion == 1) {
                     whiteKnights = fill_square(whiteKnights, to);
+                    zobristKey ^= WHITE_KNIGHT_ZOBRIST[to];
                 }
                 // promote to bishop
                 else if (promotion == 2) {
                     whiteBishops = fill_square(whiteBishops, to);
+                    zobristKey ^= WHITE_BISHOP_ZOBRIST[to];
                 }
                 // promote to rook
                 else if (promotion == 3) {
                     whiteRooks = fill_square(whiteRooks, to);
+                    zobristKey ^= WHITE_ROOK_ZOBRIST[to];
                 }
                 // promote to queen
                 else {
                     whiteQueens = fill_square(whiteQueens, to);
+                    zobristKey ^= WHITE_QUEEN_ZOBRIST[to];
                 }
             }
             else {
                 blackPawns = empty_square(blackPawns, to);
+                zobristKey ^= BLACK_PAWN_ZOBRIST[to];
 
                 // promote to knight
                 if (promotion == 1) {
                     blackKnights = fill_square(blackKnights, to);
+                    zobristKey ^= BLACK_KNIGHT_ZOBRIST[to];
                 }
                 // promote to bishop
                 else if (promotion == 2) {
                     blackBishops = fill_square(blackBishops, to);
+                    zobristKey ^= BLACK_BISHOP_ZOBRIST[to];
                 }
                 // promote to rook
                 else if (promotion == 3) {
                     blackRooks = fill_square(blackRooks, to);
+                    zobristKey ^= BLACK_ROOK_ZOBRIST[to];
                 }
                 // promote to queen
                 else {
                     blackQueens = fill_square(blackQueens, to);
+                    zobristKey ^= BLACK_QUEEN_ZOBRIST[to];
                 }
             }
         }
@@ -373,6 +480,8 @@ void make_move(Move move, bool permanent) {
     newGameState[13] = blackKings;
 
     newGameState[14] = otherGameInfo;
+
+    g_zobristStack[g_root + g_ply] = zobristKey;
 }
 
 void unmake_move() {

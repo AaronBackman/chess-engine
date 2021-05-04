@@ -10,6 +10,7 @@
 #include "LegalityChecks.h"
 #include "Utilities.h"
 #include "Uci.h"
+#include "Random.h"
 
 void main(void) {
     uci_listen();

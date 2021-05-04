@@ -133,3 +133,24 @@ bool check_if_no_legal_moves(int side) {
 
     return noMoves;
 }
+
+bool is_repeating() {
+    u64 currentZobrist = g_zobristStack[g_root + g_ply];
+    u64 oldZobrist;
+    int ply = 4;
+    int start = g_root + g_ply;
+
+    while (true) {
+        if (start - ply < 0) {
+            return false;
+        }
+
+        oldZobrist = g_zobristStack[start - ply];
+        if (currentZobrist == oldZobrist) {
+            return true;
+        }
+
+
+        ply += 2;
+    }
+}

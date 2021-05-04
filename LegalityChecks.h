@@ -6,4 +6,6 @@ bool is_square_threatened(int originSquare, int side);
 bool is_king_threatened();
 bool check_if_no_legal_moves(int side);
 
+bool is_repeating();
+
 #endif

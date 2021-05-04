@@ -22,9 +22,12 @@ typedef unsigned char BYTE;
 #define ALPHA_BETA_MIN -1000000000
 #define ALPHA_BETA_MAX 1000000000
 #define DRAW 0
+#define CONTEMPT 50
 #define CHECKMATE 10000000
 
 extern u64 g_gameStateStack[MAX_DEPTH + MAX_TURNS][15];
+// zobrist hash keys of positions
+extern u64 g_zobristStack[MAX_DEPTH + MAX_TURNS];
 extern int g_root;
 extern int g_cancelThread;
 extern int g_ply;

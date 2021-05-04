@@ -147,6 +147,8 @@ void uci_listen() {
         return;
       }
 
+      printf("calctime: %d\n", calcTime);
+
       pthread_create(&threadId, NULL, search, NULL);
       pthread_detach(threadId);
 
@@ -165,7 +167,6 @@ void uci_listen() {
           usleep(calcTime);
       }
 
-      pthread_cancel(threadId);
       g_cancelThread = 1;
       moveStr = (char*) malloc(8 * sizeof(char));
       move_to_string(moveStr, g_selectedMove);

@@ -3,6 +3,7 @@
 
 #include "Constants.h"
 #include "Utilities.h"
+#include "Random.h"
 
 u64 SINGLE_BIT_LOOKUP[64];
 u64 NORTH_EAST_LOOKUP_PATTERN[64];
@@ -202,6 +203,23 @@ unsigned char CMD[64] = {
 };
 
 unsigned char MD[64][64];
+
+
+u64 WHITE_PAWN_ZOBRIST[64];
+u64 WHITE_KNIGHT_ZOBRIST[64];
+u64 WHITE_BISHOP_ZOBRIST[64];
+u64 WHITE_ROOK_ZOBRIST[64];
+u64 WHITE_QUEEN_ZOBRIST[64];
+u64 WHITE_KING_ZOBRIST[64];
+u64 BLACK_PAWN_ZOBRIST[64];
+u64 BLACK_KNIGHT_ZOBRIST[64];
+u64 BLACK_BISHOP_ZOBRIST[64];
+u64 BLACK_ROOK_ZOBRIST[64];
+u64 BLACK_QUEEN_ZOBRIST[64];
+u64 BLACK_KING_ZOBRIST[64];
+u64 BLACK_TO_MOVE_ZOBRIST;
+u64 CASTLING_ZOBRIST[4];
+u64 ENPASSANT_FILE_ZOBRIST[8];
 
 // manhattan distance between 2 squares
 int calc_manhattan_distance(int sq1, int sq2) {
@@ -559,6 +577,35 @@ void set_black_pawn_move_lookup() {
   }
 }
 
+void initZobrist() {
+    int i;
+
+    for (i = 0; i < 64; i++) {
+        WHITE_PAWN_ZOBRIST[i] = getRNG();
+        WHITE_KNIGHT_ZOBRIST[i] = getRNG();
+        WHITE_BISHOP_ZOBRIST[i] = getRNG();
+        WHITE_ROOK_ZOBRIST[i] = getRNG();
+        WHITE_QUEEN_ZOBRIST[i] = getRNG();
+        WHITE_KING_ZOBRIST[i] = getRNG();
+        BLACK_PAWN_ZOBRIST[i] = getRNG();
+        BLACK_KNIGHT_ZOBRIST[i] = getRNG();
+        BLACK_BISHOP_ZOBRIST[i] = getRNG();
+        BLACK_ROOK_ZOBRIST[i] = getRNG();
+        BLACK_QUEEN_ZOBRIST[i] = getRNG();
+        BLACK_KING_ZOBRIST[i] = getRNG();
+    }
+
+    BLACK_TO_MOVE_ZOBRIST = getRNG();
+
+    for (i = 0; i < 4; i++) {
+        CASTLING_ZOBRIST[i] = getRNG();
+    }
+
+    for (i = 0; i < 8; i++) {
+        ENPASSANT_FILE_ZOBRIST[i] = getRNG();
+    }
+}
+
 void set_lookup_tables() {
     init_manhattan_distance_arr();
     set_single_bit_lookup();
@@ -581,4 +628,6 @@ void set_lookup_tables() {
     set_white_pawn_move_lookup();
     set_black_pawn_attack_lookup();
     set_black_pawn_move_lookup();
+
+    initZobrist();
 }

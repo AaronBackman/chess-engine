@@ -2,8 +2,10 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <stdio.h>
 
 #include "Utilities.h"
+#include "Init.h"
 #include "MakeMove.h"
 #include "Constants.h"
 
@@ -30,6 +32,8 @@ void parse_uci_position(char *fenStr) {
     u64 blackKings = 0LLU;
 
     u64 otherGameInfo = 0LLU;
+
+    u64 zobristKey = 0LLU;
 
     int fenStrLength = strlen(fenStr);
 
@@ -71,51 +75,75 @@ void parse_uci_position(char *fenStr) {
                 if (fenChar == 'p') {
                     blackPawns = fill_square(blackPawns, index);
                     blackPieces = fill_square(blackPieces, index);
+
+                    zobristKey ^= BLACK_PAWN_ZOBRIST[index];
                 }
                 else if (fenChar == 'n') {
                     blackKnights = fill_square(blackKnights, index);
                     blackPieces = fill_square(blackPieces, index);
+
+                    zobristKey ^= BLACK_KNIGHT_ZOBRIST[index];
                 }
                 else if (fenChar == 'b') {
                     blackBishops = fill_square(blackBishops, index);
                     blackPieces = fill_square(blackPieces, index);
+
+                    zobristKey ^= BLACK_BISHOP_ZOBRIST[index];
                 }
                 else if (fenChar == 'r') {
                     blackRooks = fill_square(blackRooks, index);
                     blackPieces = fill_square(blackPieces, index);
+
+                    zobristKey ^= BLACK_ROOK_ZOBRIST[index];
                 }
                 else if (fenChar == 'q') {
                     blackQueens = fill_square(blackQueens, index);
                     blackPieces = fill_square(blackPieces, index);
+
+                    zobristKey ^= BLACK_QUEEN_ZOBRIST[index];
                 }
                 else if (fenChar == 'k') {
                     blackKings = fill_square(blackKings, index);
                     blackPieces = fill_square(blackPieces, index);
+
+                    zobristKey ^= BLACK_KING_ZOBRIST[index];
                 }
 
                 else if (fenChar == 'P') {
                     whitePawns = fill_square(whitePawns, index);
                     whitePieces = fill_square(whitePieces, index);
+
+                    zobristKey ^= WHITE_PAWN_ZOBRIST[index];
                 }
                 else if (fenChar == 'N') {
                     whiteKnights = fill_square(whiteKnights, index);
                     whitePieces = fill_square(whitePieces, index);
+
+                    zobristKey ^= WHITE_KNIGHT_ZOBRIST[index];
                 }
                 else if (fenChar == 'B') {
                     whiteBishops = fill_square(whiteBishops, index);
                     whitePieces = fill_square(whitePieces, index);
+
+                    zobristKey ^= WHITE_BISHOP_ZOBRIST[index];
                 }
                 else if (fenChar == 'R') {
                     whiteRooks = fill_square(whiteRooks, index);
                     whitePieces = fill_square(whitePieces, index);
+
+                    zobristKey ^= WHITE_ROOK_ZOBRIST[index];
                 }
                 else if (fenChar == 'Q') {
                     whiteQueens = fill_square(whiteQueens, index);
                     whitePieces = fill_square(whitePieces, index);
+
+                    zobristKey ^= WHITE_QUEEN_ZOBRIST[index];
                 }
                 else if (fenChar == 'K') {
                     whiteKings = fill_square(whiteKings, index);
                     whitePieces = fill_square(whitePieces, index);
+
+                    zobristKey ^= WHITE_KING_ZOBRIST[index];
                 }
 
                 if (fenChar == '/') {
@@ -144,6 +172,7 @@ void parse_uci_position(char *fenStr) {
                 // black to move
                 else if (fenChar == 'b') {
                     otherGameInfo = set_side_to_play(otherGameInfo, -1);
+                    zobristKey ^= BLACK_TO_MOVE_ZOBRIST;
                 }
 
                 if (fenChar == ' ') {
@@ -154,18 +183,22 @@ void parse_uci_position(char *fenStr) {
                 // white castles kingside (short)
                 if (fenChar == 'K') {
                     otherGameInfo = set_white_castle_short(otherGameInfo);
+                    zobristKey ^= CASTLING_ZOBRIST[0];
                 }
                 // white castles queenside (long)
                 else if (fenChar == 'Q') {
                     otherGameInfo = set_white_castle_long(otherGameInfo);
+                    zobristKey ^= CASTLING_ZOBRIST[1];
                 }
                 // black castles kingside (short)
                 else if (fenChar == 'k') {
                     otherGameInfo = set_black_castle_short(otherGameInfo);
+                    zobristKey ^= CASTLING_ZOBRIST[2];
                 }
                 // black castles queenside (long)
                 else if (fenChar == 'q') {
                     otherGameInfo = set_black_castle_long(otherGameInfo);
+                    zobristKey ^= CASTLING_ZOBRIST[3];
                 }
 
                 if (fenChar == ' ') {
@@ -188,6 +221,7 @@ void parse_uci_position(char *fenStr) {
                 else {
                     // convert character to column index: example: d -> 3
                     int column = fenChar - 'a';
+                    zobristKey ^= ENPASSANT_FILE_ZOBRIST[column];
                     // column number is the next character
                     int row = fenStr[i + 1] - '1';
                     // index used by fen is the square that is behind the moved pawn
@@ -231,6 +265,53 @@ void parse_uci_position(char *fenStr) {
         blackQueens = 0b0000100000000000000000000000000000000000000000000000000000000000LLU;
         blackKings = 0b0001000000000000000000000000000000000000000000000000000000000000LLU;
 
+        zobristKey ^= WHITE_PAWN_ZOBRIST[8];
+        zobristKey ^= WHITE_PAWN_ZOBRIST[9];
+        zobristKey ^= WHITE_PAWN_ZOBRIST[10];
+        zobristKey ^= WHITE_PAWN_ZOBRIST[11];
+        zobristKey ^= WHITE_PAWN_ZOBRIST[12];
+        zobristKey ^= WHITE_PAWN_ZOBRIST[13];
+        zobristKey ^= WHITE_PAWN_ZOBRIST[14];
+        zobristKey ^= WHITE_PAWN_ZOBRIST[15];
+
+        zobristKey ^= WHITE_KNIGHT_ZOBRIST[1];
+        zobristKey ^= WHITE_KNIGHT_ZOBRIST[6];
+
+        zobristKey ^= WHITE_BISHOP_ZOBRIST[2];
+        zobristKey ^= WHITE_BISHOP_ZOBRIST[5];
+
+        zobristKey ^= WHITE_ROOK_ZOBRIST[0];
+        zobristKey ^= WHITE_ROOK_ZOBRIST[7];
+
+        zobristKey ^= WHITE_QUEEN_ZOBRIST[3];
+        zobristKey ^= WHITE_KING_ZOBRIST[4];
+
+        zobristKey ^= BLACK_PAWN_ZOBRIST[48];
+        zobristKey ^= BLACK_PAWN_ZOBRIST[49];
+        zobristKey ^= BLACK_PAWN_ZOBRIST[50];
+        zobristKey ^= BLACK_PAWN_ZOBRIST[51];
+        zobristKey ^= BLACK_PAWN_ZOBRIST[52];
+        zobristKey ^= BLACK_PAWN_ZOBRIST[53];
+        zobristKey ^= BLACK_PAWN_ZOBRIST[54];
+        zobristKey ^= BLACK_PAWN_ZOBRIST[55];
+
+        zobristKey ^= BLACK_KNIGHT_ZOBRIST[57];
+        zobristKey ^= BLACK_KNIGHT_ZOBRIST[62];
+
+        zobristKey ^= BLACK_BISHOP_ZOBRIST[58];
+        zobristKey ^= BLACK_BISHOP_ZOBRIST[61];
+
+        zobristKey ^= BLACK_ROOK_ZOBRIST[56];
+        zobristKey ^= BLACK_ROOK_ZOBRIST[63];
+
+        zobristKey ^= BLACK_QUEEN_ZOBRIST[59];
+        zobristKey ^= BLACK_KING_ZOBRIST[60];
+
+        zobristKey ^= CASTLING_ZOBRIST[0];
+        zobristKey ^= CASTLING_ZOBRIST[1];
+        zobristKey ^= CASTLING_ZOBRIST[2];
+        zobristKey ^= CASTLING_ZOBRIST[3];
+
         otherGameInfo = set_side_to_play(otherGameInfo, 1);
         otherGameInfo = set_white_castle_short(otherGameInfo);
         otherGameInfo = set_white_castle_long(otherGameInfo);
@@ -262,6 +343,9 @@ void parse_uci_position(char *fenStr) {
     gameState[13] = blackKings;
 
     gameState[14] = otherGameInfo;
+    g_zobristStack[0] = zobristKey;
+
+    printf("zobrist: %llu\n", g_zobristStack[g_root + g_ply]);
 
     if (movesAfterPosition) {
         int i = moveStartIndex;
@@ -354,6 +438,8 @@ void parse_uci_position(char *fenStr) {
             //printf ("enpassant allowed: %d, enpassant square: %d\n", enPassantAllowed, enPassantSquare);
             
             make_move(nextMove, true);
+
+            //printf("zobrist: %llu\n", g_zobristStack[g_root + g_ply]);
 
             // in uci newline terminates commands
             if (fenStr[i] == '\n') {

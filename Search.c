@@ -26,6 +26,8 @@ u64 quiescentNodeCount = 0;
 bool checkmate;
 bool losingCheckMate;
 
+int rootSideToMove;
+
 // parameters are the count of each piece type and color on the board (eg. wp == number white pawns)
 // used to calculate the tapered eval
 int calc_phase(int wp, int bp, int wn, int bn, int wb, int bb, int wr, int br, int wq, int bq) {
@@ -431,7 +433,7 @@ int q_search(int alpha, int beta, int side) {
     quiescentNodeCount++;
 
     if (g_cancelThread == 1) {
-        printf("exit\n");
+        printf("cancel\n");
         g_cancelThread = 0;
         pthread_exit(NULL);
     }
@@ -483,7 +485,17 @@ int negamax(int alpha, int beta, int depth, int side) {
 
     if (g_cancelThread == 1) {
         g_cancelThread = 0;
+        printf("cancel\n");
         pthread_exit(NULL);
+    }
+
+    if (is_repeating()) {
+        if (get_side_to_play(g_gameStateStack[g_root + g_ply][14]) == rootSideToMove) {
+            return DRAW - CONTEMPT;
+        }
+        else {
+            return DRAW + CONTEMPT;
+        }
     }
 
     if (depth <= 0) {
@@ -548,6 +560,8 @@ Move negamax_root(int alpha, int beta, int depth, int side) {
     // attackset is generated alongside the moves
     attackSet = g_attackSets[g_ply];
     sort_moves(movesArr, attackSet, moveCount, side);
+
+    rootSideToMove = get_side_to_play(g_gameStateStack[g_root + g_ply][14]);
 
     for (i = 0; i < moveCount; i++)  {
         Move move = movesArr[i];
