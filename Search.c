@@ -17,6 +17,7 @@
 
 Move g_selectedMove;
 int searchedDepth;
+int currentScore;
 
 int ORIGINAL_GAMES_STATE_STACK_POINTER;
 int ORIGINAL_MOVE_STACK_POINTER;
@@ -482,6 +483,7 @@ int negamax(int alpha, int beta, int depth, int side) {
     int legalMoveCount = 0;
     int i;
     int score;
+    int bestScore;
     Move *movesArr = g_moveStack[g_ply];
     u64 attackSet;
     Move bestMove;
@@ -499,36 +501,40 @@ int negamax(int alpha, int beta, int depth, int side) {
         int ttDepth = ttEntry.depth;
         int ttNodeType = ttEntry.nodeType;
         hashMove = ttEntry.hashMove;
-        score = ttEntry.score;
 
         // if entry is deep enough, result can be used directly
-        if (ttDepth == depth) {
+        if (ttDepth >= depth) {
             transpositionCount++;
+
+            // checkmate ply re-adjustment
+            if (ttEntry.score > 100000) {
+                ttEntry.score -= g_ply;
+            }
+            else if (ttEntry.score < -100000) {
+                ttEntry.score += g_ply;
+            }
+
             // score is exact
             if (ttNodeType == PV_NODE) {
-                return score;
+                return ttEntry.score;
             }
             // score is lower bound
             else if (ttNodeType == CUT_NODE) {
-                alpha = score;
+                if (ttEntry.score > alpha) {
+                    alpha = ttEntry.score;
+                }
             }
             // score is upper bound
             else if (ttNodeType == ALL_NODE) {
-                beta = score;
+                if (ttEntry.score < beta) {
+                    beta = ttEntry.score;
+                }
             }
-            // should never happen
-            else {
-                printf("Invalid zobrist: %d\n", zobristKey);
-                fflush(stdout);
-                assert(0 != 0);
-            }
-        }
-        else if (ttDepth > depth && ttNodeType == PV_NODE) {
-            transpositionCount++;
-            return score;
-        }
 
-        foundHashMove = true;
+            if (alpha >= beta) {
+                return alpha;
+            }
+        }
     }
 
     if (g_cancelThread == 1) {
@@ -537,14 +543,21 @@ int negamax(int alpha, int beta, int depth, int side) {
         pthread_exit(NULL);
     }
 
+    /*
     if (is_repeating()) {
-        if (get_side_to_play(g_gameStateStack[g_root + g_ply].meta) == rootSideToMove) {
-            return DRAW - CONTEMPT;
+        score = DRAW;
+
+        if (score >= beta) {
+            return beta;
         }
-        else {
-            return DRAW + CONTEMPT;
+
+        if (score > alpha) {
+            alpha = score;
         }
+
+        return alpha;
     }
+    */
 
     if (depth <= 0) {
         nodeCount++;
@@ -565,9 +578,13 @@ int negamax(int alpha, int beta, int depth, int side) {
 
             score = -negamax(-beta, -alpha, depth - 1, -side);
 
+            if (score > bestScore) {
+                bestScore = score;
+            }
+
             if (score >= beta) {
                 unmake_move();
-                add_tt_entry(zobristKey, beta, move, CUT_NODE, depth);
+                add_tt_entry(zobristKey, score, move, CUT_NODE, depth);
                 return beta;
             }
 
@@ -584,21 +601,31 @@ int negamax(int alpha, int beta, int depth, int side) {
     if (legalMoveCount == 0) {
         if (!is_king_threatened(side)) {
             // a draw if king is not threatened
-            return DRAW;
+            score = DRAW;
         }
         else {
             // loses if king is lost => return a very bad score
-            return -CHECKMATE;
+            score = -CHECKMATE + g_ply;
         }
+
+        if (score >= beta) {
+            return beta;
+        }
+
+        if (score > alpha) {
+            alpha = score;
+        }
+
+        return alpha;
     }
 
     // PV node
     if (alphaRise) {
-        add_tt_entry(zobristKey, score, bestMove, PV_NODE, depth);
+        add_tt_entry(zobristKey, alpha, bestMove, PV_NODE, depth);
     }
     // ALL node
     else {
-        add_tt_entry(zobristKey, alpha, create_move(0, 0, INVALID_MOVE), ALL_NODE, depth);
+        add_tt_entry(zobristKey, bestScore, create_move(0, 0, INVALID_MOVE), ALL_NODE, depth);
     }
 
     return alpha;
@@ -623,44 +650,6 @@ Move negamax_root(int alpha, int beta, int depth, int side) {
 
     ttEntry = tTable[ttIndex];
 
-    if (ttEntry.zobristKey == zobristKey) {
-        int ttDepth = ttEntry.depth;
-        int ttNodeType = ttEntry.nodeType;
-        hashMove = ttEntry.hashMove;
-        score = ttEntry.score;
-
-        // if entry is deep enough, result can be used directly
-        if (ttDepth == depth) {
-            transpositionCount++;
-
-            // score is exact
-            if (ttNodeType == PV_NODE) {
-                return hashMove;
-            }
-            // score is lower bound
-            else if (ttNodeType == CUT_NODE) {
-                alpha = score;
-                bestMove = hashMove;
-            }
-            // score is upper bound
-            else if (ttNodeType == ALL_NODE) {
-                beta = score;
-            }
-            // should never happen
-            else {
-                printf("Invalid zobrist: %d\n", zobristKey);
-                fflush(stdout);
-                assert(0 != 0);
-            }
-        }
-        else if (ttDepth > depth && ttNodeType == PV_NODE) {
-            transpositionCount++;
-            return hashMove;
-        }
-
-        foundHashMove = true;
-    }
-
     moveCount = generate_moves(movesArr, side);
     // attackset is generated alongside the moves
     attackSet = g_attackSets[g_ply];
@@ -675,11 +664,6 @@ Move negamax_root(int alpha, int beta, int depth, int side) {
 
         if (!is_king_threatened(side)) {
             score = -negamax(-beta, -alpha, depth - 1, -side);
-
-            if (score > 100000) {
-                checkmate = true;
-                return move;
-            }
 
             //printf("score: %d\n", score);
             //printf("from: %d, to: %d\n", move.from, move.to);
@@ -703,12 +687,25 @@ Move negamax_root(int alpha, int beta, int depth, int side) {
 
     // PV-node
     if (alphaRise) {
-        add_tt_entry(zobristKey, score, bestMove, PV_NODE, depth);
+        add_tt_entry(zobristKey, alpha, bestMove, PV_NODE, depth);
     }
 
     if (alpha < -100000) {
-        losingCheckMate = true;
+        int distanceToMate = alpha + CHECKMATE;
+
+        if (depth >= distanceToMate) {
+            losingCheckMate = true;
+        }
     }
+    else if (alpha > 100000) {
+        int distanceToMate = CHECKMATE - alpha;
+
+        if (depth >= distanceToMate) {
+            checkmate = true;
+        }
+    }
+
+    currentScore = alpha;
 
     return bestMove;
 }
@@ -728,7 +725,7 @@ void *search(void *vargp) {
 
     pthread_cleanup_push(clean_up_handler, vargp);
 
-    printf("game: %d, move: %d\n", g_root, g_ply);
+    currentScore = 0;
 
     checkmate = false;
     losingCheckMate = false;
@@ -742,10 +739,12 @@ void *search(void *vargp) {
 
         g_selectedMove = negamax_root(ALPHA_BETA_MIN, ALPHA_BETA_MAX, searchedDepth + 1, side);
 
-        printf("searched depth: %d\n", searchedDepth);
-        printf("nodes: %d\n", nodeCount);
-        printf("quiescent: %d\n", quiescentNodeCount);
-        printf("transpositions: %d\n", transpositionCount);
+        printf("searched depth: %d ", searchedDepth);
+        printf("nodes: %d ", nodeCount);
+        printf("quiescent: %d ", quiescentNodeCount);
+        printf("transpositions: %d ", transpositionCount);
+        printf("score: %d\n", currentScore);
+        fflush(stdout);
         searchedDepth++;
 
         if (checkmate) {
@@ -753,11 +752,6 @@ void *search(void *vargp) {
             break;
         }
         else if (losingCheckMate) {
-            if (searchedDepth >= 2) {
-                // in iterative deepening this avoids the unavoidable checkmate the longest
-                // if depth == 1, move doestnt matter
-                g_selectedMove = previousMove;
-            }
             checkmate = true;
             printf("losing checkmate\n");
             break;

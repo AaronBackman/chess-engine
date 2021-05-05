@@ -77,7 +77,7 @@ void uci_listen() {
       parse_uci_position(input);
       positionReady = true;
 
-      //print_board();
+      print_board();
       
       free(input);
       continue;

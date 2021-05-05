@@ -1,0 +1,2 @@
+// version 5
+uncommenting hash tables for minimax (non root) causes not taking fastest way to checkmate, otherwise vey much improved currently

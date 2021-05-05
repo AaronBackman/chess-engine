@@ -250,5 +250,15 @@ int get_manhattan_distance(int sq1, int sq2) {
 }
 
 void add_tt_entry(u64 zobristKey, int score, Move hashMove, u16 nodeType, u16 depth) {
-    tTable[zobristKey % TRANSPOSITION_TABLE_SIZE] = (TranspositionTableEntry){.zobristKey = zobristKey, .score = score, .hashMove = hashMove, .nodeType = nodeType, .depth = depth};
+    TranspositionTableEntry ttEntry = (TranspositionTableEntry){.zobristKey = zobristKey, .score = score, .hashMove = hashMove, .nodeType = nodeType, .depth = depth};
+    
+    // checkmate ply adjustment
+    if (ttEntry.score > 100000) {
+        ttEntry.score += g_ply;
+    }
+    else if (ttEntry.score < -100000) {
+        ttEntry.score -= g_ply;
+    }
+
+    tTable[zobristKey % TRANSPOSITION_TABLE_SIZE] = ttEntry;
 }
