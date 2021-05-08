@@ -262,3 +262,52 @@ void add_tt_entry(u64 zobristKey, int score, Move hashMove, u16 nodeType, u16 de
 
     tTable[zobristKey % TRANSPOSITION_TABLE_SIZE] = ttEntry;
 }
+
+u64 get_zobrist(Board board) {
+    u64 zobrist = 0;
+    int i;
+
+    for (i = 0; i < 64; i++) {
+        if (square_occupied(board.whitePieces | board.blackPieces, i)) {
+            if (square_occupied(board.pawns & board.whitePieces, i)) zobrist ^= WHITE_PAWN_ZOBRIST[i];
+            if (square_occupied(board.pawns & board.blackPieces, i)) zobrist ^= BLACK_PAWN_ZOBRIST[i];
+
+            if (square_occupied(board.knights & board.whitePieces, i)) zobrist ^= WHITE_KNIGHT_ZOBRIST[i];
+            if (square_occupied(board.knights & board.blackPieces, i)) zobrist ^= BLACK_KNIGHT_ZOBRIST[i];
+
+            if (square_occupied(board.bishops & board.whitePieces, i)) zobrist ^= WHITE_BISHOP_ZOBRIST[i];
+            if (square_occupied(board.bishops & board.blackPieces, i)) zobrist ^= BLACK_BISHOP_ZOBRIST[i];
+
+            if (square_occupied(board.rooks & board.whitePieces, i)) zobrist ^= WHITE_ROOK_ZOBRIST[i];
+            if (square_occupied(board.rooks & board.blackPieces, i)) zobrist ^= BLACK_ROOK_ZOBRIST[i];
+
+            if (square_occupied(board.queens & board.whitePieces, i)) zobrist ^= WHITE_QUEEN_ZOBRIST[i];
+            if (square_occupied(board.queens & board.blackPieces, i)) zobrist ^= BLACK_QUEEN_ZOBRIST[i];
+
+            if (square_occupied(board.kings & board.whitePieces, i)) zobrist ^= WHITE_KING_ZOBRIST[i];
+            if (square_occupied(board.kings & board.blackPieces, i)) zobrist ^= BLACK_KING_ZOBRIST[i];
+        }
+    }
+
+    if (get_side_to_play(board.meta) == BLACK) zobrist ^= BLACK_TO_MOVE_ZOBRIST;
+
+    if (can_white_castle_short(board.meta)) zobrist ^= CASTLING_ZOBRIST[0];
+    if (can_white_castle_long(board.meta)) zobrist ^= CASTLING_ZOBRIST[1];
+    if (can_black_castle_short(board.meta)) zobrist ^= CASTLING_ZOBRIST[2];
+    if (can_black_castle_long(board.meta)) zobrist ^= CASTLING_ZOBRIST[3];
+
+    if (is_enpassant_allowed(board.meta)) zobrist ^= ENPASSANT_FILE_ZOBRIST[get_enpassant_square(board.meta) % 8];
+
+    return zobrist;
+}
+
+void print_in_binary(u64 n) {
+    int i;
+
+    for (i = 63; i >= 0; i--) {
+        if ((n & SINGLE_BIT_LOOKUP[i]) == 0) printf("0");
+        else printf("1");
+    }
+
+    printf("\n");
+}

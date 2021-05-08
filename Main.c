@@ -16,4 +16,4 @@ void main(void) {
     uci_listen();
 }
 
-// compile with gcc -pthread -o Program *.c
+// compile with gcc -pthread -O3 -o Program *.c

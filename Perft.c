@@ -27,6 +27,10 @@ u64 perft(int depth, int side) {
 
   for (i = 0; i < moveCount; i++) {
     make_move(moves[i], false);
+
+    // for testing, slows the function significantly, so should be commented out most of the time
+    // assert(g_zobristStack[g_root + g_ply] == get_zobrist(g_gameStateStack[g_root + g_ply]));
+
     if (!is_king_threatened(side)) {
       nodes += perft(depth - 1, -side);
     }
@@ -43,8 +47,14 @@ void perft_divide(int depth) {
   u64 nodes = 0;
   int side = get_side_to_play(g_gameStateStack[g_root].meta);
 
-  if (depth == 0) 
+  if (depth == 0) {
     return;
+  }
+
+  printf("zobrist in perft: real vs comparison, startpos\n");
+  print_in_binary(g_zobristStack[g_root + g_ply]);
+  print_in_binary(get_zobrist(g_gameStateStack[g_root + g_ply]));
+  printf("\n");
 
   moveCount = generate_moves(moves, side);
   for (i = 0; i < moveCount; i++) {
@@ -52,6 +62,15 @@ void perft_divide(int depth) {
     Move move = moves[i];
 
     make_move(move, false);
+
+    // for testing zobrist keys
+    /*
+    printf("zobrist in perft: real vs comparison\n");
+    print_in_binary(g_zobristStack[g_root + g_ply]);
+    print_in_binary(get_zobrist(g_gameStateStack[g_root + g_ply]));
+    printf("\n");
+    */
+
     if (!is_king_threatened(side)) {
       char *moveNotation;
       char *moveNotationFrom;

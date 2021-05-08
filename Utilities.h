@@ -79,4 +79,9 @@ void print_board();
 
 void add_tt_entry(u64 zobristKey, int score, Move hashMove, u16 nodeType, u16 depth);
 
+// very inefficient, only used in testing
+u64 get_zobrist(Board board);
+
+void print_in_binary(u64 n);
+
 #endif

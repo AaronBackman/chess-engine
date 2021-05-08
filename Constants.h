@@ -40,6 +40,9 @@ typedef unsigned char BYTE;
 #define ROOK_PROMOTION_CAPTURE_MOVE 14
 #define QUEEN_PROMOTION_CAPTURE_MOVE 15
 
+#define WHITE 1
+#define BLACK -1
+
 #define PV_NODE 1
 #define ALL_NODE 2
 #define CUT_NODE 3

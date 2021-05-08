@@ -56,13 +56,16 @@ void make_move(Move move, bool permanent) {
     // castling is handled separately because it is the only move that moves 2 pieces at the same time
     if (code == KING_CASTLE_MOVE || code == QUEEN_CASTLE_MOVE) {
         // white moving
-        if (side == 1) {
+        if (side == WHITE) {
             // set white castling to 0
-            otherGameInfo = remove_white_castle_short(otherGameInfo);
-            otherGameInfo = remove_white_castle_long(otherGameInfo);
-
-            zobristKey ^= CASTLING_ZOBRIST[0];
-            zobristKey ^= CASTLING_ZOBRIST[1];
+            if (can_white_castle_short(otherGameInfo)) {
+                otherGameInfo = remove_white_castle_short(otherGameInfo);
+                zobristKey ^= CASTLING_ZOBRIST[0];
+            }
+            if (can_white_castle_long(otherGameInfo)) {
+                otherGameInfo = remove_white_castle_long(otherGameInfo);
+                zobristKey ^= CASTLING_ZOBRIST[1];
+            }
 
             // kingside
             if (code == KING_CASTLE_MOVE) {
@@ -100,11 +103,14 @@ void make_move(Move move, bool permanent) {
         // black moving
         else {
             // set black castling to 0
-            otherGameInfo = remove_black_castle_short(otherGameInfo);
-            otherGameInfo = remove_black_castle_long(otherGameInfo);
-
-            zobristKey ^= CASTLING_ZOBRIST[2];
-            zobristKey ^= CASTLING_ZOBRIST[3];
+            if (can_black_castle_short(otherGameInfo)) {
+                otherGameInfo = remove_black_castle_short(otherGameInfo);
+                zobristKey ^= CASTLING_ZOBRIST[2];
+            }
+            if (can_black_castle_long(otherGameInfo)) {
+                otherGameInfo = remove_black_castle_long(otherGameInfo);
+                zobristKey ^= CASTLING_ZOBRIST[3];
+            }
 
             // kingside
             if (code == KING_CASTLE_MOVE) {
@@ -143,12 +149,9 @@ void make_move(Move move, bool permanent) {
 
     else if (code == EP_CAPTURE_MOVE) {
         int enpassantSquare = get_enpassant_square(otherGameInfo);
-        int enpassantColumn = enpassantSquare % 8;
         u64 enPassantBit = SINGLE_BIT_LOOKUP[enpassantSquare];
-
-        zobristKey ^= ENPASSANT_FILE_ZOBRIST[enpassantColumn];
         
-        if (side == 1) {
+        if (side == WHITE) {
             whitePieces ^= movePattern;
             whitePawns ^= movePattern;
 
@@ -176,7 +179,7 @@ void make_move(Move move, bool permanent) {
 
     // a normal move or promotion
     else {
-        if ((side == -1) && (code == CAPTURE_MOVE || code >= KNIGHT_PROMOTION_CAPTURE_MOVE)) {
+        if ((side == BLACK) && (code == CAPTURE_MOVE || code >= KNIGHT_PROMOTION_CAPTURE_MOVE)) {
             whitePieces = empty_square(whitePieces, to);
 
             if (square_occupied(whitePawns, to)) {
@@ -222,7 +225,7 @@ void make_move(Move move, bool permanent) {
         }
 
 
-        else if ((side == 1) && (code == CAPTURE_MOVE || code >= KNIGHT_PROMOTION_CAPTURE_MOVE)) {
+        else if ((side == WHITE) && (code == CAPTURE_MOVE || code >= KNIGHT_PROMOTION_CAPTURE_MOVE)) {
             blackPieces = empty_square(blackPieces, to);
 
             if (square_occupied(blackPawns, to)) {
@@ -267,7 +270,7 @@ void make_move(Move move, bool permanent) {
             }
         }
 
-        if (side == 1) {
+        if (side == WHITE) {
             whitePieces ^= movePattern;
 
             if (square_occupied(whitePawns, from)) {
