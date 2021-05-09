@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "Move.h"
 #include "Board.h"
@@ -45,11 +46,16 @@ void perft_divide(int depth) {
   int moveCount;
   int i;
   u64 nodes = 0;
+  clock_t start;
+  clock_t end;
+  int timeInMillis;
   int side = get_side_to_play(g_gameStateStack[g_root].meta);
 
   if (depth == 0) {
     return;
   }
+
+  start = clock();
 
   printf("zobrist in perft: real vs comparison, startpos\n");
   print_in_binary(g_zobristStack[g_root + g_ply]);
@@ -97,4 +103,8 @@ void perft_divide(int depth) {
   }
 
   printf("total nodes: %llu\n\n", nodes);
+  end = clock();
+
+  timeInMillis = (int)(((double) (end - start)) / CLOCKS_PER_SEC * 1000);
+  printf("time: %d.%d\n", timeInMillis / 1000, timeInMillis % 1000);
 }

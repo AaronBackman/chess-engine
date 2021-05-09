@@ -67,11 +67,25 @@ void uci_listen() {
       parse_uci_position("position fen rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1\n");
       positionReady = true;
 
+      print_board();
+
       free(input);
       continue;
     }
 
-    if (strncmp(input, "position", 8) == 0) {
+    if (strcmp(input, "position kiwi\n") == 0) {
+      positionReady = false;
+      g_root = 0;
+      parse_uci_position("position fen r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -\n");
+      positionReady = true;
+
+      print_board();
+      
+      free(input);
+      continue;
+    }
+
+    else if (strncmp(input, "position", 8) == 0) {
       positionReady = false;
       g_root = 0;
       parse_uci_position(input);

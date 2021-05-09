@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <pthread.h>
 #include <assert.h>
+#include <time.h>
 
 #include "Constants.h"
 #include "Move.h"
@@ -30,6 +31,41 @@ bool checkmate;
 bool losingCheckMate;
 
 int rootSideToMove;
+
+int MVV_LVA[5][6] = {
+    {500, 400, 300, 200, 100, 600},
+    {1100, 1000, 900, 800, 700, 1200},
+    {1700, 1600, 1500, 1400, 1300, 1800},
+    {2300, 2200, 2100, 2000, 1900, 2400},
+    {2900, 2800, 2700, 2600, 2500, 3000}
+};
+
+int PROMOTIONS[4] = {
+    -1000,
+    -2000,
+    -3000,
+    1000
+};
+
+int MOVE_SCORES[MAX_MOVES];
+
+
+// debugging info
+u64 betaCutOffs[100][5];
+u64 betaCutOffsTotal[100];
+
+void zero_beta_cutoff() {
+    int i;
+    int j;
+
+    for (i = 0; i < 100; i++) {
+        betaCutOffsTotal[i] = 0;
+
+        for (j = 0; j < 5; j++) {
+            betaCutOffs[i][j] = 0;
+        }
+    }
+}
 
 // parameters are the count of each piece type and color on the board (eg. wp == number white pawns)
 // used to calculate the tapered eval
@@ -253,173 +289,132 @@ int evaluate(int side) {
     return score;
 }
 
-void sort_moves(Move *movesArr, u64 attackSet, int end, int side) {
+void sort_moves(Move *movesArr, int end, int side, Move hashMove, bool foundHashMove) {
     int i;
+    int j;
     int start = 0;
+    int score;
+    int MVV_Index;
+    int LVA_Index;
+    Move move;
     Board gameState = g_gameStateStack[g_root + g_ply];
     u64 whitePieces = gameState.whitePieces;
-    u64 whitePawns = gameState.pawns & whitePieces;
-    u64 whiteKnights = gameState.knights & whitePieces;
-    u64 whiteBishops = gameState.bishops & whitePieces;
-    u64 whiteRooks = gameState.rooks & whitePieces;
-    u64 whiteQueens = gameState.queens & whitePieces;
-    u64 whiteKings = gameState.kings & whitePieces;
-
     u64 blackPieces = gameState.blackPieces;
-    u64 blackPawns = gameState.pawns & blackPieces;
-    u64 blackKnights = gameState.knights & blackPieces;
-    u64 blackBishops = gameState.bishops & blackPieces;
-    u64 blackRooks = gameState.rooks & blackPieces;
-    u64 blackQueens = gameState.queens & blackPieces;
-    u64 blackKings = gameState.kings & blackPieces;
 
-    while (attackSet != 0) {
-        // most valuable victim - least valuable attacker, is used to sort attacking moves
-        int MVV_INDEX = -1;
-        int LVA_INDEX = -1;
+    u64 pawns = gameState.pawns;
+    u64 knights = gameState.knights;
+    u64 bishops = gameState.bishops;
+    u64 rooks = gameState.rooks;
+    u64 queens = gameState.queens;
+    u64 kings = gameState.kings;
 
-        u64 victims;
-        u64 attackers;
-        u64 leastValuedAttacker = 0LLU;
+    // score moves
+    for (i = start; i < end; i++) {
+        move = movesArr[i];
+        score = 0;
 
-        if (side == 1) {
-            if ((attackSet & blackQueens) != 0) {
-                victims = attackSet & blackQueens;
-            }
-            else if ((attackSet & blackRooks) != 0) {
-                victims = attackSet & blackRooks;
-            }
-            else if ((attackSet & blackBishops) != 0) {
-                victims = attackSet & blackBishops;
-            }
-            else if ((attackSet & blackKnights) != 0) {
-                victims = attackSet & blackKnights;
-            }
-            else if ((attackSet & blackPawns) != 0) {
-                victims = attackSet & blackPawns;
-            }
-            // dont need to check for kings because king cant ever be captured before game ends in checkmate
-            else {
-                // no victims left to be attacked
-                break;
-            }
-
-            MVV_INDEX = bitscan_forward(victims);
-            attackers = get_threat_map(MVV_INDEX, -side);
-
-            assert(MVV_INDEX != -1);
-
-            while (attackers != 0) {
-                if ((attackers & whitePawns) != 0) {
-                    leastValuedAttacker = attackers & whitePawns;
-                }
-                else if ((attackers & whiteKnights) != 0) {
-                    leastValuedAttacker = attackers & whiteKnights;
-                }
-                else if ((attackers & whiteBishops) != 0) {
-                    leastValuedAttacker = attackers & whiteBishops;
-                }
-                else if ((attackers & whiteRooks) != 0) {
-                    leastValuedAttacker = attackers & whiteRooks;
-                }
-                else if ((attackers & whiteQueens) != 0) {
-                    leastValuedAttacker = attackers & whiteQueens;
-                }
-                else if ((attackers & whiteKings) != 0) {
-                    leastValuedAttacker = attackers & whiteKings;
-                }
-
-                LVA_INDEX = bitscan_forward(leastValuedAttacker);
-                attackers = empty_square(attackers, LVA_INDEX);
-
-                assert(LVA_INDEX != -1);
-
-
-                for (i = start; i < end; i++) {
-                    Move move = movesArr[i];
-
-                    // if found the MVV-LVA move, sort it to the beginning
-                    if (move.from == LVA_INDEX && move.to == MVV_INDEX) {
-                        Move m = movesArr[start];
-                        movesArr[start] = move;
-                        movesArr[i] = m;
-                        start++;
-                        break;
-                    }
-                }
-            }
-
-            attackSet = empty_square(attackSet, MVV_INDEX);
+        // hash moves always first
+        if (move.from == hashMove.from && move.to == hashMove.to && move.code == hashMove.code) {
+            score += 10000;
         }
-        else {
-            if ((attackSet & whiteQueens) != 0) {
-                victims = attackSet & whiteQueens;
+
+        if (move.code == CAPTURE_MOVE || move.code == KNIGHT_PROMOTION_CAPTURE_MOVE || move.code == BISHOP_PROMOTION_CAPTURE_MOVE || move.code == ROOK_PROMOTION_CAPTURE_MOVE || move.code == QUEEN_PROMOTION_CAPTURE_MOVE) {
+            if (square_occupied(pawns, move.from)) {
+                LVA_Index = 0;
             }
-            else if ((attackSet & whiteRooks) != 0) {
-                victims = attackSet & whiteRooks;
+            else if (square_occupied(knights, move.from)) {
+                LVA_Index = 1;
             }
-            else if ((attackSet & whiteBishops) != 0) {
-                victims = attackSet & whiteBishops;
+            else if (square_occupied(bishops, move.from)) {
+                LVA_Index = 2;
             }
-            else if ((attackSet & whiteKnights) != 0) {
-                victims = attackSet & whiteKnights;
+            else if (square_occupied(rooks, move.from)) {
+                LVA_Index = 3;
             }
-            else if ((attackSet & whitePawns) != 0) {
-                victims = attackSet & whitePawns;
+            else if (square_occupied(queens, move.from)) {
+                LVA_Index = 4;
             }
-            // dont need to check for kings because king cant ever be captured before game ends in checkmate
+
+            else if (square_occupied(kings, move.from)) {
+                LVA_Index = 5;
+            }
+
+            if (square_occupied(pawns, move.to)) {
+                MVV_Index = 0;
+            }
+            else if (square_occupied(knights, move.to)) {
+                MVV_Index = 1;
+            }
+            else if (square_occupied(bishops, move.to)) {
+                MVV_Index = 2;
+            }
+            else if (square_occupied(rooks, move.to)) {
+                MVV_Index = 3;
+            }
+            else if (square_occupied(queens, move.to)) {
+                MVV_Index = 4;
+            }
             else {
-                // no victims left to be attacked
-                break;
+                assert(0 != 0);
             }
 
-            MVV_INDEX = bitscan_forward(victims);
-            attackers = get_threat_map(MVV_INDEX, -side);
+            score = MVV_LVA[MVV_Index][LVA_Index];
 
-            assert(MVV_INDEX != -1);
-
-            while (attackers != 0) {
-                if ((attackers & blackPawns) != 0) {
-                    leastValuedAttacker = attackers & blackPawns;
-                }
-                else if ((attackers & blackKnights) != 0) {
-                    leastValuedAttacker = attackers & blackKnights;
-                }
-                else if ((attackers & blackBishops) != 0) {
-                    leastValuedAttacker = attackers & blackBishops;
-                }
-                else if ((attackers & blackRooks) != 0) {
-                    leastValuedAttacker = attackers & blackRooks;
-                }
-                else if ((attackers & blackQueens) != 0) {
-                    leastValuedAttacker = attackers & blackQueens;
-                }
-                else if ((attackers & blackKings) != 0) {
-                    leastValuedAttacker = attackers & blackKings;
-                }
-
-                LVA_INDEX = bitscan_forward(leastValuedAttacker);
-                attackers = empty_square(attackers, LVA_INDEX);
-
-                assert(LVA_INDEX != -1);
-
-
-                for (i = start; i < end; i++) {
-                    Move move = movesArr[i];
-
-                    // if found the MVV-LVA move, sort it to the beginning
-                    if (move.from == LVA_INDEX && move.to == MVV_INDEX) {
-                        Move m = movesArr[start];
-                        movesArr[start] = move;
-                        movesArr[i] = m;
-                        start++;
-                        break;
-                    }
-                }
+            if (move.code == KNIGHT_PROMOTION_CAPTURE_MOVE) {
+                score += PROMOTIONS[0];
             }
-
-            attackSet = empty_square(attackSet, MVV_INDEX);
+            else if (move.code == BISHOP_PROMOTION_CAPTURE_MOVE) {
+                score += -PROMOTIONS[1];
+            }
+            else if (move.code == ROOK_PROMOTION_CAPTURE_MOVE) {
+                score += PROMOTIONS[2];
+            }
+            else if (move.code == QUEEN_PROMOTION_CAPTURE_MOVE) {
+                score += PROMOTIONS[3];
+            }
         }
+        else if (move.code == KNIGHT_PROMOTION_MOVE || move.code == BISHOP_PROMOTION_MOVE || move.code == ROOK_PROMOTION_MOVE || move.code == QUEEN_PROMOTION_MOVE) {
+            if (move.code == KNIGHT_PROMOTION_MOVE) {
+                score += PROMOTIONS[0];
+            }
+            else if (move.code == BISHOP_PROMOTION_MOVE) {
+                score += PROMOTIONS[1];
+            }
+            else if (move.code == ROOK_PROMOTION_MOVE) {
+                score += PROMOTIONS[2];
+            }
+            else if (move.code == QUEEN_PROMOTION_MOVE) {
+                score += PROMOTIONS[3];
+            }
+            else {
+                assert(0 != 0);
+            }
+        }
+
+
+        MOVE_SCORES[i] = score;
+    }
+
+    for (i = start; i < end; i++) {
+        int maxScore = MOVE_SCORES[i];
+        int maxScoreIndex = i;
+        Move m;
+
+        for (j = i + 1; j < end; j++) {
+            if (MOVE_SCORES[j] > maxScore) {
+                maxScore = MOVE_SCORES[j];
+                maxScoreIndex = j;
+            }
+        }
+
+        if (maxScoreIndex == i) {
+            continue;
+        }
+
+        // swap best remaining move to the beginning
+        m = movesArr[i];
+        movesArr[i] = movesArr[maxScoreIndex];
+        movesArr[maxScoreIndex] = m;
     }
 }
 
@@ -450,9 +445,7 @@ int q_search(int alpha, int beta, int side) {
     }
 
     moveCount = generate_captures(movesArr, side);
-    // attackset is generated alongside the moves
-    attackSet = g_attackSets[g_ply];
-    sort_moves(movesArr, attackSet, moveCount, side);
+    sort_moves(movesArr, moveCount, side, create_move(0, 0, 0), false);
 
     for (i = 0; i < moveCount; i++)  {
         Move move = movesArr[i];
@@ -488,8 +481,9 @@ int negamax(int alpha, int beta, int depth, int side) {
     u64 attackSet;
     Move bestMove;
     bool alphaRise = false;
+    //bool isInCheck = is_king_threatened(side);
 
-    Move hashMove;
+    Move hashMove = create_move(0, 0, 0);
     bool foundHashMove = false;
     TranspositionTableEntry ttEntry;
     u64 zobristKey = g_zobristStack[g_root + g_ply];
@@ -497,10 +491,38 @@ int negamax(int alpha, int beta, int depth, int side) {
 
     ttEntry = tTable[ttIndex];
 
+    if (g_cancelThread == 1) {
+        g_cancelThread = 0;
+        printf("cancel\n");
+        pthread_exit(NULL);
+    }
+
+    // must be before transposition table probing
+    if (is_repeating()) {
+        score = DRAW;
+
+        if (score >= beta) {
+            return beta;
+        }
+
+        if (score > alpha) {
+            alpha = score;
+        }
+
+        return alpha;
+    }
+
     if (ttEntry.zobristKey == zobristKey) {
         int ttDepth = ttEntry.depth;
         int ttNodeType = ttEntry.nodeType;
         hashMove = ttEntry.hashMove;
+
+        if (ttNodeType == PV_NODE) {
+            foundHashMove = true;
+        }
+        if (ttNodeType == CUT_NODE) {
+            foundHashMove = true;
+        }
 
         // if entry is deep enough, result can be used directly
         if (ttDepth >= depth) {
@@ -537,44 +559,49 @@ int negamax(int alpha, int beta, int depth, int side) {
         }
     }
 
-    if (g_cancelThread == 1) {
-        g_cancelThread = 0;
-        printf("cancel\n");
-        pthread_exit(NULL);
-    }
-
-    /*
-    if (is_repeating()) {
-        score = DRAW;
-
-        if (score >= beta) {
-            return beta;
-        }
-
-        if (score > alpha) {
-            alpha = score;
-        }
-
-        return alpha;
-    }
-    */
-
     if (depth <= 0) {
         nodeCount++;
         return q_search(alpha, beta, side);
     }
 
     moveCount = generate_moves(movesArr, side);
-    // attackset is generated alongside the moves
-    attackSet = g_attackSets[g_ply];
-    sort_moves(movesArr, attackSet, moveCount, side);
+    sort_moves(movesArr, moveCount, side, hashMove, foundHashMove);
 
     for (i = 0; i < moveCount; i++)  {
         Move move = movesArr[i];
         make_move(move, false);
 
         if (!is_king_threatened(side)) {
+            // does to move give check to the opponent
+            bool checkingMove = false;
             legalMoveCount++;
+            
+            /*
+            if (depth >= 3) {
+                checkingMove = is_king_threatened(-side);
+            }
+            */
+
+            /*
+            // late move reductions
+            if (
+                    depth >= 3 && legalMoveCount > 10 && move.code != CAPTURE_MOVE &&
+                    !checkingMove && !isInCheck &&
+                    move.code < KNIGHT_PROMOTION_MOVE  && move.code != EP_CAPTURE_MOVE
+                ) {
+                score = -negamax(-beta, -alpha, depth / 3, -side);
+            }
+            else if (
+                    depth >= 3 && legalMoveCount > 4 && move.code != CAPTURE_MOVE &&
+                    !checkingMove && !isInCheck &&
+                    move.code < KNIGHT_PROMOTION_MOVE  && move.code != EP_CAPTURE_MOVE
+                ) {
+                score = -negamax(-beta, -alpha, depth - 2, -side);
+            }
+            else {
+                score = -negamax(-beta, -alpha, depth - 1, -side);
+            }
+            */
 
             score = -negamax(-beta, -alpha, depth - 1, -side);
 
@@ -585,6 +612,13 @@ int negamax(int alpha, int beta, int depth, int side) {
             if (score >= beta) {
                 unmake_move();
                 add_tt_entry(zobristKey, score, move, CUT_NODE, depth);
+
+                betaCutOffsTotal[g_ply]++;
+                if (legalMoveCount < 6) {
+                    betaCutOffs[g_ply][legalMoveCount - 1]++;
+                }
+
+
                 return beta;
             }
 
@@ -634,26 +668,73 @@ int negamax(int alpha, int beta, int depth, int side) {
 
 Move negamax_root(int alpha, int beta, int depth, int side) {
     int moveCount;
-    int illegalMoveCount = 0;
+    int legalMoveCount = 0;
     int i;
     Move bestMove;
     bool alphaRise = false;
     bool foundHashMove = false;
+    //bool isInCheck = is_king_threatened(side);
     int score;
     Move *movesArr = g_moveStack[g_ply];
     u64 attackSet;
 
-    Move hashMove;
+    Move hashMove = create_move(0, 0, 0);
     TranspositionTableEntry ttEntry;
     u64 zobristKey = g_zobristStack[g_root + g_ply];
     u64 ttIndex = zobristKey % TRANSPOSITION_TABLE_SIZE;
 
     ttEntry = tTable[ttIndex];
 
+    if (ttEntry.zobristKey == zobristKey) {
+        int ttDepth = ttEntry.depth;
+        int ttNodeType = ttEntry.nodeType;
+        hashMove = ttEntry.hashMove;
+
+        if (ttNodeType == PV_NODE) {
+            foundHashMove = true;
+        }
+        if (ttNodeType == CUT_NODE) {
+            foundHashMove = true;
+        }
+
+        // if entry is deep enough, result can be used directly
+        if (ttDepth == depth) {
+            transpositionCount++;
+
+            // checkmate ply re-adjustment
+            if (ttEntry.score > 100000) {
+                ttEntry.score -= g_ply;
+            }
+            else if (ttEntry.score < -100000) {
+                ttEntry.score += g_ply;
+            }
+
+            // score is exact
+            if (ttNodeType == PV_NODE) {
+                alpha = ttEntry.score - 1;
+                beta = ttEntry.score + 1;
+            }
+            // score is lower bound
+            else if (ttNodeType == CUT_NODE) {
+                if (ttEntry.score > alpha) {
+                    alpha = ttEntry.score;
+                }
+            }
+            // score is upper bound
+            else if (ttNodeType == ALL_NODE) {
+                if (ttEntry.score < beta) {
+                    beta = ttEntry.score;
+                }
+            }
+
+            if (alpha >= beta) {
+                assert(0 != 0);
+            }
+        }
+    }
+
     moveCount = generate_moves(movesArr, side);
-    // attackset is generated alongside the moves
-    attackSet = g_attackSets[g_ply];
-    sort_moves(movesArr, attackSet, moveCount, side);
+    sort_moves(movesArr, moveCount, side, hashMove, foundHashMove);
 
     rootSideToMove = get_side_to_play(g_gameStateStack[g_root + g_ply].meta);
 
@@ -663,6 +744,37 @@ Move negamax_root(int alpha, int beta, int depth, int side) {
         make_move(move, false);
 
         if (!is_king_threatened(side)) {
+            // does to move give check to the opponent
+            bool checkingMove = false;
+            legalMoveCount++;
+
+            /*
+            if (depth >= 3) {
+                checkingMove = is_king_threatened(-side);
+            }
+            */
+
+            /*
+            // late move reductions
+            if (
+                    depth >= 3 && legalMoveCount > 10 && move.code != CAPTURE_MOVE &&
+                    !checkingMove && !isInCheck &&
+                    move.code < KNIGHT_PROMOTION_MOVE  && move.code != EP_CAPTURE_MOVE
+                ) {
+                score = -negamax(-beta, -alpha, depth / 3, -side);
+            }
+            else if (
+                    depth >= 3 && legalMoveCount > 4 && move.code != CAPTURE_MOVE &&
+                    !checkingMove && !isInCheck &&
+                    move.code < KNIGHT_PROMOTION_MOVE  && move.code != EP_CAPTURE_MOVE
+                ) {
+                score = -negamax(-beta, -alpha, depth - 2, -side);
+            }
+            else {
+                score = -negamax(-beta, -alpha, depth - 1, -side);
+            }
+            */
+
             score = -negamax(-beta, -alpha, depth - 1, -side);
 
             //printf("score: %d\n", score);
@@ -722,8 +834,16 @@ void *search(void *vargp) {
     Board gameState = g_gameStateStack[g_root];
     u64 otherGameInfo = gameState.meta;
     int side = get_side_to_play(otherGameInfo);
+    clock_t start;
+    clock_t end;
+    int timeInMillis;
 
     pthread_cleanup_push(clean_up_handler, vargp);
+
+    // used for debugging purposes
+    zero_beta_cutoff();
+
+    start = clock();
 
     currentScore = 0;
 
@@ -739,11 +859,18 @@ void *search(void *vargp) {
 
         g_selectedMove = negamax_root(ALPHA_BETA_MIN, ALPHA_BETA_MAX, searchedDepth + 1, side);
 
+        end = clock();
+        timeInMillis = (int)(((double) (end - start)) / CLOCKS_PER_SEC * 1000);
+
         printf("searched depth: %d ", searchedDepth);
         printf("nodes: %d ", nodeCount);
         printf("quiescent: %d ", quiescentNodeCount);
         printf("transpositions: %d ", transpositionCount);
+        // time in seconds, millisecond precision
+        printf("time: %d.%d ", timeInMillis / 1000, timeInMillis % 1000);
         printf("score: %d\n", currentScore);
+        printf("beta-cut-offs: %f, %f, %f, total: %d\n", (float)betaCutOffs[searchedDepth][0] * 100 / (float)betaCutOffsTotal[searchedDepth], (float)betaCutOffs[searchedDepth][1] * 100 / (float)betaCutOffsTotal[searchedDepth], (float)betaCutOffs[searchedDepth][2] * 100 / (float)betaCutOffsTotal[searchedDepth], betaCutOffsTotal[searchedDepth]);
+        
         fflush(stdout);
         searchedDepth++;
 
@@ -756,6 +883,8 @@ void *search(void *vargp) {
             printf("losing checkmate\n");
             break;
         }
+
+        zero_beta_cutoff();
     }
 
     pthread_cleanup_pop(1);
