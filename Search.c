@@ -32,6 +32,12 @@ bool losingCheckMate;
 
 int rootSideToMove;
 
+// killer move heuristic
+Move KILLER_MOVES[MAX_DEPTH];
+
+// mate killer move heuristic
+Move KILLER_MATE_MOVES[MAX_DEPTH];
+
 int MVV_LVA[5][6] = {
     {500, 400, 300, 200, 100, 600},
     {1100, 1000, 900, 800, 700, 1200},
@@ -48,6 +54,7 @@ int PROMOTIONS[4] = {
 };
 
 int MOVE_SCORES[MAX_MOVES];
+int QUIET_MOVE_SCORES[MAX_MOVES];
 
 
 // debugging info
@@ -294,6 +301,7 @@ void sort_moves(Move *movesArr, int end, int side, Move hashMove, bool foundHash
     int j;
     int start = 0;
     int score;
+    int quietScore;
     int MVV_Index;
     int LVA_Index;
     Move move;
@@ -312,6 +320,7 @@ void sort_moves(Move *movesArr, int end, int side, Move hashMove, bool foundHash
     for (i = start; i < end; i++) {
         move = movesArr[i];
         score = 0;
+        quietScore = 0;
 
         // hash moves always first
         if (move.from == hashMove.from && move.to == hashMove.to && move.code == hashMove.code) {
@@ -390,31 +399,61 @@ void sort_moves(Move *movesArr, int end, int side, Move hashMove, bool foundHash
                 assert(0 != 0);
             }
         }
+        else if (move.code == QUIET_MOVE) {
+            if (g_ply > 0) {
+                Move killerMove = KILLER_MOVES[g_ply - 1];
+                Move mateKillerMove = KILLER_MATE_MOVES[g_ply - 1];
+
+                // killer moves before other quiet moves
+                if (move.from == mateKillerMove.from && move.to == mateKillerMove.to && move.code == mateKillerMove.code) {
+                    quietScore += INT_MAX;
+                }
+                else if (move.from == killerMove.from && move.to == killerMove.to && move.code == killerMove.code) {
+                    quietScore += INT_MAX - 1;
+                }
+            }
+        }
 
 
         MOVE_SCORES[i] = score;
+        QUIET_MOVE_SCORES[i] = quietScore;
     }
 
     for (i = start; i < end; i++) {
         int maxScore = MOVE_SCORES[i];
+        int maxQuietScore = QUIET_MOVE_SCORES[i];
         int maxScoreIndex = i;
-        Move m;
+        int maxQuietIndex = i;
+        Move startMove = movesArr[i];
 
         for (j = i + 1; j < end; j++) {
             if (MOVE_SCORES[j] > maxScore) {
                 maxScore = MOVE_SCORES[j];
                 maxScoreIndex = j;
             }
+            else if (startMove.code == QUIET_MOVE && maxScoreIndex == i && QUIET_MOVE_SCORES[j] > maxQuietScore) {
+                maxQuietScore = QUIET_MOVE_SCORES[j];
+                maxQuietIndex = j;
+            }
         }
 
-        if (maxScoreIndex == i) {
+        if (maxScoreIndex == i && maxQuietIndex == i) {
             continue;
         }
 
+
         // swap best remaining move to the beginning
-        m = movesArr[i];
-        movesArr[i] = movesArr[maxScoreIndex];
-        movesArr[maxScoreIndex] = m;
+        if (maxScoreIndex != i) {
+            movesArr[i] = movesArr[maxScoreIndex];
+            movesArr[maxScoreIndex] = startMove;
+        }
+        else if (maxQuietIndex != i) {
+            movesArr[i] = movesArr[maxQuietIndex];
+            movesArr[maxQuietIndex] = startMove;
+        }
+        else {
+            assert(0 != 0);
+        }
     }
 }
 
@@ -612,6 +651,15 @@ int negamax(int alpha, int beta, int depth, int side) {
             if (score >= beta) {
                 unmake_move();
                 add_tt_entry(zobristKey, score, move, CUT_NODE, depth);
+
+                if (move.code == QUIET_MOVE) {
+                    if (score > 100000) {
+                        KILLER_MATE_MOVES[g_ply - 1] = move;
+                    }
+                    else {
+                        KILLER_MOVES[g_ply - 1] = move;
+                    }
+                }
 
                 betaCutOffsTotal[g_ply]++;
                 if (legalMoveCount < 6) {
