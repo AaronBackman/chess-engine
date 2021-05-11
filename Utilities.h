@@ -84,4 +84,6 @@ u64 get_zobrist(Board board);
 
 void print_in_binary(u64 n);
 
+int max(int a, int b);
+
 #endif

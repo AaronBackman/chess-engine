@@ -17,6 +17,7 @@
 #include "Perft.h"
 
 Move g_selectedMove;
+bool foundMove;
 int searchedDepth;
 int currentScore;
 
@@ -63,6 +64,12 @@ int PROMOTIONS[4] = {
     1000
 };
 
+int pieceValues[6] = {
+    PAWN_SCORE, KNIGHT_SCORE, BISHOP_SCORE, ROOK_SCORE, QUEEN_SCORE, KING_SCORE
+};
+
+int history[2][64][64];
+
 int MOVE_SCORES[MAX_MOVES];
 int QUIET_MOVE_SCORES[MAX_MOVES];
 
@@ -80,6 +87,18 @@ void zero_beta_cutoff() {
 
         for (j = 0; j < 5; j++) {
             betaCutOffs[i][j] = 0;
+        }
+    }
+}
+
+void zero_history() {
+    int i;
+    int j;
+
+    for (i = 0; i < 64; i++) {
+        for (j = 0; j < 64; j++) {
+            history[0][i][j] = 0;
+            history[1][i][j] = 0;
         }
     }
 }
@@ -145,6 +164,121 @@ int white_king_to_corners() {
     blackKingIndex = bitscan_forward(blackKings);
 
     return 47 * CMD[whiteKingIndex] + 18 * (14 - get_manhattan_distance(whiteKingIndex, blackKingIndex));
+}
+
+u64 considerXrays(u64 attackersDefenders, int squareAttacked, u64 squareRemovedBB) {
+    u64 xray;
+
+    if ((squareRemovedBB & NORTH_EAST_LOOKUP_PATTERN[squareAttacked]) != 0) {
+        xray = attackersDefenders & NORTH_EAST_LOOKUP_PATTERN[squareAttacked];
+    }
+
+    else if ((squareRemovedBB & NORTH_WEST_LOOKUP_PATTERN[squareAttacked]) != 0) {
+        xray = attackersDefenders & NORTH_WEST_LOOKUP_PATTERN[squareAttacked];
+    }
+
+    else if ((squareRemovedBB & SOUTH_EAST_LOOKUP_PATTERN[squareAttacked]) != 0) {
+        xray = attackersDefenders & SOUTH_EAST_LOOKUP_PATTERN[squareAttacked];
+    }
+
+    else if ((squareRemovedBB & SOUTH_WEST_LOOKUP_PATTERN[squareAttacked]) != 0) {
+        xray = attackersDefenders & SOUTH_WEST_LOOKUP_PATTERN[squareAttacked];
+    }
+
+    else if ((squareRemovedBB & NORTH_LOOKUP_PATTERN[squareAttacked]) != 0) {
+        xray = attackersDefenders & NORTH_LOOKUP_PATTERN[squareAttacked];
+    }
+
+    else if ((squareRemovedBB & WEST_LOOKUP_PATTERN[squareAttacked]) != 0) {
+        xray = attackersDefenders & WEST_LOOKUP_PATTERN[squareAttacked];
+    }
+
+    else if ((squareRemovedBB & SOUTH_LOOKUP_PATTERN[squareAttacked]) != 0) {
+        xray = attackersDefenders & SOUTH_LOOKUP_PATTERN[squareAttacked];
+    }
+
+    else if ((squareRemovedBB & EAST_LOOKUP_PATTERN[squareAttacked]) != 0) {
+        xray = attackersDefenders & EAST_LOOKUP_PATTERN[squareAttacked];
+    }
+    else {
+        return 0LLU;
+    }
+
+    return xray & -xray;
+}
+
+u64 getLeastValuablePiece(u64 attackersDefenders, int side, Board *board, int *attackPiece) {
+    u64 leastValuablePiece;
+
+    if (side == WHITE) {
+        attackersDefenders &= board -> whitePieces;
+    }
+    else {
+        attackersDefenders &= board -> blackPieces;
+    }
+
+    if ((board -> pawns & attackersDefenders) != 0) {
+        leastValuablePiece = board -> pawns & attackersDefenders;
+        *attackPiece = 0;
+    }
+    else if ((board -> knights & attackersDefenders) != 0) {
+        leastValuablePiece = board -> knights & attackersDefenders;
+        *attackPiece = 1;
+    }
+    else if ((board -> bishops & attackersDefenders) != 0) {
+        leastValuablePiece = board -> bishops & attackersDefenders;
+        *attackPiece = 2;
+    }
+    else if ((board -> rooks & attackersDefenders) != 0) {
+        leastValuablePiece = board -> rooks & attackersDefenders;
+        *attackPiece = 3;
+    }
+    else if ((board -> queens & attackersDefenders) != 0) {
+        leastValuablePiece = board -> queens & attackersDefenders;
+        *attackPiece = 4;
+    }
+    else if ((board -> kings & attackersDefenders) != 0) {
+        leastValuablePiece = board -> kings & attackersDefenders;
+        *attackPiece = 5;
+    }
+    else {
+        return 0LLU;
+    }
+
+    return leastValuablePiece & -leastValuablePiece;
+}
+
+// static exchange evaluation (SEE)
+int see(int from, int to, Board *board, int side, int targetPiece, int attackPiece) {
+    int gain[32], d = 0;
+    u64 mayXray = board -> pawns | board -> bishops | board -> rooks | board -> queens;
+    u64 fromSet = SINGLE_BIT_LOOKUP[from];
+    u64 occupied = board -> whitePieces | board -> blackPieces;
+    u64 attackersDefenders = get_threat_map(to, WHITE) | get_threat_map(to, BLACK);
+    gain[d] = pieceValues[targetPiece];
+    do {
+        d++; // next depth and side
+        side *= -1;
+        gain[d] = pieceValues[attackPiece] - gain[d-1]; // speculative store, if defended
+
+        if (max(-gain[d-1], gain[d]) < 0) break; // pruning does not influence the result
+
+        attackersDefenders ^= fromSet; // reset bit in set to traverse
+        occupied ^= fromSet; // reset bit in temporary occupancy (for x-Rays)
+
+        if ( fromSet & mayXray ) {
+            attackersDefenders |= considerXrays(occupied, to, fromSet);
+        }
+
+        fromSet = getLeastValuablePiece(attackersDefenders, side, board, &attackPiece);
+
+    } while (fromSet);
+
+    while (--d) {
+        gain[d-1] = -max(-gain[d-1], gain[d]);
+    }
+
+    return gain[0];
 }
 
 int evaluate(int side) {
@@ -429,6 +563,15 @@ void sort_moves_score(Move *movesArr, int end, int side, Move hashMove, bool fou
                     quietScore += INT_MAX - 2;
                     secondKiller++;
                 }
+
+                else {
+                    if (side == WHITE) {
+                        quietScore = history[0][move.from][move.to];
+                    }
+                    else {
+                        quietScore = history[1][move.from][move.to];
+                    }
+                }
             }
         }
 
@@ -486,6 +629,17 @@ int q_search(int alpha, int beta, int side) {
     int stand_pat = evaluate(side);
     //assert(evaluate(side) == -evaluate(-side));
 
+    Board gameState = g_gameStateStack[g_root + g_ply];
+    u64 whitePieces = gameState.whitePieces;
+    u64 blackPieces = gameState.blackPieces;
+
+    u64 pawns = gameState.pawns;
+    u64 knights = gameState.knights;
+    u64 bishops = gameState.bishops;
+    u64 rooks = gameState.rooks;
+    u64 queens = gameState.queens;
+    u64 kings = gameState.kings;
+
     quiescentNodeCount++;
 
     if (g_cancelThread == 1) {
@@ -498,6 +652,11 @@ int q_search(int alpha, int beta, int side) {
         return beta;
     }
 
+    // none of the moves can pass delta pruning
+    if (stand_pat + QUEEN_SCORE < alpha - DELTA) {
+        return alpha;
+    }
+
     if (alpha < stand_pat) {
         alpha = stand_pat;
     }
@@ -507,9 +666,65 @@ int q_search(int alpha, int beta, int side) {
 
     for (i = 0; i < moveCount; i++)  {
         Move move;
+        int attackPiece;
+        int targetPiece;
 
         selection_sort_one_move(movesArr, i, moveCount);
         move = movesArr[i];
+
+        if (square_occupied(pawns, move.from)) {
+            attackPiece = 0;
+        }
+        else if (square_occupied(knights, move.from)) {
+            attackPiece = 1;
+        }
+        else if (square_occupied(bishops, move.from)) {
+            attackPiece = 2;
+        }
+        else if (square_occupied(rooks, move.from)) {
+            attackPiece = 3;
+        }
+        else if (square_occupied(queens, move.from)) {
+            attackPiece = 4;
+        }
+        else if (square_occupied(kings, move.from)) {
+            attackPiece = 5;
+        }
+        else {
+            goto afterCapturePruning;
+        }
+
+
+        if (square_occupied(pawns, move.to)) {
+            targetPiece = 0;
+        }
+        else if (square_occupied(knights, move.to)) {
+            targetPiece = 1;
+        }
+        else if (square_occupied(bishops, move.to)) {
+            targetPiece = 2;
+        }
+        else if (square_occupied(rooks, move.to)) {
+            targetPiece = 3;
+        }
+        else if (square_occupied(queens, move.to)) {
+            targetPiece = 4;
+        }
+        else {
+            goto afterCapturePruning;
+        }
+
+        // delta pruning
+        if (pieceValues[targetPiece] < alpha - DELTA) {
+            continue;
+        }
+
+        // prune moves with negative SEE
+        if (see(move.from, move.to, &gameState, side, targetPiece, attackPiece) < 0) {
+            continue;
+        }
+
+        afterCapturePruning:
 
         make_move(move, false);
 
@@ -679,6 +894,15 @@ int negamax(int alpha, int beta, int depth, int side) {
                 add_tt_entry(zobristKey, score, move, CUT_NODE, depth);
 
                 if (move.code == QUIET_MOVE) {
+                    if (g_ply < 10) {
+                        if (side == WHITE) {
+                            history[0][move.from][move.to] = depth * depth;
+                        }
+                        else {
+                            history[1][move.from][move.to] = depth * depth;
+                        }
+                    }
+
                     if (score > 100000) {
                         KILLER_MATE_MOVES[g_ply - 1] = move;
                     }
@@ -766,6 +990,9 @@ Move negamax_root(int alpha, int beta, int depth, int side) {
 
     ttEntry = tTable[ttIndex];
 
+    printf("root\n");
+    fflush(stdout);
+
     if (ttEntry.zobristKey == zobristKey) {
         int ttDepth = ttEntry.depth;
         int ttNodeType = ttEntry.nodeType;
@@ -778,6 +1005,7 @@ Move negamax_root(int alpha, int beta, int depth, int side) {
             foundHashMove = true;
         }
 
+        /*
         // if entry is deep enough, result can be used directly
         if (ttDepth == depth) {
             transpositionCount++;
@@ -808,6 +1036,7 @@ Move negamax_root(int alpha, int beta, int depth, int side) {
                 }
             }
         }
+        */
     }
 
     moveCount = generate_moves(movesArr, side);
@@ -863,9 +1092,11 @@ Move negamax_root(int alpha, int beta, int depth, int side) {
                 unmake_move();
 
                 aspirationWindow = beta - currentScore;
+                printf("aspiration window size fail high: %d\n", aspirationWindow);
+                fflush(stdout);
                 aspirationWindow *= 4;
 
-                if (aspirationWindow > 1) {
+                if (aspirationWindow > 100) {
                     return negamax_root(alpha, ALPHA_BETA_MAX, depth, side);
                 }
 
@@ -916,9 +1147,11 @@ Move negamax_root(int alpha, int beta, int depth, int side) {
     // fail low aspiration window, have to re-search with a wider window
     else {
         aspirationWindow = currentScore - alpha;
+        printf("aspiration window size fail low: %d\n", aspirationWindow);
+        fflush(stdout);
         aspirationWindow *= 4;
 
-        if (aspirationWindow > 1) {
+        if (aspirationWindow > 100) {
             return negamax_root(ALPHA_BETA_MIN, beta, depth, side);
         }
 
@@ -943,6 +1176,10 @@ void *search(void *vargp) {
     clock_t start;
     clock_t end;
     int timeInMillis;
+    int i;
+
+    printf("start search\n");
+    fflush(stdout);
 
     pthread_cleanup_push(clean_up_handler, vargp);
 
@@ -956,6 +1193,8 @@ void *search(void *vargp) {
     checkmate = false;
     losingCheckMate = false;
     g_cancelThread = 0;
+
+    foundMove = false;
 
     while (searchedDepth < MAX_DEPTH) {
         Move previousMove = g_selectedMove;
@@ -975,6 +1214,7 @@ void *search(void *vargp) {
             // aspiration window
             g_selectedMove = negamax_root(currentScore - 25, currentScore + 25, searchedDepth + 1, side);
         }
+        foundMove = true;
 
         end = clock();
         timeInMillis = (int)(((double) (end - start)) / CLOCKS_PER_SEC * 1000);
@@ -985,9 +1225,13 @@ void *search(void *vargp) {
         printf("transpositions: %d ", transpositionCount);
         // time in seconds, millisecond precision
         printf("time: %d.%d ", timeInMillis / 1000, timeInMillis % 1000);
-        printf("score: %d\n", currentScore);
-        printf("beta-cut-offs: %f, %f, %f, total: %d\n", (float)betaCutOffs[searchedDepth][0] * 100 / (float)betaCutOffsTotal[searchedDepth], (float)betaCutOffs[searchedDepth][1] * 100 / (float)betaCutOffsTotal[searchedDepth], (float)betaCutOffs[searchedDepth][2] * 100 / (float)betaCutOffsTotal[searchedDepth], betaCutOffsTotal[searchedDepth]);
-        printf("mate killers: %d, 1. killers: %d, 2. killers: %d\n\n", mateKiller, firstKiller, secondKiller);
+        printf("score: %d\n\n", currentScore);
+
+        for (i = 0; i <= searchedDepth; i++) {
+            printf("beta-cut-offs: %f, %f, %f, total: %d\n", (float)betaCutOffs[i][0] * 100 / (float)betaCutOffsTotal[i], (float)betaCutOffs[i][1] * 100 / (float)betaCutOffsTotal[i], (float)betaCutOffs[i][2] * 100 / (float)betaCutOffsTotal[i], betaCutOffsTotal[i]);
+        }
+        
+        printf("\nmate killers: %d, 1. killers: %d, 2. killers: %d\n\n", mateKiller, firstKiller, secondKiller);
 
 
         fflush(stdout);

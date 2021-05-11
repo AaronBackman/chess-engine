@@ -48,6 +48,7 @@ void uci_listen() {
     if (strcmp(input, "isready\n") == 0) {
       if (!initReady) {
         set_lookup_tables();
+        zero_history();
         initReady = true;
       }
       if (!positionReady) {
@@ -92,6 +93,8 @@ void uci_listen() {
       positionReady = true;
 
       print_board();
+
+      // printf("see: %d\n", see(19, 36, &g_gameStateStack[g_root + g_ply], WHITE, 0, 1));
       
       free(input);
       continue;
@@ -115,6 +118,7 @@ void uci_listen() {
 
       printf("bestmove %s\n", moveStr);
       fflush(stdout);
+      zero_history();
 
       free(moveStr);
       free(input);
@@ -167,6 +171,7 @@ void uci_listen() {
       pthread_create(&threadId, NULL, search, NULL);
       pthread_detach(threadId);
 
+      wait:
       // more than 1 second
       if (calcTime >= 1000000) {
           for (i = 0; i < calcTime / 1000000; i++) {
@@ -182,12 +187,18 @@ void uci_listen() {
           usleep(calcTime);
       }
 
+      // hasnt yet found any move, continue searching
+      if (!foundMove) {
+          goto wait;
+      }
+
       g_cancelThread = 1;
       moveStr = (char*) malloc(8 * sizeof(char));
       move_to_string(moveStr, g_selectedMove);
 
       printf("bestmove %s\n", moveStr);
       fflush(stdout);
+      zero_history();
 
       free(moveStr);
       free(input);

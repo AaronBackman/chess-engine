@@ -311,3 +311,12 @@ void print_in_binary(u64 n) {
 
     printf("\n");
 }
+
+int max(int a, int b) {
+    if (a > b) {
+        return a;
+    }
+    else {
+        return b;
+    }
+}

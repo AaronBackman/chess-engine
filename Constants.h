@@ -43,6 +43,8 @@ typedef unsigned char BYTE;
 #define WHITE 1
 #define BLACK -1
 
+#define DELTA 200
+
 #define PV_NODE 1
 #define ALL_NODE 2
 #define CUT_NODE 3
