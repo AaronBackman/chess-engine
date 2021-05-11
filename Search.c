@@ -32,11 +32,21 @@ bool losingCheckMate;
 
 int rootSideToMove;
 
+int firstKiller;
+int secondKiller;
+int mateKiller;
+
 // killer move heuristic
-Move KILLER_MOVES[MAX_DEPTH];
+Move KILLER_MOVES[MAX_DEPTH][2];
 
 // mate killer move heuristic
 Move KILLER_MATE_MOVES[MAX_DEPTH];
+
+void clear_killers() {
+    KILLER_MATE_MOVES[g_ply] = create_move(0, 0, 0);
+    KILLER_MOVES[g_ply][0] = create_move(0, 0, 0);
+    KILLER_MOVES[g_ply][1] = create_move(0, 0, 0);
+}
 
 int MVV_LVA[5][6] = {
     {500, 400, 300, 200, 100, 600},
@@ -296,7 +306,8 @@ int evaluate(int side) {
     return score;
 }
 
-void sort_moves(Move *movesArr, int end, int side, Move hashMove, bool foundHashMove) {
+// assigns a score for each move so that they can later be sorted
+void sort_moves_score(Move *movesArr, int end, int side, Move hashMove, bool foundHashMove) {
     int i;
     int j;
     int start = 0;
@@ -401,15 +412,22 @@ void sort_moves(Move *movesArr, int end, int side, Move hashMove, bool foundHash
         }
         else if (move.code == QUIET_MOVE) {
             if (g_ply > 0) {
-                Move killerMove = KILLER_MOVES[g_ply - 1];
+                Move firstKillerMove = KILLER_MOVES[g_ply - 1][0];
+                Move secondKillerMove = KILLER_MOVES[g_ply - 1][1];
                 Move mateKillerMove = KILLER_MATE_MOVES[g_ply - 1];
 
                 // killer moves before other quiet moves
                 if (move.from == mateKillerMove.from && move.to == mateKillerMove.to && move.code == mateKillerMove.code) {
                     quietScore += INT_MAX;
+                    mateKiller++;
                 }
-                else if (move.from == killerMove.from && move.to == killerMove.to && move.code == killerMove.code) {
+                else if (move.from == firstKillerMove.from && move.to == firstKillerMove.to && move.code == firstKillerMove.code) {
                     quietScore += INT_MAX - 1;
+                    firstKiller++;
+                }
+                else if (move.from == secondKillerMove.from && move.to == secondKillerMove.to && move.code == secondKillerMove.code) {
+                    quietScore += INT_MAX - 2;
+                    secondKiller++;
                 }
             }
         }
@@ -418,42 +436,43 @@ void sort_moves(Move *movesArr, int end, int side, Move hashMove, bool foundHash
         MOVE_SCORES[i] = score;
         QUIET_MOVE_SCORES[i] = quietScore;
     }
+}
 
-    for (i = start; i < end; i++) {
-        int maxScore = MOVE_SCORES[i];
-        int maxQuietScore = QUIET_MOVE_SCORES[i];
-        int maxScoreIndex = i;
-        int maxQuietIndex = i;
-        Move startMove = movesArr[i];
+void selection_sort_one_move(Move *movesArr, int start, int end) {
+    int maxScore = MOVE_SCORES[start];
+    int maxQuietScore = QUIET_MOVE_SCORES[start];
+    int maxScoreIndex = start;
+    int maxQuietIndex = start;
+    Move startMove = movesArr[start];
+    int i;
 
-        for (j = i + 1; j < end; j++) {
-            if (MOVE_SCORES[j] > maxScore) {
-                maxScore = MOVE_SCORES[j];
-                maxScoreIndex = j;
-            }
-            else if (startMove.code == QUIET_MOVE && maxScoreIndex == i && QUIET_MOVE_SCORES[j] > maxQuietScore) {
-                maxQuietScore = QUIET_MOVE_SCORES[j];
-                maxQuietIndex = j;
-            }
+    for (i = start + 1; i < end; i++) {
+        if (MOVE_SCORES[i] > maxScore) {
+            maxScore = MOVE_SCORES[i];
+            maxScoreIndex = i;
         }
+        else if (startMove.code == QUIET_MOVE && maxScoreIndex == start && QUIET_MOVE_SCORES[i] > maxQuietScore) {
+            maxQuietScore = QUIET_MOVE_SCORES[i];
+            maxQuietIndex = i;
+        }
+    }
 
-        if (maxScoreIndex == i && maxQuietIndex == i) {
-            continue;
-        }
+    if (maxScoreIndex == start && maxQuietIndex == start) {
+        return;
+    }
 
 
-        // swap best remaining move to the beginning
-        if (maxScoreIndex != i) {
-            movesArr[i] = movesArr[maxScoreIndex];
-            movesArr[maxScoreIndex] = startMove;
-        }
-        else if (maxQuietIndex != i) {
-            movesArr[i] = movesArr[maxQuietIndex];
-            movesArr[maxQuietIndex] = startMove;
-        }
-        else {
-            assert(0 != 0);
-        }
+    // swap best remaining move to the beginning
+    if (maxScoreIndex != start) {
+        movesArr[start] = movesArr[maxScoreIndex];
+        movesArr[maxScoreIndex] = startMove;
+    }
+    else if (maxQuietIndex != start) {
+        movesArr[start] = movesArr[maxQuietIndex];
+        movesArr[maxQuietIndex] = startMove;
+    }
+    else {
+        assert(0 != 0);
     }
 }
 
@@ -484,10 +503,13 @@ int q_search(int alpha, int beta, int side) {
     }
 
     moveCount = generate_captures(movesArr, side);
-    sort_moves(movesArr, moveCount, side, create_move(0, 0, 0), false);
+    sort_moves_score(movesArr, moveCount, side, create_move(0, 0, 0), false);
 
     for (i = 0; i < moveCount; i++)  {
-        Move move = movesArr[i];
+        Move move;
+
+        selection_sort_one_move(movesArr, i, moveCount);
+        move = movesArr[i];
 
         make_move(move, false);
 
@@ -604,10 +626,13 @@ int negamax(int alpha, int beta, int depth, int side) {
     }
 
     moveCount = generate_moves(movesArr, side);
-    sort_moves(movesArr, moveCount, side, hashMove, foundHashMove);
+    sort_moves_score(movesArr, moveCount, side, hashMove, foundHashMove);
 
     for (i = 0; i < moveCount; i++)  {
-        Move move = movesArr[i];
+        Move move;
+
+        selection_sort_one_move(movesArr, i, moveCount);
+        move = movesArr[i];
         make_move(move, false);
 
         if (!is_king_threatened(side)) {
@@ -649,6 +674,7 @@ int negamax(int alpha, int beta, int depth, int side) {
             }
 
             if (score >= beta) {
+                clear_killers();
                 unmake_move();
                 add_tt_entry(zobristKey, score, move, CUT_NODE, depth);
 
@@ -657,7 +683,12 @@ int negamax(int alpha, int beta, int depth, int side) {
                         KILLER_MATE_MOVES[g_ply - 1] = move;
                     }
                     else {
-                        KILLER_MOVES[g_ply - 1] = move;
+                        if (KILLER_MOVES[g_ply - 1][0].from == 0 && KILLER_MOVES[g_ply - 1][0].to == 0) {
+                            KILLER_MOVES[g_ply - 1][0] = move;
+                        }
+                        else {
+                            KILLER_MOVES[g_ply - 1][1] = move;
+                        }
                     }
                 }
 
@@ -676,6 +707,7 @@ int negamax(int alpha, int beta, int depth, int side) {
                 alphaRise = true;
             }
         }
+        clear_killers();
         unmake_move();
     }
 
@@ -721,6 +753,7 @@ Move negamax_root(int alpha, int beta, int depth, int side) {
     Move bestMove;
     bool alphaRise = false;
     bool foundHashMove = false;
+    int aspirationWindow;
     //bool isInCheck = is_king_threatened(side);
     int score;
     Move *movesArr = g_moveStack[g_ply];
@@ -774,20 +807,19 @@ Move negamax_root(int alpha, int beta, int depth, int side) {
                     beta = ttEntry.score;
                 }
             }
-
-            if (alpha >= beta) {
-                assert(0 != 0);
-            }
         }
     }
 
     moveCount = generate_moves(movesArr, side);
-    sort_moves(movesArr, moveCount, side, hashMove, foundHashMove);
+    sort_moves_score(movesArr, moveCount, side, hashMove, foundHashMove);
 
     rootSideToMove = get_side_to_play(g_gameStateStack[g_root + g_ply].meta);
 
     for (i = 0; i < moveCount; i++)  {
-        Move move = movesArr[i];
+        Move move;
+
+        selection_sort_one_move(movesArr, i, moveCount);
+        move = movesArr[i];
 
         make_move(move, false);
 
@@ -825,6 +857,21 @@ Move negamax_root(int alpha, int beta, int depth, int side) {
 
             score = -negamax(-beta, -alpha, depth - 1, -side);
 
+            // fail high aspiration window, have to re-search with a wider window
+            if (score >= beta) {
+                clear_killers();
+                unmake_move();
+
+                aspirationWindow = beta - currentScore;
+                aspirationWindow *= 4;
+
+                if (aspirationWindow > 1) {
+                    return negamax_root(alpha, ALPHA_BETA_MAX, depth, side);
+                }
+
+                return negamax_root(alpha, currentScore + aspirationWindow, depth, side);
+            }
+
             //printf("score: %d\n", score);
             //printf("from: %d, to: %d\n", move.from, move.to);
             if (score > alpha) {
@@ -837,6 +884,7 @@ Move negamax_root(int alpha, int beta, int depth, int side) {
             }
         }
 
+        clear_killers();
         unmake_move();
     }
 
@@ -848,24 +896,34 @@ Move negamax_root(int alpha, int beta, int depth, int side) {
     // PV-node
     if (alphaRise) {
         add_tt_entry(zobristKey, alpha, bestMove, PV_NODE, depth);
-    }
+        currentScore = alpha;
 
-    if (alpha < -100000) {
-        int distanceToMate = alpha + CHECKMATE;
+        if (alpha < -100000) {
+            int distanceToMate = alpha + CHECKMATE;
 
-        if (depth >= distanceToMate) {
-            losingCheckMate = true;
+            if (depth >= distanceToMate) {
+                losingCheckMate = true;
+            }
+        }
+        else if (alpha > 100000) {
+            int distanceToMate = CHECKMATE - alpha;
+
+            if (depth >= distanceToMate) {
+                checkmate = true;
+            }
         }
     }
-    else if (alpha > 100000) {
-        int distanceToMate = CHECKMATE - alpha;
+    // fail low aspiration window, have to re-search with a wider window
+    else {
+        aspirationWindow = currentScore - alpha;
+        aspirationWindow *= 4;
 
-        if (depth >= distanceToMate) {
-            checkmate = true;
+        if (aspirationWindow > 1) {
+            return negamax_root(ALPHA_BETA_MIN, beta, depth, side);
         }
-    }
 
-    currentScore = alpha;
+        return negamax_root(currentScore - aspirationWindow, beta, depth, side);
+    }
 
     return bestMove;
 }
@@ -905,7 +963,18 @@ void *search(void *vargp) {
         quiescentNodeCount = 0;
         transpositionCount = 0;
 
-        g_selectedMove = negamax_root(ALPHA_BETA_MIN, ALPHA_BETA_MAX, searchedDepth + 1, side);
+        mateKiller = 0;
+        firstKiller = 0;
+        secondKiller = 0;
+
+        if (searchedDepth == 0) {
+            // full search
+            g_selectedMove = negamax_root(ALPHA_BETA_MIN, ALPHA_BETA_MAX, searchedDepth + 1, side);
+        }
+        else {
+            // aspiration window
+            g_selectedMove = negamax_root(currentScore - 25, currentScore + 25, searchedDepth + 1, side);
+        }
 
         end = clock();
         timeInMillis = (int)(((double) (end - start)) / CLOCKS_PER_SEC * 1000);
@@ -918,7 +987,9 @@ void *search(void *vargp) {
         printf("time: %d.%d ", timeInMillis / 1000, timeInMillis % 1000);
         printf("score: %d\n", currentScore);
         printf("beta-cut-offs: %f, %f, %f, total: %d\n", (float)betaCutOffs[searchedDepth][0] * 100 / (float)betaCutOffsTotal[searchedDepth], (float)betaCutOffs[searchedDepth][1] * 100 / (float)betaCutOffsTotal[searchedDepth], (float)betaCutOffs[searchedDepth][2] * 100 / (float)betaCutOffsTotal[searchedDepth], betaCutOffsTotal[searchedDepth]);
-        
+        printf("mate killers: %d, 1. killers: %d, 2. killers: %d\n\n", mateKiller, firstKiller, secondKiller);
+
+
         fflush(stdout);
         searchedDepth++;
 
