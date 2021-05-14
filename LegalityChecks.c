@@ -9,76 +9,58 @@
 #include "Utilities.h"
 #include "AttackMaps.h"
 
-u64 get_threat_map(int originSquare, int side) {
-    int i;
-    int j;
-    int squareIndex;
+u64 get_attack_defend_maps(int originSquare) {
     Board gameState = g_gameStateStack[g_root + g_ply];
     u64 whitePieces = gameState.whitePieces;
-    u64 whitePawns = gameState.pawns & whitePieces;
-    u64 whiteKnights = gameState.knights & whitePieces;
-    u64 whiteBishops = gameState.bishops & whitePieces;
-    u64 whiteRooks = gameState.rooks & whitePieces;
-    u64 whiteQueens = gameState.queens & whitePieces;
-    u64 whiteKings = gameState.kings & whitePieces;
-
     u64 blackPieces = gameState.blackPieces;
-    u64 blackPawns = gameState.pawns & blackPieces;
-    u64 blackKnights = gameState.knights & blackPieces;
-    u64 blackBishops = gameState.bishops & blackPieces;
-    u64 blackRooks = gameState.rooks & blackPieces;
-    u64 blackQueens = gameState.queens & blackPieces;
-    u64 blackKings = gameState.kings & blackPieces;
+    
+    u64 pawns = gameState.pawns;
+    u64 knights = gameState.knights;
+    u64 diagonals = gameState.bishops | gameState.queens;
+    u64 linears = gameState.rooks | gameState.queens;
+    u64 kings = gameState.kings;
 
-    u64 otherGameInfo = gameState.meta;
-    u64 whiteDiagonals = whiteBishops | whiteQueens;
-    u64 whiteLinears = whiteRooks | whiteQueens;
-    u64 blackDiagonals = blackBishops | blackQueens;
-    u64 blackLinears = blackRooks | blackQueens;
-
-    u64 threatMap = 0;
+    u64 attackDefendMaps = 0;
     u64 pawnPattern;
     u64 knightPattern;
     u64 diagonalPattern;
     u64 linearPattern;
     u64 kingPattern;
+    
+    pawnPattern = get_white_pawn_attack_maps(gameState, originSquare);
+    attackDefendMaps |= (pawnPattern & pawns & blackPieces);
 
-    if (side == 1) {
-        // pawns can always attack each other
-        pawnPattern = get_white_pawn_attack_maps(gameState, originSquare);
-        threatMap |= (pawnPattern & blackPawns);
+    pawnPattern = get_black_pawn_attack_maps(gameState, originSquare);
+    attackDefendMaps |= (pawnPattern & pawns & whitePieces);
 
-        knightPattern = get_knight_maps(gameState, originSquare);
-        threatMap |= (knightPattern & blackKnights);
+    knightPattern = get_knight_maps(gameState, originSquare);
+    attackDefendMaps |= (knightPattern & knights);
 
-        diagonalPattern = get_diagonal_maps(gameState, originSquare);
-        threatMap |= (diagonalPattern & blackDiagonals);
+    diagonalPattern = get_diagonal_maps(gameState, originSquare);
+    attackDefendMaps |= (diagonalPattern & diagonals);
 
-        linearPattern = get_linear_maps(gameState, originSquare);
-        threatMap |= (linearPattern & blackLinears);
+    linearPattern = get_linear_maps(gameState, originSquare);
+    attackDefendMaps |= (linearPattern & linears);
 
-        kingPattern = get_king_maps(gameState, originSquare);
-        threatMap |= (kingPattern & blackKings);
+    kingPattern = get_king_maps(gameState, originSquare);
+    attackDefendMaps |= (kingPattern & kings);
+
+    return attackDefendMaps;
+}
+
+u64 get_threat_map(int originSquare, int side) {
+    Board gameState = g_gameStateStack[g_root + g_ply];
+    u64 whitePieces = gameState.whitePieces;
+    u64 blackPieces = gameState.blackPieces;
+
+    u64 attackDefendMaps = get_attack_defend_maps(originSquare);
+    
+    if (side == WHITE) {
+        return attackDefendMaps & blackPieces;
     }
     else {
-        // pawns can always attack each other
-        pawnPattern = get_black_pawn_attack_maps(gameState, originSquare);
-        threatMap |= (pawnPattern & whitePawns);
-
-        knightPattern = get_knight_maps(gameState, originSquare);
-        threatMap |= (knightPattern & whiteKnights);
-
-        diagonalPattern = get_diagonal_maps(gameState, originSquare);
-        threatMap |= (diagonalPattern & whiteDiagonals);
-
-        linearPattern = get_linear_maps(gameState, originSquare);
-        threatMap |= (linearPattern & whiteLinears);
-
-        kingPattern = get_king_maps(gameState, originSquare);
-        threatMap |= (kingPattern & whiteKings);
+        return attackDefendMaps & whitePieces;
     }
-
-    return threatMap;
 }
 
 bool is_square_threatened(int originSquare, int side) {

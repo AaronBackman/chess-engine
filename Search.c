@@ -4,6 +4,7 @@
 #include <pthread.h>
 #include <assert.h>
 #include <time.h>
+#include <stdlib.h>
 
 #include "Constants.h"
 #include "Move.h"
@@ -254,7 +255,7 @@ int see(int from, int to, Board *board, int side, int targetPiece, int attackPie
     u64 mayXray = board -> pawns | board -> bishops | board -> rooks | board -> queens;
     u64 fromSet = SINGLE_BIT_LOOKUP[from];
     u64 occupied = board -> whitePieces | board -> blackPieces;
-    u64 attackersDefenders = get_threat_map(to, WHITE) | get_threat_map(to, BLACK);
+    u64 attackersDefenders = get_attack_defend_maps(to);
     gain[d] = pieceValues[targetPiece];
     do {
         d++; // next depth and side
@@ -582,11 +583,15 @@ void sort_moves_score(Move *movesArr, int end, int side, Move hashMove, bool fou
 }
 
 void selection_sort_one_move(Move *movesArr, int start, int end) {
-    int maxScore = MOVE_SCORES[start];
-    int maxQuietScore = QUIET_MOVE_SCORES[start];
     int maxScoreIndex = start;
     int maxQuietIndex = start;
+
     Move startMove = movesArr[start];
+    int startQuetScore = QUIET_MOVE_SCORES[start];
+    int startScore = MOVE_SCORES[start];
+
+    int maxScore = startScore;
+    int maxQuietScore = startQuetScore;
     int i;
 
     for (i = start + 1; i < end; i++) {
@@ -609,10 +614,22 @@ void selection_sort_one_move(Move *movesArr, int start, int end) {
     if (maxScoreIndex != start) {
         movesArr[start] = movesArr[maxScoreIndex];
         movesArr[maxScoreIndex] = startMove;
+
+        QUIET_MOVE_SCORES[start] = QUIET_MOVE_SCORES[maxScoreIndex];
+        QUIET_MOVE_SCORES[maxScoreIndex] = startQuetScore;
+
+        MOVE_SCORES[start] = MOVE_SCORES[maxScoreIndex];
+        MOVE_SCORES[maxScoreIndex] = startScore;
     }
     else if (maxQuietIndex != start) {
         movesArr[start] = movesArr[maxQuietIndex];
         movesArr[maxQuietIndex] = startMove;
+
+        QUIET_MOVE_SCORES[start] = QUIET_MOVE_SCORES[maxQuietIndex];
+        QUIET_MOVE_SCORES[maxQuietIndex] = startQuetScore;
+
+        MOVE_SCORES[start] = MOVE_SCORES[maxQuietIndex];
+        MOVE_SCORES[maxQuietIndex] = startScore;
     }
     else {
         assert(0 != 0);
@@ -720,7 +737,7 @@ int q_search(int alpha, int beta, int side) {
         }
 
         // prune moves with negative SEE
-        if (see(move.from, move.to, &gameState, side, targetPiece, attackPiece) < 0) {
+        if (attackPiece != 5 && targetPiece - attackPiece < 0 && see(move.from, move.to, &gameState, side, targetPiece, attackPiece) < 0) {
             continue;
         }
 
@@ -851,36 +868,7 @@ int negamax(int alpha, int beta, int depth, int side) {
         make_move(move, false);
 
         if (!is_king_threatened(side)) {
-            // does to move give check to the opponent
-            bool checkingMove = false;
             legalMoveCount++;
-            
-            /*
-            if (depth >= 3) {
-                checkingMove = is_king_threatened(-side);
-            }
-            */
-
-            /*
-            // late move reductions
-            if (
-                    depth >= 3 && legalMoveCount > 10 && move.code != CAPTURE_MOVE &&
-                    !checkingMove && !isInCheck &&
-                    move.code < KNIGHT_PROMOTION_MOVE  && move.code != EP_CAPTURE_MOVE
-                ) {
-                score = -negamax(-beta, -alpha, depth / 3, -side);
-            }
-            else if (
-                    depth >= 3 && legalMoveCount > 4 && move.code != CAPTURE_MOVE &&
-                    !checkingMove && !isInCheck &&
-                    move.code < KNIGHT_PROMOTION_MOVE  && move.code != EP_CAPTURE_MOVE
-                ) {
-                score = -negamax(-beta, -alpha, depth - 2, -side);
-            }
-            else {
-                score = -negamax(-beta, -alpha, depth - 1, -side);
-            }
-            */
 
             score = -negamax(-beta, -alpha, depth - 1, -side);
 
@@ -980,6 +968,8 @@ Move negamax_root(int alpha, int beta, int depth, int side) {
     int aspirationWindow;
     //bool isInCheck = is_king_threatened(side);
     int score;
+    int originalAlpha = alpha;
+    int originalBeta = beta;
     Move *movesArr = g_moveStack[g_ply];
     u64 attackSet;
 
@@ -990,7 +980,14 @@ Move negamax_root(int alpha, int beta, int depth, int side) {
 
     ttEntry = tTable[ttIndex];
 
+    if (g_cancelThread == 1) {
+        g_cancelThread = 0;
+        printf("cancel\n");
+        pthread_exit(NULL);
+    }
+
     printf("root\n");
+    printf("alpha: %d, beta: %d\n", alpha, beta);
     fflush(stdout);
 
     if (ttEntry.zobristKey == zobristKey) {
@@ -1004,39 +1001,6 @@ Move negamax_root(int alpha, int beta, int depth, int side) {
         if (ttNodeType == CUT_NODE) {
             foundHashMove = true;
         }
-
-        /*
-        // if entry is deep enough, result can be used directly
-        if (ttDepth == depth) {
-            transpositionCount++;
-
-            // checkmate ply re-adjustment
-            if (ttEntry.score > 100000) {
-                ttEntry.score -= g_ply;
-            }
-            else if (ttEntry.score < -100000) {
-                ttEntry.score += g_ply;
-            }
-
-            // score is exact
-            if (ttNodeType == PV_NODE) {
-                alpha = ttEntry.score - 1;
-                beta = ttEntry.score + 1;
-            }
-            // score is lower bound
-            else if (ttNodeType == CUT_NODE) {
-                if (ttEntry.score > alpha) {
-                    alpha = ttEntry.score;
-                }
-            }
-            // score is upper bound
-            else if (ttNodeType == ALL_NODE) {
-                if (ttEntry.score < beta) {
-                    beta = ttEntry.score;
-                }
-            }
-        }
-        */
     }
 
     moveCount = generate_moves(movesArr, side);
@@ -1053,36 +1017,7 @@ Move negamax_root(int alpha, int beta, int depth, int side) {
         make_move(move, false);
 
         if (!is_king_threatened(side)) {
-            // does to move give check to the opponent
-            bool checkingMove = false;
             legalMoveCount++;
-
-            /*
-            if (depth >= 3) {
-                checkingMove = is_king_threatened(-side);
-            }
-            */
-
-            /*
-            // late move reductions
-            if (
-                    depth >= 3 && legalMoveCount > 10 && move.code != CAPTURE_MOVE &&
-                    !checkingMove && !isInCheck &&
-                    move.code < KNIGHT_PROMOTION_MOVE  && move.code != EP_CAPTURE_MOVE
-                ) {
-                score = -negamax(-beta, -alpha, depth / 3, -side);
-            }
-            else if (
-                    depth >= 3 && legalMoveCount > 4 && move.code != CAPTURE_MOVE &&
-                    !checkingMove && !isInCheck &&
-                    move.code < KNIGHT_PROMOTION_MOVE  && move.code != EP_CAPTURE_MOVE
-                ) {
-                score = -negamax(-beta, -alpha, depth - 2, -side);
-            }
-            else {
-                score = -negamax(-beta, -alpha, depth - 1, -side);
-            }
-            */
 
             score = -negamax(-beta, -alpha, depth - 1, -side);
 
@@ -1096,11 +1031,13 @@ Move negamax_root(int alpha, int beta, int depth, int side) {
                 fflush(stdout);
                 aspirationWindow *= 4;
 
+                assert(aspirationWindow != 0);
+
                 if (aspirationWindow > 100) {
-                    return negamax_root(alpha, ALPHA_BETA_MAX, depth, side);
+                    return negamax_root(originalAlpha, ALPHA_BETA_MAX, depth, side);
                 }
 
-                return negamax_root(alpha, currentScore + aspirationWindow, depth, side);
+                return negamax_root(originalAlpha, currentScore + aspirationWindow, depth, side);
             }
 
             //printf("score: %d\n", score);
@@ -1151,11 +1088,13 @@ Move negamax_root(int alpha, int beta, int depth, int side) {
         fflush(stdout);
         aspirationWindow *= 4;
 
+        assert(aspirationWindow != 0);
+
         if (aspirationWindow > 100) {
-            return negamax_root(ALPHA_BETA_MIN, beta, depth, side);
+            return negamax_root(ALPHA_BETA_MIN, originalBeta, depth, side);
         }
 
-        return negamax_root(currentScore - aspirationWindow, beta, depth, side);
+        return negamax_root(currentScore - aspirationWindow, originalBeta, depth, side);
     }
 
     return bestMove;
@@ -1177,6 +1116,7 @@ void *search(void *vargp) {
     clock_t end;
     int timeInMillis;
     int i;
+    char *moveStr;
 
     printf("start search\n");
     fflush(stdout);
@@ -1212,6 +1152,8 @@ void *search(void *vargp) {
         }
         else {
             // aspiration window
+            printf("window around: %d and %d\n", currentScore - 25, currentScore + 25);
+            fflush(stdout);
             g_selectedMove = negamax_root(currentScore - 25, currentScore + 25, searchedDepth + 1, side);
         }
         foundMove = true;
@@ -1225,7 +1167,13 @@ void *search(void *vargp) {
         printf("transpositions: %d ", transpositionCount);
         // time in seconds, millisecond precision
         printf("time: %d.%d ", timeInMillis / 1000, timeInMillis % 1000);
-        printf("score: %d\n\n", currentScore);
+        printf("score: %d\n", currentScore);
+        moveStr = (char*) malloc(8 * sizeof(char));
+        move_to_string(moveStr, g_selectedMove);
+
+        printf("pv: %s\n\n", moveStr);
+
+        free(moveStr);
 
         for (i = 0; i <= searchedDepth; i++) {
             printf("beta-cut-offs: %f, %f, %f, total: %d\n", (float)betaCutOffs[i][0] * 100 / (float)betaCutOffsTotal[i], (float)betaCutOffs[i][1] * 100 / (float)betaCutOffsTotal[i], (float)betaCutOffs[i][2] * 100 / (float)betaCutOffsTotal[i], betaCutOffsTotal[i]);
@@ -1248,6 +1196,12 @@ void *search(void *vargp) {
         }
 
         zero_beta_cutoff();
+
+        if (g_cancelThread == 1) {
+            g_cancelThread = 0;
+            printf("cancel\n");
+            pthread_exit(NULL);
+        }
     }
 
     pthread_cleanup_pop(1);
