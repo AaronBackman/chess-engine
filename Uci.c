@@ -50,6 +50,10 @@ void uci_listen() {
         set_lookup_tables();
         zero_history();
         initReady = true;
+
+        print_bitmap_binary(IS_STACKED_PAWN[0][24]);
+        print_bitmap_binary(IS_STACKED_PAWN[1][27]);
+        print_bitmap_binary(IS_STACKED_PAWN[0][15]);
       }
       if (!positionReady) {
         free(input);

@@ -313,6 +313,9 @@ int evaluate(int side) {
     int whitePieceSum;
     int blackPieceSum;
 
+    u64 originalWhitePawns = whitePawns;
+    u64 originalBlackPawns = blackPawns;
+
     // number of each piece type and color
     int wp = 0;
     int bp = 0;
@@ -324,6 +327,7 @@ int evaluate(int side) {
     int br = 0;
     int wq = 0;
     int bq = 0;
+    u64 mask;
 
 
     // first calculate the opening score
@@ -331,6 +335,31 @@ int evaluate(int side) {
         index = bitscan_forward(whitePawns);
         whitePawns &= (whitePawns - 1);
         whiteOpeningMaterial += PAWN_SCORE + WHITE_PAWN_PIECE_SQUARE_TABLE[index];
+        
+        mask = IS_PASSED_PAWN[0][index];
+        // passed pawn
+        if ((mask & originalBlackPawns) == 0) {
+            whiteOpeningMaterial += 20;
+        }
+
+        mask = IS_ISOLATED_PAWN[index & 7];
+        // isolated pawns
+        if ((mask & originalWhitePawns) == 0) {
+            whiteOpeningMaterial -= 20;
+        }
+
+        mask = IS_CONNECTED_PAWN[0][index];
+        // unconnected pawns
+        if ((mask & originalWhitePawns) == 0) {
+            whiteOpeningMaterial -= 10;
+        }
+
+        mask = IS_STACKED_PAWN[0][index];
+        // doubled, triple, etc pawns
+        if ((mask & originalWhitePawns) != 0) {
+            whiteOpeningMaterial -= 20;
+        }
+
         wp++;
     }
     while (whiteKnights!= 0) {
@@ -349,6 +378,20 @@ int evaluate(int side) {
         index = bitscan_forward(whiteRooks);
         whiteRooks &= (whiteRooks - 1);
         whiteOpeningMaterial += ROOK_SCORE + WHITE_ROOK_PIECE_SQUARE_TABLE[index];
+
+        mask = FILE_MASK[index & 7];
+
+        if ((mask & originalWhitePawns) == 0) {
+            // open file
+            if ((mask & originalBlackPawns) == 0) {
+                whiteOpeningMaterial += 20;
+            }
+            // semi-open file
+            else {
+                whiteOpeningMaterial += 10;
+            }
+        }
+
         wr++;
     }
     while (whiteQueens != 0) {
@@ -371,6 +414,31 @@ int evaluate(int side) {
         index = bitscan_forward(blackPawns);
         blackPawns &= (blackPawns - 1);
         blackOpeningMaterial += PAWN_SCORE + BLACK_PAWN_PIECE_SQUARE_TABLE[index];
+
+        mask = IS_PASSED_PAWN[1][index];
+
+        if ((mask & originalWhitePawns) == 0) {
+            blackOpeningMaterial += 20;
+        }
+
+        mask = IS_ISOLATED_PAWN[index & 7];
+
+        if ((mask & originalBlackPawns) == 0) {
+            blackOpeningMaterial -= 20;
+        }
+
+        mask = IS_CONNECTED_PAWN[1][index];
+
+        if ((mask & originalBlackPawns) == 0) {
+            blackOpeningMaterial -= 10;
+        }
+
+        mask = IS_STACKED_PAWN[1][index & 7];
+        // doubled, triple, etc pawns
+        if ((mask & originalBlackPawns) != 0) {
+            blackOpeningMaterial -= 20;
+        }
+
         bp++;
     }
     while (blackKnights!= 0) {
@@ -389,6 +457,20 @@ int evaluate(int side) {
         index = bitscan_forward(blackRooks);
         blackRooks &= (blackRooks - 1);
         blackOpeningMaterial += ROOK_SCORE+ BLACK_ROOK_PIECE_SQUARE_TABLE[index];
+
+        mask = FILE_MASK[index & 7];
+
+        if ((mask & originalBlackPawns) == 0) {
+            // open file
+            if ((mask & originalWhitePawns) == 0) {
+                blackOpeningMaterial += 20;
+            }
+            // semi-open file
+            else {
+                blackOpeningMaterial += 10;
+            }
+        }
+
         br++;
     }
     while (blackQueens != 0) {
@@ -473,7 +555,7 @@ void sort_moves_score(Move *movesArr, int end, int side, Move hashMove, bool fou
             score += 10000;
         }
 
-        if (move.code == CAPTURE_MOVE || move.code == KNIGHT_PROMOTION_CAPTURE_MOVE || move.code == BISHOP_PROMOTION_CAPTURE_MOVE || move.code == ROOK_PROMOTION_CAPTURE_MOVE || move.code == QUEEN_PROMOTION_CAPTURE_MOVE) {
+        if (move.code == CAPTURE_MOVE || move.code == KNIGHT_PROMOTION_CAPTURE_MOVE || move.code == BISHOP_PROMOTION_CAPTURE_MOVE || move.code == ROOK_PROMOTION_CAPTURE_MOVE || move.code == QUEEN_PROMOTION_CAPTURE_MOVE || move.code == EP_CAPTURE_MOVE) {
             if (square_occupied(pawns, move.from)) {
                 LVA_Index = 0;
             }
@@ -510,6 +592,10 @@ void sort_moves_score(Move *movesArr, int end, int side, Move hashMove, bool fou
                 MVV_Index = 4;
             }
             else {
+                FILE *fp;
+                fp = fopen("error.txt", "w");
+                fprintf(fp, "error: move from: %d, to: %d, code: %d", move.from, move.to, move.code);
+                fclose(fp);
                 assert(0 != 0);
             }
 

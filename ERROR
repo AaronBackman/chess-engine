@@ -1,0 +1,4 @@
+Program_7_2: Search.c:595: sort_moves_score: Assertion `0 != 0' failed.
+// MVV_LVA move.to not occupied by any (non-king) piece (maybe perft error)
+
+

@@ -64,6 +64,12 @@ extern u64 ENPASSANT_FILE_ZOBRIST[8];
 
 extern TranspositionTableEntry tTable[TRANSPOSITION_TABLE_SIZE];
 
+extern u64 FILE_MASK[8];
+extern u64 IS_PASSED_PAWN[2][64];
+extern u64 IS_ISOLATED_PAWN[8];
+extern u64 IS_CONNECTED_PAWN[2][64];
+extern u64 IS_STACKED_PAWN[2][64];
+
 // the center manhattan distance
 extern unsigned char CMD[64];
 

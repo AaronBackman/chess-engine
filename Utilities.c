@@ -312,6 +312,34 @@ void print_in_binary(u64 n) {
     printf("\n");
 }
 
+void print_bitmap_binary(u64 bb) {
+    int i = 7;
+    int j = 0;
+
+    printf("\n");
+
+    while (i * 8 + j >= 0) {
+        if (square_occupied(bb, i * 8 + j)) {
+            printf("1 ");
+        }
+        else {
+            printf("0 ");
+        }
+
+        if (j == 7) {
+            printf("\n");
+            j = 0;
+            i--;
+        }
+        else {
+            j++;
+        }
+    }
+
+    printf("\n");
+}
+
+
 int max(int a, int b) {
     if (a > b) {
         return a;

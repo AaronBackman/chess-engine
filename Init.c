@@ -224,6 +224,13 @@ u64 BLACK_TO_MOVE_ZOBRIST;
 u64 CASTLING_ZOBRIST[4];
 u64 ENPASSANT_FILE_ZOBRIST[8];
 
+
+u64 FILE_MASK[8];
+u64 IS_PASSED_PAWN[2][64];
+u64 IS_ISOLATED_PAWN[8];
+u64 IS_CONNECTED_PAWN[2][64];
+u64 IS_STACKED_PAWN[2][64];
+
 // manhattan distance between 2 squares
 int calc_manhattan_distance(int sq1, int sq2) {
    int file1, file2, rank1, rank2;
@@ -257,6 +264,213 @@ void set_single_bit_lookup() {
     SINGLE_BIT_LOOKUP[i] = 1LLU << i;
   }
 }
+
+
+void set_file_masks() {
+    int i;
+    int j;
+
+    for (i = 0; i < 8; i++) {
+        u64 mask = 0;
+
+        for (j = 0; j < 64; j++) {
+            if (j % 8 == i % 8) {
+                mask = fill_square(mask, j);
+            }
+        }
+
+        FILE_MASK[i] = mask;
+    }
+}
+
+void set_passed_pawn_masks() {
+    int i;
+    int j;
+
+    // white
+    for (i = 0; i < 64; i++) {
+        u64 mask = 0;
+
+        mask = fill_square(mask, i);
+
+        for (j = 0; j < 64; j++) {
+            if (j / 8 > i / 8) {
+                if (i % 8 == 0) {
+                    if (j % 8 == 0) {
+                        mask = fill_square(mask, j);
+                    }
+                    else if (j % 8 == 1) {
+                        mask = fill_square(mask, j);
+                    }
+                }
+                else if (i % 8 == 7) {
+                    if (j % 8 == 7) {
+                        mask = fill_square(mask, j);
+                    }
+                    else if (j % 8 == 6) {
+                        mask = fill_square(mask, j);
+                    }
+                }
+                else {
+                    if (j % 8 == i % 8) {
+                        mask = fill_square(mask, j);
+                    }
+                    else if (j % 8 == i % 8 - 1) {
+                        mask = fill_square(mask, j);
+                    }
+                    else if (j % 8 == i % 8 + 1) {
+                        mask = fill_square(mask, j);
+                    }
+                }
+            }
+        }
+
+        IS_PASSED_PAWN[0][i] = mask;
+    }
+
+    // black
+    for (i = 0; i < 64; i++) {
+        u64 mask = 0;
+
+        mask = fill_square(mask, i);
+
+        for (j = 0; j < 64; j++) {
+            if (j / 8 < i / 8) {
+                if (i % 8 == 0) {
+                    if (j % 8 == 0) {
+                        mask = fill_square(mask, j);
+                    }
+                    else if (j % 8 == 1) {
+                        mask = fill_square(mask, j);
+                    }
+                }
+                else if (i % 8 == 7) {
+                    if (j % 8 == 7) {
+                        mask = fill_square(mask, j);
+                    }
+                    else if (j % 8 == 6) {
+                        mask = fill_square(mask, j);
+                    }
+                }
+                else {
+                    if (j % 8 == i % 8) {
+                        mask = (mask, j);
+                    }
+                    else if (j % 8 == i % 8 - 1) {
+                        mask = fill_square(mask, j);
+                    }
+                    else if (j % 8 == i % 8 + 1) {
+                        mask = fill_square(mask, j);
+                    }
+                }
+            }
+        }
+
+        IS_PASSED_PAWN[1][i] = mask;
+    }
+}
+
+void set_isolated_pawn_masks() {
+    int i;
+
+    for (i = 0; i < 8; i++) {
+        u64 mask = 0;
+
+        if (i == 0) {
+            mask |= FILE_MASK[1];
+        }
+        else if (i == 7) {
+            mask |= FILE_MASK[6];
+        }
+        else {
+            mask |= FILE_MASK[i - 1];
+            mask |= FILE_MASK[i + 1];
+        }
+
+        IS_ISOLATED_PAWN[i] = mask;
+    }
+}
+
+void set_connected_pawn_masks() {
+    int i;
+
+    for (i = 8; i < 56; i++) {
+        u64 mask = 0;
+
+        if (i % 8 == 0) {
+            mask = fill_square(mask, i - 7);
+        }
+        else if (i % 8 == 7) {
+            mask = fill_square(mask, i - 9);
+        }
+        else {
+            mask = fill_square(mask, i - 7);
+            mask = fill_square(mask, i - 9);
+        }
+
+        IS_CONNECTED_PAWN[0][i] = mask;
+    }
+
+    for (i = 8; i < 56; i++) {
+        u64 mask = 0;
+
+        if (i % 8 == 0) {
+            mask = fill_square(mask, i + 9);
+        }
+        else if (i % 8 == 7) {
+            mask = fill_square(mask, i + 7);
+        }
+        else {
+            mask = fill_square(mask, i + 9);
+            mask = fill_square(mask, i + 7);
+        }
+
+        IS_CONNECTED_PAWN[1][i] = mask;
+    }
+}
+
+void set_stacked_pawn_masks() {
+    int i;
+    int j;
+
+    // white
+    for (i = 0; i < 64; i++) {
+        u64 mask = 0;
+        for (j = 0; j < 64; j++) {
+            if (j / 8 > i / 8) {
+                if (j % 8 == i % 8) {
+                    mask = fill_square(mask, j);
+                }
+            }
+        }
+
+        IS_STACKED_PAWN[0][i] = mask;
+    }
+
+    // black
+    for (i = 0; i < 64; i++) {
+        u64 mask = 0;
+        for (j = 0; j < 64; j++) {
+            if (j / 8 < i / 8) {
+                if (j % 8 == i % 8) {
+                    mask = fill_square(mask, j);
+                }
+            }
+        }
+
+        IS_STACKED_PAWN[1][i] = mask;
+    }
+}
+
+void init_eval_masks() {
+    set_file_masks();
+    set_passed_pawn_masks();
+    set_isolated_pawn_masks();
+    set_connected_pawn_masks();
+    set_stacked_pawn_masks();
+}
+
+
 
 void set_north_east_lookup() {
   int boardIndex;
@@ -612,6 +826,8 @@ void initZobrist() {
 void set_lookup_tables() {
     init_manhattan_distance_arr();
     set_single_bit_lookup();
+
+    init_eval_masks();
 
     // set diagonal lookUptables
     set_north_east_lookup();
