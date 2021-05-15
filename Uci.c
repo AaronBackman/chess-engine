@@ -170,8 +170,6 @@ void uci_listen() {
         return;
       }
 
-      printf("calctime: %d\n", calcTime);
-
       pthread_create(&threadId, NULL, search, NULL);
       pthread_detach(threadId);
 

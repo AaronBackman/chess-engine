@@ -10,9 +10,9 @@ typedef unsigned short u16;
 typedef unsigned char BYTE;
 
 #define BOARD_SIZE 64
-#define MAX_TURNS 1024
-#define MAX_MOVES 500
-#define MAX_DEPTH 100
+#define MAX_TURNS 512
+#define MAX_MOVES 256
+#define MAX_DEPTH 64
 // with 16 byte hash entry is equal to 256 megabytes
 #define TRANSPOSITION_TABLE_SIZE 16777216
 

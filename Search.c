@@ -28,6 +28,7 @@ int ORIGINAL_MOVE_STACK_POINTER;
 u64 nodeCount = 0;
 u64 quiescentNodeCount = 0;
 u64 transpositionCount = 0;
+u64 evalCount = 0;
 
 bool checkmate;
 bool losingCheckMate;
@@ -75,10 +76,13 @@ int MOVE_SCORES[MAX_MOVES];
 int QUIET_MOVE_SCORES[MAX_MOVES];
 
 
+/*
 // debugging info
 u64 betaCutOffs[100][5];
 u64 betaCutOffsTotal[100];
+*/
 
+/*
 void zero_beta_cutoff() {
     int i;
     int j;
@@ -91,6 +95,7 @@ void zero_beta_cutoff() {
         }
     }
 }
+*/
 
 void zero_history() {
     int i;
@@ -315,6 +320,8 @@ int evaluate(int side) {
 
     u64 originalWhitePawns = whitePawns;
     u64 originalBlackPawns = blackPawns;
+
+    evalCount++;
 
     // number of each piece type and color
     int wp = 0;
@@ -555,7 +562,7 @@ void sort_moves_score(Move *movesArr, int end, int side, Move hashMove, bool fou
             score += 10000;
         }
 
-        if (move.code == CAPTURE_MOVE || move.code == KNIGHT_PROMOTION_CAPTURE_MOVE || move.code == BISHOP_PROMOTION_CAPTURE_MOVE || move.code == ROOK_PROMOTION_CAPTURE_MOVE || move.code == QUEEN_PROMOTION_CAPTURE_MOVE || move.code == EP_CAPTURE_MOVE) {
+        if (move.code == CAPTURE_MOVE || move.code == KNIGHT_PROMOTION_CAPTURE_MOVE || move.code == BISHOP_PROMOTION_CAPTURE_MOVE || move.code == ROOK_PROMOTION_CAPTURE_MOVE || move.code == QUEEN_PROMOTION_CAPTURE_MOVE) {
             if (square_occupied(pawns, move.from)) {
                 LVA_Index = 0;
             }
@@ -592,10 +599,6 @@ void sort_moves_score(Move *movesArr, int end, int side, Move hashMove, bool fou
                 MVV_Index = 4;
             }
             else {
-                FILE *fp;
-                fp = fopen("error.txt", "w");
-                fprintf(fp, "error: move from: %d, to: %d, code: %d", move.from, move.to, move.code);
-                fclose(fp);
                 assert(0 != 0);
             }
 
@@ -630,6 +633,9 @@ void sort_moves_score(Move *movesArr, int end, int side, Move hashMove, bool fou
             else {
                 assert(0 != 0);
             }
+        }
+        else if (move.code == EP_CAPTURE_MOVE) {
+            score = MVV_LVA[0][0];
         }
         else if (move.code == QUIET_MOVE) {
             if (g_ply > 0) {
@@ -746,7 +752,6 @@ int q_search(int alpha, int beta, int side) {
     quiescentNodeCount++;
 
     if (g_cancelThread == 1) {
-        printf("cancel\n");
         g_cancelThread = 0;
         pthread_exit(NULL);
     }
@@ -850,6 +855,33 @@ int q_search(int alpha, int beta, int side) {
     return alpha;
 }
 
+int calcReduction(bool isInCheck, bool alphaRise, Move move, int moveCount, int depth, int side) {
+    if (move.code != QUIET_MOVE || depth < 3 || isInCheck) {
+        return 0;
+    }
+    // move gives check
+    if (is_king_threatened(-side)) {
+        return 0;
+    }
+    
+    if (alphaRise) {
+        if (moveCount > 6) {
+            return depth / 3;
+        }
+        else {
+            return 1;
+        }
+    }
+    else {
+        if (moveCount > 6) {
+            return depth / 3 * 2;
+        }
+        else {
+            return 1;
+        }
+    }
+}
+
 int negamax(int alpha, int beta, int depth, int side) {
     int moveCount;
     int legalMoveCount = 0;
@@ -860,7 +892,7 @@ int negamax(int alpha, int beta, int depth, int side) {
     u64 attackSet;
     Move bestMove;
     bool alphaRise = false;
-    //bool isInCheck = is_king_threatened(side);
+    bool isInCheck = is_king_threatened(side);
 
     Move hashMove = create_move(0, 0, 0);
     bool foundHashMove = false;
@@ -872,7 +904,6 @@ int negamax(int alpha, int beta, int depth, int side) {
 
     if (g_cancelThread == 1) {
         g_cancelThread = 0;
-        printf("cancel\n");
         pthread_exit(NULL);
     }
 
@@ -948,6 +979,7 @@ int negamax(int alpha, int beta, int depth, int side) {
 
     for (i = 0; i < moveCount; i++)  {
         Move move;
+        int reduction;
 
         selection_sort_one_move(movesArr, i, moveCount);
         move = movesArr[i];
@@ -956,7 +988,24 @@ int negamax(int alpha, int beta, int depth, int side) {
         if (!is_king_threatened(side)) {
             legalMoveCount++;
 
-            score = -negamax(-beta, -alpha, depth - 1, -side);
+            // dont reduce hash moves
+            if (move.from == hashMove.from && move.to == hashMove.to && move.code == hashMove.code) {
+                reduction = 0;
+            }
+            // dont reduce killer moves
+            else if (QUIET_MOVE_SCORES[moveCount] >= INT_MAX - 2) {
+                reduction = 0;
+            }
+            else {
+                reduction = calcReduction(isInCheck, alphaRise, move, legalMoveCount, depth, side);
+            }
+
+            score = -negamax(-beta, -alpha, depth - 1 - reduction, -side);
+
+            // if reduced move seems good, research without reduction
+            if (reduction > 0 && score > alpha) {
+                score = -negamax(-beta, -alpha, depth - 1, -side);
+            }
 
             if (score > bestScore) {
                 bestScore = score;
@@ -989,11 +1038,14 @@ int negamax(int alpha, int beta, int depth, int side) {
                         }
                     }
                 }
+                
+                /*
 
                 betaCutOffsTotal[g_ply]++;
                 if (legalMoveCount < 6) {
                     betaCutOffs[g_ply][legalMoveCount - 1]++;
                 }
+                */
 
 
                 return beta;
@@ -1052,7 +1104,7 @@ Move negamax_root(int alpha, int beta, int depth, int side) {
     bool alphaRise = false;
     bool foundHashMove = false;
     int aspirationWindow;
-    //bool isInCheck = is_king_threatened(side);
+    bool isInCheck = is_king_threatened(side);
     int score;
     int originalAlpha = alpha;
     int originalBeta = beta;
@@ -1068,13 +1120,8 @@ Move negamax_root(int alpha, int beta, int depth, int side) {
 
     if (g_cancelThread == 1) {
         g_cancelThread = 0;
-        printf("cancel\n");
         pthread_exit(NULL);
     }
-
-    printf("root\n");
-    printf("alpha: %d, beta: %d\n", alpha, beta);
-    fflush(stdout);
 
     if (ttEntry.zobristKey == zobristKey) {
         int ttDepth = ttEntry.depth;
@@ -1096,6 +1143,7 @@ Move negamax_root(int alpha, int beta, int depth, int side) {
 
     for (i = 0; i < moveCount; i++)  {
         Move move;
+        int reduction;
 
         selection_sort_one_move(movesArr, i, moveCount);
         move = movesArr[i];
@@ -1105,7 +1153,20 @@ Move negamax_root(int alpha, int beta, int depth, int side) {
         if (!is_king_threatened(side)) {
             legalMoveCount++;
 
-            score = -negamax(-beta, -alpha, depth - 1, -side);
+            // dont reduce hash moves
+            if (move.from == hashMove.from && move.to == hashMove.to && move.code == hashMove.code) {
+                reduction = 0;
+            }
+            else {
+                reduction = calcReduction(isInCheck, true, move, legalMoveCount, depth, side);
+            }
+
+            score = -negamax(-beta, -alpha, depth - 1 - reduction, -side);
+
+            // if reduced move seems good, research without reduction
+            if (reduction > 0 && score > alpha) {
+                score = -negamax(-beta, -alpha, depth - 1, -side);
+            }
 
             // fail high aspiration window, have to re-search with a wider window
             if (score >= beta) {
@@ -1113,8 +1174,6 @@ Move negamax_root(int alpha, int beta, int depth, int side) {
                 unmake_move();
 
                 aspirationWindow = beta - currentScore;
-                printf("aspiration window size fail high: %d\n", aspirationWindow);
-                fflush(stdout);
                 aspirationWindow *= 4;
 
                 assert(aspirationWindow != 0);
@@ -1170,8 +1229,6 @@ Move negamax_root(int alpha, int beta, int depth, int side) {
     // fail low aspiration window, have to re-search with a wider window
     else {
         aspirationWindow = currentScore - alpha;
-        printf("aspiration window size fail low: %d\n", aspirationWindow);
-        fflush(stdout);
         aspirationWindow *= 4;
 
         assert(aspirationWindow != 0);
@@ -1186,10 +1243,46 @@ Move negamax_root(int alpha, int beta, int depth, int side) {
     return bestMove;
 }
 
+getPV(char *pvStr) {
+    int index = 0;
+    while (index < 10) {
+        char *moveStr = (char *) malloc(8 * sizeof(char));
+        Move hashMove;
+        TranspositionTableEntry ttEntry;
+        u64 zobristKey = g_zobristStack[g_root + g_ply];
+        u64 ttIndex = zobristKey % TRANSPOSITION_TABLE_SIZE;
+
+        ttEntry = tTable[ttIndex];
+
+        if (ttEntry.zobristKey != zobristKey) {
+            free(moveStr);
+            break;
+        }
+
+        int ttDepth = ttEntry.depth;
+        int ttNodeType = ttEntry.nodeType;
+        hashMove = ttEntry.hashMove;
+        move_to_string(moveStr, hashMove);
+        strcat(moveStr, " ");
+        strcat(pvStr, moveStr);
+
+        if (ttNodeType != PV_NODE) {
+            free(moveStr);
+            break;
+        }
+
+        make_move(hashMove, false);
+        index++;
+    }
+
+    while (g_ply > 0) {
+        unmake_move();
+    }
+}
+
 // cleans up after this thread is terminated
 void clean_up_handler(void *vargp) {
     g_ply = 0;
-    printf("cleanup\n");
 }
 
 // a thread to calculate the best moves with iterative deepening
@@ -1202,17 +1295,13 @@ void *search(void *vargp) {
     clock_t end;
     int timeInMillis;
     int i;
-    char *moveStr;
-
-    printf("start search\n");
-    fflush(stdout);
+    char *pvStr
 
     pthread_cleanup_push(clean_up_handler, vargp);
 
     // used for debugging purposes
-    zero_beta_cutoff();
+    //zero_beta_cutoff();
 
-    start = clock();
 
     currentScore = 0;
 
@@ -1227,6 +1316,7 @@ void *search(void *vargp) {
         nodeCount = 0;
         quiescentNodeCount = 0;
         transpositionCount = 0;
+        evalCount = 0;
 
         mateKiller = 0;
         firstKiller = 0;
@@ -1237,55 +1327,36 @@ void *search(void *vargp) {
             g_selectedMove = negamax_root(ALPHA_BETA_MIN, ALPHA_BETA_MAX, searchedDepth + 1, side);
         }
         else {
-            // aspiration window
-            printf("window around: %d and %d\n", currentScore - 25, currentScore + 25);
-            fflush(stdout);
             g_selectedMove = negamax_root(currentScore - 25, currentScore + 25, searchedDepth + 1, side);
         }
         foundMove = true;
+        searchedDepth++;
 
         end = clock();
         timeInMillis = (int)(((double) (end - start)) / CLOCKS_PER_SEC * 1000);
 
-        printf("searched depth: %d ", searchedDepth);
-        printf("nodes: %d ", nodeCount);
-        printf("quiescent: %d ", quiescentNodeCount);
-        printf("transpositions: %d ", transpositionCount);
-        // time in seconds, millisecond precision
-        printf("time: %d.%d ", timeInMillis / 1000, timeInMillis % 1000);
-        printf("score: %d\n", currentScore);
-        moveStr = (char*) malloc(8 * sizeof(char));
-        move_to_string(moveStr, g_selectedMove);
-
-        printf("pv: %s\n\n", moveStr);
-
-        free(moveStr);
-
-        for (i = 0; i <= searchedDepth; i++) {
-            printf("beta-cut-offs: %f, %f, %f, total: %d\n", (float)betaCutOffs[i][0] * 100 / (float)betaCutOffsTotal[i], (float)betaCutOffs[i][1] * 100 / (float)betaCutOffsTotal[i], (float)betaCutOffs[i][2] * 100 / (float)betaCutOffsTotal[i], betaCutOffsTotal[i]);
+        if (searchedDepth > 2) {
+            pvStr = (char *) malloc(128 * sizeof(char));
+            getPV(pvStr);
+            printf("info depth %d nodes %d time %d score %d pv %s\n", searchedDepth, evalCount, timeInMillis, currentScore, pvStr);
+            free(pvStr);
         }
-        
-        printf("\nmate killers: %d, 1. killers: %d, 2. killers: %d\n\n", mateKiller, firstKiller, secondKiller);
 
-
-        fflush(stdout);
-        searchedDepth++;
+        // time in seconds, millisecond precision
+        //printf("time: %d.%d ", timeInMillis / 1000, timeInMillis % 1000);
 
         if (checkmate) {
-            printf("checkmate\n");
             break;
         }
         else if (losingCheckMate) {
             checkmate = true;
-            printf("losing checkmate\n");
             break;
         }
 
-        zero_beta_cutoff();
+        //zero_beta_cutoff();
 
         if (g_cancelThread == 1) {
             g_cancelThread = 0;
-            printf("cancel\n");
             pthread_exit(NULL);
         }
     }

@@ -1,1 +1,0 @@
-sorting doesnt switch scores associated with moves swirched
