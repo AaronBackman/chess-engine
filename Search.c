@@ -5,6 +5,7 @@
 #include <assert.h>
 #include <time.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "Constants.h"
 #include "Move.h"
@@ -734,7 +735,6 @@ int q_search(int alpha, int beta, int side) {
     int i;
     int score;
     Move *movesArr = g_moveStack[g_ply];
-    u64 attackSet;
     int stand_pat = evaluate(side);
     //assert(evaluate(side) == -evaluate(-side));
 
@@ -1243,7 +1243,7 @@ Move negamax_root(int alpha, int beta, int depth, int side) {
     return bestMove;
 }
 
-getPV(char *pvStr) {
+void getPV(char *pvStr) {
     int index = 0;
     while (index < 10) {
         char *moveStr = (char *) malloc(8 * sizeof(char));
@@ -1264,12 +1264,12 @@ getPV(char *pvStr) {
         hashMove = ttEntry.hashMove;
         move_to_string(moveStr, hashMove);
         strcat(moveStr, " ");
-        strcat(pvStr, moveStr);
 
         if (ttNodeType != PV_NODE) {
             free(moveStr);
             break;
         }
+        strcat(pvStr, moveStr);
 
         make_move(hashMove, false);
         index++;
@@ -1293,9 +1293,10 @@ void *search(void *vargp) {
     int side = get_side_to_play(otherGameInfo);
     clock_t start;
     clock_t end;
-    int timeInMillis;
-    int i;
-    char *pvStr
+    int timeInMillis = 0;
+    int oldTimeInMillis = 0;
+    int timeDifference;
+    char *pvStr;
 
     pthread_cleanup_push(clean_up_handler, vargp);
 
@@ -1333,12 +1334,31 @@ void *search(void *vargp) {
         searchedDepth++;
 
         end = clock();
+        oldTimeInMillis = timeInMillis;
         timeInMillis = (int)(((double) (end - start)) / CLOCKS_PER_SEC * 1000);
 
         if (searchedDepth > 2) {
             pvStr = (char *) malloc(128 * sizeof(char));
             getPV(pvStr);
-            printf("info depth %d nodes %d time %d score %d pv %s\n", searchedDepth, evalCount, timeInMillis, currentScore, pvStr);
+            timeDifference = timeInMillis - oldTimeInMillis;
+            // to avoid division with zero when time < 1 millisecond
+            if (timeDifference == 0) {
+                timeDifference = 1;
+            }
+
+            if (currentScore < -100000) {
+                int distanceToMate = currentScore + CHECKMATE;
+                printf("info depth %d nodes %d nps %d time %d score mate %d pv %s\n", searchedDepth, evalCount, evalCount / timeDifference * 1000, timeInMillis, distanceToMate / 2, pvStr);
+            }
+            else if (currentScore > 100000) {
+                int distanceToMate = CHECKMATE - currentScore;
+                printf("info depth %d nodes %d nps %d time %d score mate %d pv %s\n", searchedDepth, evalCount, evalCount / timeDifference * 1000, timeInMillis, (distanceToMate + 1) / 2, pvStr);
+            }
+            else {
+                printf("info depth %d nodes %d nps %d time %d score cp %d pv %s\n", searchedDepth, evalCount, evalCount / timeDifference * 1000, timeInMillis, currentScore, pvStr);
+            }
+
+            fflush(stdout);
             free(pvStr);
         }
 

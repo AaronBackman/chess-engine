@@ -331,8 +331,8 @@ void parse_uci_position(char *fenStr) {
 
     g_zobristStack[0] = zobristKey;
 
-    printf("zobrist after parse: ");
-    print_in_binary(zobristKey);
+    //printf("zobrist after parse: ");
+    //print_in_binary(zobristKey);
 
     if (movesAfterPosition) {
         int i = moveStartIndex;
@@ -457,5 +457,5 @@ void parse_uci_position(char *fenStr) {
         }
     }
 
-    printf("zobrist: %llu\n", g_zobristStack[g_root + g_ply]);
+    //printf("zobrist: %llu\n", g_zobristStack[g_root + g_ply]);
 }

@@ -26,7 +26,7 @@ void uci_listen() {
     input = (char*) malloc(maxInputLength * sizeof(char));
     fgets(input, maxInputLength, stdin);
 
-    printf("root %d ply %d\n", g_root, g_ply);
+    // printf("root %d ply %d\n", g_root, g_ply);
 
 
     if (strcmp(input, "uci\n") == 0) {
@@ -50,10 +50,6 @@ void uci_listen() {
         set_lookup_tables();
         zero_history();
         initReady = true;
-
-        print_bitmap_binary(IS_STACKED_PAWN[0][24]);
-        print_bitmap_binary(IS_STACKED_PAWN[1][27]);
-        print_bitmap_binary(IS_STACKED_PAWN[0][15]);
       }
       if (!positionReady) {
         free(input);
@@ -72,7 +68,7 @@ void uci_listen() {
       parse_uci_position("position fen rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1\n");
       positionReady = true;
 
-      print_board();
+      // print_board();
 
       free(input);
       continue;
@@ -84,7 +80,7 @@ void uci_listen() {
       parse_uci_position("position fen r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -\n");
       positionReady = true;
 
-      print_board();
+      // print_board();
       
       free(input);
       continue;
@@ -96,7 +92,7 @@ void uci_listen() {
       parse_uci_position(input);
       positionReady = true;
 
-      print_board();
+      // print_board();
 
       // printf("see: %d\n", see(19, 36, &g_gameStateStack[g_root + g_ply], WHITE, 0, 1));
       

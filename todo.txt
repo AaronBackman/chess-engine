@@ -1,0 +1,1 @@
+// todo add check detection to q search requires special move generation in q search to be efficient

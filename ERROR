@@ -5,3 +5,7 @@ Program_7_2: Search.c:595: sort_moves_score: Assertion `0 != 0' failed.
 
 
 Program_7_2: Search.c:595: sort_moves_score: Assertion `0 != 0' failed.
+Program_7_4: Search.c:603: sort_moves_score: Assertion `0 != 0' failed.
+Program_7_3: Search.c:599: sort_moves_score: Assertion `0 != 0' failed.
+Program_7_4: Search.c:603: sort_moves_score: Assertion `0 != 0' failed.
+Program_7_4: Search.c:603: sort_moves_score: Assertion `0 != 0' failed.
