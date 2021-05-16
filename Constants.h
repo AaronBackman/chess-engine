@@ -29,7 +29,7 @@ typedef unsigned char BYTE;
 #define QUEEN_CASTLE_MOVE 3
 #define CAPTURE_MOVE 4
 #define EP_CAPTURE_MOVE 5
-// #define NULL_MOVE 6
+#define NULL_MOVE 6
 #define INVALID_MOVE 7
 #define KNIGHT_PROMOTION_MOVE 8
 #define BISHOP_PROMOTION_MOVE 9
@@ -44,6 +44,7 @@ typedef unsigned char BYTE;
 #define BLACK -1
 
 #define DELTA 200
+#define NULL_R 3
 
 #define PV_NODE 1
 #define ALL_NODE 2

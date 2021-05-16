@@ -82,6 +82,9 @@ void add_tt_entry(u64 zobristKey, int score, Move hashMove, u16 nodeType, u16 de
 // very inefficient, only used in testing
 u64 get_zobrist(Board board);
 
+// check if side to move has a non-pawn (or king) piece
+bool has_a_piece(Board *gameState, int side);
+
 void print_in_binary(u64 n);
 
 void print_bitmap_binary(u64 bb);

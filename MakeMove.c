@@ -176,6 +176,9 @@ void make_move(Move move, bool permanent) {
             zobristKey ^= WHITE_PAWN_ZOBRIST[enpassantSquare];
         }
     }
+    else if (code == NULL_MOVE) {
+        // do nothing
+    }
 
     // a normal move or promotion
     else {

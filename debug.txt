@@ -1,0 +1,1 @@
+recusive null moves would cause king to be taken

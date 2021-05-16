@@ -882,6 +882,7 @@ int calcReduction(bool isInCheck, bool alphaRise, Move move, int moveCount, int 
     }
 }
 
+
 int negamax(int alpha, int beta, int depth, int side) {
     int moveCount;
     int legalMoveCount = 0;
@@ -893,6 +894,7 @@ int negamax(int alpha, int beta, int depth, int side) {
     Move bestMove;
     bool alphaRise = false;
     bool isInCheck = is_king_threatened(side);
+    Board gameState = g_gameStateStack[g_root + g_ply];
 
     Move hashMove = create_move(0, 0, 0);
     bool foundHashMove = false;
@@ -974,12 +976,34 @@ int negamax(int alpha, int beta, int depth, int side) {
         return q_search(alpha, beta, side);
     }
 
+    // try the null move if conditions are met
+    if (depth >= 4 && !isInCheck && has_a_piece(&gameState, side)) {
+        int R = 2;
+        if (depth > 6) {
+            R = 3;
+        }
+
+        make_move(create_move(0, 0, NULL_MOVE), false);
+
+        score = -negamax(-beta, -beta + 1, depth - 1 - NULL_R, -side);
+
+        unmake_move();
+
+        if (score >= beta) {
+            depth -= 4;
+
+            if (depth <= 0) {
+                return beta;
+            }
+        }
+    }
+
     moveCount = generate_moves(movesArr, side);
     sort_moves_score(movesArr, moveCount, side, hashMove, foundHashMove);
 
     for (i = 0; i < moveCount; i++)  {
         Move move;
-        int reduction;
+        int reduction = 0;
 
         selection_sort_one_move(movesArr, i, moveCount);
         move = movesArr[i];

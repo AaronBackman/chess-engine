@@ -301,6 +301,23 @@ u64 get_zobrist(Board board) {
     return zobrist;
 }
 
+bool has_a_piece(Board *gameState, int side) {
+    u64 pieces = 0LLU;
+    pieces |= gameState->knights;
+    pieces |= gameState->bishops;
+    pieces |= gameState->rooks;
+    pieces |= gameState->queens;
+
+    if (side == WHITE) {
+        pieces &= gameState->whitePieces;
+    }
+    else {
+        pieces &= gameState->blackPieces;
+    }
+
+    return pieces != 0;
+}
+
 void print_in_binary(u64 n) {
     int i;
 
