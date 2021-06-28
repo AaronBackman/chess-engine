@@ -44,7 +44,6 @@ typedef unsigned char BYTE;
 #define BLACK -1
 
 #define DELTA 200
-#define NULL_R 3
 
 #define PV_NODE 1
 #define ALL_NODE 2

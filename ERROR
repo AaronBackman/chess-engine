@@ -11,3 +11,4 @@ Program_7_4: Search.c:603: sort_moves_score: Assertion `0 != 0' failed.
 Program_7_4: Search.c:603: sort_moves_score: Assertion `0 != 0' failed.
 Program_7_5: Utilities.h:59: bitscan_forward: Assertion `board != 0' failed.
 Program_7_5: Search.c:603: sort_moves_score: Assertion `0 != 0' failed.
+Program_7: Search.c:603: sort_moves_score: Assertion `0 != 0' failed.

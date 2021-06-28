@@ -985,7 +985,7 @@ int negamax(int alpha, int beta, int depth, int side) {
 
         make_move(create_move(0, 0, NULL_MOVE), false);
 
-        score = -negamax(-beta, -beta + 1, depth - 1 - NULL_R, -side);
+        score = -negamax(-beta, -beta + 1, depth - 1 - R, -side);
 
         unmake_move();
 
@@ -1376,7 +1376,7 @@ void *search(void *vargp) {
             }
             else if (currentScore > 100000) {
                 int distanceToMate = CHECKMATE - currentScore;
-                printf("info depth %d nodes %d nps %d time %d score mate %d pv %s\n", searchedDepth, evalCount, evalCount / timeDifference * 1000, timeInMillis, (distanceToMate + 1) / 2, pvStr);
+                printf("info depth %d nodes %d nps %d time %d score mate %d pv %s\n", searchedDepth, evalCount, evalCount / timeDifference * 1000, timeInMillis, -((distanceToMate + 1) / 2), pvStr);
             }
             else {
                 printf("info depth %d nodes %d nps %d time %d score cp %d pv %s\n", searchedDepth, evalCount, evalCount / timeDifference * 1000, timeInMillis, currentScore, pvStr);
